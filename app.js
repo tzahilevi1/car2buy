@@ -359,8 +359,9 @@
   }
 
   /* ---------- used cars grid (יד 2) + smart search ---------- */
-  const usedGrid = document.getElementById('usedGrid');
-  if (usedGrid && window.Car2Buy) {
+  function renderUsed() {
+    const usedGrid = document.getElementById('usedGrid');
+    if (!(usedGrid && window.Car2Buy)) return;
     const { USED, usedCard, NIS } = window.Car2Buy;
     usedGrid.innerHTML = USED.map(usedCard).join('');
     const cards = [...usedGrid.querySelectorAll('.car')];
@@ -437,6 +438,8 @@
       fillModels(); applyU();
     }
   }
+  if (window.Car2Buy && window.Car2Buy.carsLoading) document.addEventListener('c2b:cars-updated', renderUsed, { once: true });
+  else renderUsed();
 
   /* ---------- magazine (featured + grid + sidebar) ---------- */
   const magGrid = document.getElementById('magGrid');

@@ -203,28 +203,36 @@
   }
 
   // ---------- CARS ----------
+  var carFilter = 'all';
   function renderCars() {
-    db.from('cars').select('*').order('created_at', { ascending: false }).then(function (r) {
+    db.from('cars').select('*').order('condition', { ascending: true }).order('sort_order', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false }).then(function (r) {
       if (r.error) return errBox(r.error.message);
-      var cars = r.data || [];
+      var all = r.data || [];
+      var cnt = { all: all.length, new: 0, used: 0 };
+      all.forEach(function (c) { (c.condition === 'used') ? cnt.used++ : cnt.new++; });
+      var cars = carFilter === 'all' ? all : all.filter(function (c) { return (c.condition || 'new') === carFilter; });
       var rows = cars.map(function (c) {
+        var cond = c.condition === 'used' ? '<span class="tag">יד 2</span>' : '<span class="tag handled">חדש</span>';
+        var extra = c.extra || {};
+        var sub = c.condition === 'used' ? (esc(c.year) + ' · ' + (extra.km ? Number(extra.km).toLocaleString('en-US') + ' ק״מ' : '') + (extra.hand ? ' · יד ' + esc(extra.hand) : '')) : esc(c.trim);
         return '<tr><td>' + (c.img ? '<img src="' + esc(c.img) + '" style="width:54px;height:36px;object-fit:cover;border-radius:6px">' : '') +
-          '</td><td>' + esc(c.brand) + '</td><td>' + esc(c.name) + '</td><td>' + esc(c.trim) + '</td><td>' + nis(c.monthly) +
+          '</td><td>' + cond + '</td><td>' + esc(c.brand) + '</td><td>' + esc(c.name) + '</td><td class="muted">' + sub + '</td><td>' + nis(c.monthly) +
           '</td><td>' + nis(c.price) + '</td><td>' + (c.active ? '<span class="tag handled">פעיל</span>' : '<span class="tag">מוסתר</span>') +
           '</td><td><button class="btn btn-ghost btn-sm" data-edit="' + c.id + '">עריכה</button> ' +
           '<button class="btn btn-ghost btn-sm" data-del="' + c.id + '" style="border-color:var(--danger);color:var(--danger)">מחיקה</button></td></tr>';
       }).join('');
+      function tabBtn(v, label) { return '<button data-cf="' + v + '"' + (carFilter === v ? ' class="active"' : '') + '>' + label + '</button>'; }
       view(
-        '<div class="card"><div class="row-between"><h3>רכבים בדאטהבייס (' + cars.length + ')</h3>' +
-        '<button class="btn btn-sm" id="carAdd">+ הוספת רכב</button></div>' +
-        '<p class="muted" style="font-size:13px">רכבים אלה מתווספים לקטלוג באתר לצד המלאי הקיים.</p>' +
-        '<div class="table-scroll"><table><thead><tr><th>תמונה</th><th>מותג</th><th>דגם</th><th>גרסה</th><th>החזר</th><th>מחיר</th><th>סטטוס</th><th></th></tr></thead><tbody>' +
-        (rows || '<tr><td colspan="8" class="muted">אין עדיין רכבים. לחצו "הוספת רכב".</td></tr>') + '</tbody></table></div></div>' +
+        '<div class="card"><div class="row-between"><h3>ניהול רכבים</h3><button class="btn btn-sm" id="carAdd">+ הוספת רכב</button></div>' +
+        '<nav class="tabs" id="carTabs" style="margin-bottom:14px">' + tabBtn('all', 'הכל (' + cnt.all + ')') + tabBtn('new', 'חדשים (' + cnt.new + ')') + tabBtn('used', 'יד 2 (' + cnt.used + ')') + '</nav>' +
+        '<div class="table-scroll"><table><thead><tr><th>תמונה</th><th>סוג</th><th>מותג</th><th>דגם</th><th>פרטים</th><th>החזר</th><th>מחיר</th><th>סטטוס</th><th></th></tr></thead><tbody>' +
+        (rows || '<tr><td colspan="9" class="muted">אין רכבים בקבוצה זו.</td></tr>') + '</tbody></table></div></div>' +
         '<div id="carFormWrap"></div>'
       );
+      $('carTabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-cf]'); if (b) { carFilter = b.dataset.cf; renderCars(); } });
       $('carAdd').addEventListener('click', function () { carForm(null); });
       $('view').querySelectorAll('button[data-edit]').forEach(function (b) {
-        b.addEventListener('click', function () { carForm(cars.filter(function (c) { return c.id === b.dataset.edit; })[0]); });
+        b.addEventListener('click', function () { carForm(all.filter(function (c) { return c.id === b.dataset.edit; })[0]); });
       });
       $('view').querySelectorAll('button[data-del]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -239,25 +247,35 @@
   }
   function carForm(car) {
     car = car || {};
+    var extra = car.extra || {};
+    var isUsed = car.condition === 'used';
     var f = function (label, key, type, val) {
       return '<div class="field"><label>' + label + '</label><input class="inp" style="width:100%" name="' + key + '" type="' + (type || 'text') + '" value="' + esc(car[key] != null ? car[key] : (val || '')) + '"></div>';
+    };
+    var fx = function (label, key, val) { // used-specific (from extra)
+      return '<div class="field"><label>' + label + '</label><input class="inp" style="width:100%" name="' + key + '" type="number" value="' + esc(extra[key] != null ? extra[key] : (val || '')) + '"></div>';
     };
     $('carFormWrap').innerHTML =
       '<div class="card"><h3>' + (car.id ? 'עריכת רכב' : 'רכב חדש') + '</h3>' +
       '<form id="carForm"><div class="form-grid">' +
+      '<div class="field"><label>סוג</label><select class="inp" style="width:100%" name="condition" id="condSel"><option value="new"' + (isUsed ? '' : ' selected') + '>רכב חדש</option><option value="used"' + (isUsed ? ' selected' : '') + '>יד 2 (משומש)</option></select></div>' +
       f('מותג (עברית)', 'brand') + f('דגם', 'name') + f('גרסה/גימור', 'trim') +
       f('החזר חודשי ₪', 'monthly', 'number') + f('מחיר ₪', 'price', 'number') + f('שנה', 'year', 'number') +
-      f('קטגוריה (suv/sedan/ev...)', 'cat') + f('סוג דלק', 'fuel') +
+      f('קטגוריה (suv/sedan/ev)', 'cat') + f('סוג דלק', 'fuel') +
+      '<div id="usedFields" style="display:' + (isUsed ? 'contents' : 'none') + '">' + fx('קילומטראז\'', 'km') + fx('יד', 'hand') + '</div>' +
       '<div class="field" style="grid-column:1/-1"><label>כתובת תמונה (URL)</label><input class="inp" style="width:100%" name="img" type="url" value="' + esc(car.img || '') + '"></div>' +
       '<label class="field" style="grid-column:1/-1;display:flex;align-items:center;gap:8px"><input type="checkbox" name="active" ' + (car.active === false ? '' : 'checked') + '> פעיל (מוצג באתר)</label>' +
       '</div><div style="margin-top:14px;display:flex;gap:10px"><button type="submit" class="btn">שמירה</button><button type="button" class="btn btn-ghost" id="carCancel">ביטול</button></div>' +
       '<div class="err" id="carErr"></div></form></div>';
     $('carFormWrap').scrollIntoView({ behavior: 'smooth' });
+    $('condSel').addEventListener('change', function () { $('usedFields').style.display = this.value === 'used' ? 'contents' : 'none'; });
     $('carCancel').addEventListener('click', function () { $('carFormWrap').innerHTML = ''; });
     $('carForm').addEventListener('submit', function (e) {
       e.preventDefault();
       var fd = new FormData(e.target);
+      var cond = fd.get('condition') || 'new';
       var payload = {
+        condition: cond,
         brand: (fd.get('brand') || '').trim(),
         name: (fd.get('name') || '').trim(),
         trim: (fd.get('trim') || '').trim() || null,
@@ -267,13 +285,14 @@
         cat: (fd.get('cat') || '').trim() || null,
         fuel: (fd.get('fuel') || '').trim() || null,
         img: (fd.get('img') || '').trim() || null,
-        active: fd.get('active') === 'on'
+        active: fd.get('active') === 'on',
+        extra: cond === 'used' ? { km: fd.get('km') ? parseInt(fd.get('km'), 10) : null, hand: fd.get('hand') ? parseInt(fd.get('hand'), 10) : null, type: (fd.get('cat') || '') } : (car.extra || null)
       };
       if (!payload.brand || !payload.name) { $('carErr').textContent = 'מותג ודגם הם שדות חובה.'; return; }
       var q = car.id ? db.from('cars').update(payload).eq('id', car.id) : db.from('cars').insert(payload);
       q.then(function (res) {
         if (res.error) { $('carErr').textContent = 'שגיאה: ' + res.error.message; return; }
-        renderCars();
+        carFilter = cond; renderCars();
       });
     });
   }
