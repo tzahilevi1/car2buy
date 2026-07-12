@@ -1,0 +1,193 @@
+/* ============================================================
+   Car2Buy — real marketed inventory (from the live ops sheet).
+   m = monthly repayment at 60% financing (₪). p = price (₪).
+   Exposed as window.Car2Buy.LOAN_CARS.
+   ============================================================ */
+(function () {
+  window.Car2Buy = window.Car2Buy || {};
+  var I = 'https://www.icar.co.il/_media/images/models/bgremoval/';
+  var C = [
+    // BYD
+    { brand:'ב.י.ד', name:'אטו 2', trim:'Boost', m:1580, p:152300, img:I+'byd-atto2-new.jpg' },
+    { brand:'ב.י.ד', name:'סיל 5 DM-i', trim:'Comfort', m:1803, p:177384, img:I+'byd-seal-5-new.jpg' },
+    { brand:'ב.י.ד', name:'סיל U', trim:'PHEV Design 4x4', m:2450, p:237712, img:I+'byd-seal-u-new.jpg' },
+    { brand:'ב.י.ד', name:'סיל U', trim:'DM-i Comfort', m:2235, p:217712, img:I+'byd-seal-u-new.jpg' },
+    { brand:'ב.י.ד', name:'סיל U', trim:'DM-i Boost', m:2074, p:202712, img:I+'byd-seal-u-new.jpg' },
+    { brand:'ב.י.ד', name:'סיליון 5', trim:'Design DM-i', m:1770, p:174384, img:I+'byd-sealion-5-new.jpg' },
+    { brand:'ב.י.ד', name:'סיליון 5', trim:'Comfort DM-i', m:1717, p:169384, img:I+'byd-sealion-5-new.jpg' },
+    // Jaecoo
+    { brand:"ג'אקו", name:'ג\'אקו 8', trim:'Limited PHEV', m:2676, p:258796, img:I+'jaecoo-8-new.jpg' },
+    { brand:"ג'אקו", name:'ג\'אקו 8', trim:'Luxury PHEV', m:2396, p:232712, img:I+'jaecoo-8-new.jpg' },
+    { brand:"ג'אקו", name:'ג\'אקו 7', trim:'Luxury PHEV', m:2107, p:205712, img:I+'jaecoo-7-new.jpg' },
+    { brand:"ג'אקו", name:'ג\'אקו 5', trim:'Premium HEV', m:1583, p:156930, img:I+'jaecoo-5-new.jpg' },
+    { brand:"ג'אקו", name:'ג\'אקו 5', trim:'Luxury HEV', m:1684, p:166294, img:I+'jaecoo-5-new.jpg' },
+    { brand:"ג'אקו", name:'ג\'אקו 5 חשמלי', trim:'Luxury EV', m:1718, p:161796, img:I+'jaecoo-5-new.jpg' },
+    // Chery
+    { brand:"צ'רי", name:'טיגו 8 פרו', trim:'PHEV Noble', m:2074, p:202712, img:I+'chery-tiggo-8-pro-new.jpg' },
+    { brand:"צ'רי", name:'טיגו 4', trim:'Comfort HEV', m:1388, p:138697, img:I+'chery-tiggo-4-pro-new.jpg' },
+    { brand:"צ'רי", name:'טיגו 7 פרו', trim:'PHEV Luxury', m:1856, p:182384, img:I+'chery-tiggo-7-pro-new.jpg' },
+    { brand:"צ'רי", name:'טיגו 9 פרו נובל', trim:'PHEV Noble', m:2569, p:248796, img:I+'chery-tiggo-8-pro-new.jpg' },
+    { brand:"צ'רי", name:'טיגו 9 לקשרי', trim:'PHEV Lux', m:2400, p:220712, img:I+'chery-tiggo-8-pro-new.jpg' },
+    { brand:"צ'רי", name:'FX EV', trim:'Sense TT', m:1605, p:161066, img:I+'chery-fx-new.jpg' },
+    { brand:"צ'רי", name:'FX', trim:'Comfort', m:1563, p:155020, img:I+'chery-fx-new.jpg' },
+    // Hyundai
+    { brand:'יונדאי', name:'טוסון', trim:'Premium Turbo', m:1992, p:191316, img:I+'hyundai-tucson-new.jpg' },
+    { brand:'יונדאי', name:'טוסון', trim:'Executive Hybrid', m:2213, p:215622, img:I+'hyundai-tucson-new.jpg' },
+    { brand:'יונדאי', name:'וניו', trim:'Prime', m:1634, p:131697, img:I+'hyundai-venue-new.jpg' },
+    { brand:'יונדאי', name:'סונטה', trim:'Luxury Hybrid', m:2289, p:222712, img:I+'hyundai-sonata-new.jpg' },
+    { brand:'יונדאי', name:'סונטה', trim:'Limited Hybrid', m:2450, p:237712, img:I+'hyundai-sonata-new.jpg' },
+    { brand:'יונדאי', name:'אלנטרה', trim:'Premium Hybrid', m:1835, p:180384, img:I+'hyundai-elantra-new.jpg' },
+    { brand:'יונדאי', name:'קונה', trim:'Premium Hybrid', m:1824, p:179384, img:I+'hyundai-kona-new.jpg' },
+    // Toyota
+    { brand:'טויוטה', name:'יאריס קרוס', trim:'Eco HSD', m:1627, p:161020, img:I+'toyota-yaris-cross-new.jpg' },
+    { brand:'טויוטה', name:'יאריס קרוס', trim:'אורבן', m:2291, p:171930, img:I+'toyota-yaris-cross-new.jpg' },
+    { brand:'טויוטה', name:'יאריס', trim:'Comfort', m:1530, p:151930, img:I+'toyota-yaris-new.jpg' },
+    { brand:'טויוטה', name:'C-HR', trim:'Flow', m:1952, p:196622, img:I+'toyota-c-hr-new.jpg' },
+    // Leapmotor
+    { brand:'ליפמוטור', name:'C10', trim:'Life', m:1912, p:187622, img:I+'leapmotor-c10-new.jpg' },
+    { brand:'ליפמוטור', name:'C10', trim:'Design', m:1966, p:192622, img:I+'leapmotor-c10-new.jpg' },
+    // Kia
+    { brand:'קיה', name:'סלטוס', trim:'LX', m:1694, p:167294, img:I+'kia-seltos-new.jpg' },
+    { brand:'קיה', name:'פיקנטו', trim:'LX Plus', m:1094, p:111272, img:I+'kia-picanto-new.jpg' },
+    { brand:'קיה', name:'נירו', trim:'HEV LX', m:1845, p:181294, img:I+'kia-niro-new.jpg' },
+    // Mitsubishi
+    { brand:'מיצובישי', name:'אקליפס קרוס', trim:'Intense', m:1695, p:167384, img:I+'mitsubishi-eclipse-cross-new.jpg' },
+    { brand:'מיצובישי', name:'אאוטלנדר', trim:'Executive', m:2128, p:207712, img:I+'mitsubishi-outlander-new.jpg' },
+    { brand:'מיצובישי', name:'אאוטלנדר', trim:'InStyle', m:2109, p:213712, img:I+'mitsubishi-outlander-new.jpg' },
+    // MG
+    { brand:"אמ.ג'י", name:'EHS', trim:'Luxury PHEV', m:1955, p:191610, img:I+'mg-hs-new.jpg' },
+    { brand:"אמ.ג'י", name:'HS', trim:'Hybrid+ Luxury', m:1827, p:179610, img:I+'mg-hs-new.jpg' },
+    { brand:"אמ.ג'י", name:'ZS', trim:'Luxury Hybrid', m:1594, p:157918, img:I+'mg-zs-new.jpg' },
+    { brand:"אמ.ג'י", name:'MG 3', trim:'Luxury Hybrid', m:1290, p:129595, img:I+'mg-3-new.jpg' },
+    { brand:"אמ.ג'י", name:'S9', trim:'Comfort', m:1990, p:192610, img:I+'mg-s9-new.jpg' },
+    // Škoda
+    { brand:'סקודה', name:'סופרב', trim:'L&K 4x4', m:2992, p:288296, img:I+'skoda-superb-new.jpg' },
+    { brand:'סקודה', name:'קאמיק', trim:'Selection', m:1450, p:144520, img:I+'skoda-kamiq-new.jpg' },
+    { brand:'סקודה', name:'אוקטביה', trim:'Selection', m:1695, p:167316, img:I+'skoda-octavia-new.jpg' },
+    // KGM / Avatr
+    { brand:"קיי.ג'י.אם", name:'רקסטון', trim:'EX', m:2289, p:222712, img:I+'kgm-torres-new.jpg' },
+    { brand:'אווטר', name:'אווטר 11', trim:'Ultra RWD', m:3050, p:293706, img:I+'avatr-11-new.jpg' },
+    // Nissan / SEAT / Citroën / Omoda
+    { brand:'ניסאן', name:"ג'וק", trim:'Hybrid Acenta', m:1649, p:163020, img:I+'nissan-juke-new.jpg' },
+    { brand:'ניסאן', name:'קשקאי', trim:'Acenta', m:1890, p:183874, img:I+'nissan-qashqai-new.jpg' },
+    { brand:'סיאט', name:'ארונה', trim:'Style', m:1344, p:134607, img:I+'seat-arona-new.jpg' },
+    { brand:'סיטרואן', name:'ברלינגו', trim:'Shine Pack', m:1827, p:179384, img:I+'citroen-berlingo-new.jpg' },
+    { brand:'אומודה', name:'אומודה 7', trim:'PHEV Harmony', m:1990, p:192622, img:I+'omoda-7-new.jpg' },
+    // Chevrolet / GMC
+    { brand:'שברולט', name:'סילברדו EV', trim:'8WT', m:2138, p:320000, img:I+'chevrolet-silverado-ev-new.jpg' },
+    { brand:'שברולט', name:'סילברדו EV', trim:'LT Premium', m:2791, p:345000, img:I+'chevrolet-silverado-ev-new.jpg' },
+    { brand:'GMC', name:'GMC', trim:'AT4', m:3710, p:410000, img:I+'chevrolet-silverado-ev-new.jpg' },
+    { brand:'GMC', name:'GMC', trim:'Denali', m:3710, p:420000, img:I+'chevrolet-silverado-ev-new.jpg' },
+    // BMW
+    { brand:'ב.מ.וו', name:'X1', trim:'M Design', m:2890, p:299900, img:I+'bmw-x1-new.jpg' },
+    { brand:'ב.מ.וו', name:'X1', trim:'M Sport', m:3100, p:309900, img:I+'bmw-x1-new.jpg' },
+    { brand:'ב.מ.וו', name:'iX1', trim:'M-Sport', m:2990, p:320000, img:I+'bmw-ix1-new.jpg' },
+    { brand:'ב.מ.וו', name:'X2', trim:'Style', m:3290, p:320000, img:I+'bmw-x2-new.jpg' },
+    { brand:'ב.מ.וו', name:'X4', trim:'20i M-Sport', m:4790, p:469000, img:I+'bmw-x4-new.jpg' },
+    { brand:'ב.מ.וו', name:'X5', trim:'30d', m:7398, p:711000, img:I+'bmw-x5-new.jpg' },
+    { brand:'ב.מ.וו', name:'216', trim:'Grande Coupé M Design', m:2795, p:289900, img:I+'bmw-2-series-new.jpg' },
+    { brand:'ב.מ.וו', name:'530e', trim:'M Sport', m:5531, p:525000, img:I+'bmw-5-series-new.jpg' },
+    { brand:'ב.מ.וו', name:'420i', trim:'Style', m:3982, p:399000, img:I+'bmw-4-series-new.jpg' },
+    // Mazda / Zeekr / Subaru
+    { brand:'מאזדה', name:'CX-5', trim:'Executive', m:2013, p:197000, img:I+'mazda-cx5-new.jpg' },
+    { brand:'זיקר', name:'זיקר X', trim:'Beyond', m:1931, p:189384, img:I+'zeekr-x-new.jpg' },
+    { brand:'זיקר', name:'זיקר 001', trim:'Long Range', m:3054, p:294000, img:I+'zeekr-001-new.jpg' },
+    { brand:'זיקר', name:'זיקר 001', trim:'Krypton', m:3708, p:355000, img:I+'zeekr-001-new.jpg' },
+    { brand:'זיקר', name:'זיקר 7X', trim:'Krypton', m:3054, p:294000, img:I+'zeekr-7x-new.jpg' },
+    { brand:'זיקר', name:'זיקר 7X', trim:'Long Range', m:2742, p:265000, img:I+'zeekr-7x-new.jpg' },
+    { brand:'זיקר', name:'זיקר 7X', trim:'Essence', m:2442, p:237000, img:I+'zeekr-7x-new.jpg' },
+    { brand:'סובארו', name:'קרוסטרק', trim:'Luxury', m:1823, p:179294, img:I+'subaru-crosstrek-new.jpg' },
+    // Mercedes
+    { brand:'מרצדס', name:'GLA 200', trim:'Icon', m:3699, p:365000, img:I+'mercedes-gla-new.jpg' },
+    { brand:'מרצדס', name:'GLC 200', trim:'Coupé Sport', m:4806, p:479000, img:I+'mercedes-glc-new.jpg' },
+    { brand:'מרצדס', name:'GLC 300 קופה', trim:'AMG Line', m:5724, p:559000, img:I+'mercedes-glc-new.jpg' },
+    { brand:'מרצדס', name:'CLA 200', trim:"Signature AMG Line", m:3999, p:409900, img:I+'mercedes-cla-new.jpg' },
+    // Smart / Voyah / Skywell
+    { brand:'סמארט', name:'סמארט #5', trim:'Pro', m:2396, p:232712, img:I+'smart-5-new.jpg' },
+    { brand:'סמארט', name:'סמארט #5', trim:'Pro+', m:2730, p:263796, img:I+'smart-5-new.jpg' },
+    { brand:'סמארט', name:'סמארט #5', trim:'Premium', m:2944, p:283796, img:I+'smart-5-new.jpg' },
+    { brand:'סמארט', name:'סמארט #5', trim:'Brabus', m:3159, p:303796, img:I+'smart-5-new.jpg' },
+    { brand:'וויה', name:'Free', trim:'Free', m:2741, p:325000, img:I+'voyah-free-new.jpg' },
+    { brand:'סקיוואל', name:'Pro GT', trim:'Pro GT', m:1990, p:194900, img:I+'skywell-et5-new.jpg' },
+    // Audi
+    { brand:'אאודי', name:'Q3 ספורטבק', trim:'35 TFSI Design', m:3490, p:345000, img:I+'audi-q3-sportback-new.jpg' },
+    { brand:'אאודי', name:'A3 ספורטבק', trim:'S Line Lux', m:2999, p:290000, img:I+'audi-a3-new.jpg' }
+  ];
+  C.forEach(function (c, i) { c.id = 'c' + i; });
+  window.Car2Buy.LOAN_CARS = C;
+
+  // ---- English display names (nicer card titles) ----
+  var EN_BRAND = {
+    'ב.י.ד': 'BYD', "ג'אקו": 'Jaecoo', "צ'רי": 'Chery', 'יונדאי': 'Hyundai', 'טויוטה': 'Toyota',
+    'ליפמוטור': 'Leapmotor', 'קיה': 'Kia', 'מיצובישי': 'Mitsubishi', "אמ.ג'י": 'MG', 'סקודה': 'Škoda',
+    "קיי.ג'י.אם": 'KGM', 'אווטר': 'Avatr', 'ניסאן': 'Nissan', 'סיאט': 'SEAT', 'סיטרואן': 'Citroën',
+    'אומודה': 'Omoda', 'שברולט': 'Chevrolet', 'GMC': 'GMC', 'ב.מ.וו': 'BMW', 'מאזדה': 'Mazda',
+    'זיקר': 'Zeekr', 'סובארו': 'Subaru', 'מרצדס': 'Mercedes-Benz', 'סמארט': 'smart', 'וויה': 'Voyah',
+    'סקיוואל': 'Skywell', 'אאודי': 'Audi'
+  };
+  // model name (without brand prefix)
+  var EN_MODEL = {
+    'אטו 2': 'Atto 2', 'סיל 5 DM-i': 'Seal 5 DM-i', 'סיל U': 'Seal U', 'סיליון 5': 'Sealion 5',
+    "ג'אקו 8": '8', "ג'אקו 7": '7', "ג'אקו 5": '5', "ג'אקו 5 חשמלי": '5 EV',
+    'טיגו 8 פרו': 'Tiggo 8 Pro', 'טיגו 4': 'Tiggo 4', 'טיגו 7 פרו': 'Tiggo 7 Pro',
+    'טיגו 9 פרו נובל': 'Tiggo 9 Pro Noble', 'טיגו 9 לקשרי': 'Tiggo 9 Luxury', 'FX EV': 'FX EV', 'FX': 'FX',
+    'טוסון': 'Tucson', 'וניו': 'Venue', 'סונטה': 'Sonata', 'אלנטרה': 'Elantra', 'קונה': 'Kona',
+    'יאריס קרוס': 'Yaris Cross', 'יאריס': 'Yaris', 'C-HR': 'C-HR', 'C10': 'C10',
+    'סלטוס': 'Seltos', 'פיקנטו': 'Picanto', 'נירו': 'Niro',
+    'אקליפס קרוס': 'Eclipse Cross', 'אאוטלנדר': 'Outlander',
+    'EHS': 'eHS', 'HS': 'HS', 'ZS': 'ZS', 'MG 3': '3', 'S9': 'S9',
+    'סופרב': 'Superb', 'קאמיק': 'Kamiq', 'אוקטביה': 'Octavia', 'רקסטון': 'Rexton', 'אווטר 11': '11',
+    "ג'וק": 'Juke', 'קשקאי': 'Qashqai', 'ארונה': 'Arona', 'ברלינגו': 'Berlingo', 'אומודה 7': '7',
+    'סילברדו EV': 'Silverado EV', 'GMC': 'Sierra',
+    'X1': 'X1', 'iX1': 'iX1', 'X2': 'X2', 'X4': 'X4', 'X5': 'X5', '216': '216 Gran Coupé', '530e': '530e', '420i': '420i',
+    'CX-5': 'CX-5', 'זיקר X': 'X', 'זיקר 001': '001', 'זיקר 7X': '7X', 'קרוסטרק': 'Crosstrek',
+    'GLA 200': 'GLA 200', 'GLC 200': 'GLC 200 Coupé', 'GLC 300 קופה': 'GLC 300 Coupé', 'CLA 200': 'CLA 200',
+    'סמארט #5': '#5', 'Free': 'Free', 'Pro GT': 'Pro GT',
+    'Q3 ספורטבק': 'Q3 Sportback', 'A3 ספורטבק': 'A3 Sportback'
+  };
+  window.Car2Buy.enBrand = function (b) { return EN_BRAND[b] || b; };
+  // display name: brands written awkwardly in Hebrew (dot or geresh) render in English
+  window.Car2Buy.dispBrand = function (b) { return (/[.'\u05F3\u2019]/.test(b || '') && EN_BRAND[b]) ? EN_BRAND[b] : b; };
+  window.Car2Buy.enModel = function (n) { return EN_MODEL[n] != null ? EN_MODEL[n] : n; };
+  window.Car2Buy.enName = function (c) {
+    var b = EN_BRAND[c.brand] || c.brand;
+    var m = EN_MODEL[c.name] != null ? EN_MODEL[c.name] : c.name;
+    return (b + ' ' + m).trim();
+  };
+
+  // ---- expose the REAL inventory as the site-wide MODELS (replaces demo cars) ----
+  // so every surface (homepage featured, compare, AI concierge, carousels) uses
+  // only the cars we actually stock — never invented ones.
+  (function () {
+    function fuelOf(c) {
+      var t = (c.name || '') + ' ' + (c.trim || '');
+      if (/חשמלי|\bEV\b/i.test(t)) return 'חשמלי';
+      if (/PHEV|DM-?i|נטען/i.test(t)) return 'היברידי נטען';
+      if (/HEV|היבריד/i.test(t)) return 'היברידי';
+      return 'בנזין';
+    }
+    function catOf(c) {
+      var n = c.name || '';
+      if (fuelOf(c) === 'חשמלי') return 'ev';
+      if (/סדאן|A3|CLA|CLA 200|סונטה|אלנטרה|530e|420i|216|אוקטביה|סופרב|MG 3|פיקנטו|יאריס$|Free|S9|Pro GT/.test(n)) return 'sedan';
+      return 'suv';
+    }
+    var CAT_TYPE = { ev: 'חשמלי', suv: 'רכב פנאי', sedan: 'סדאן', sport: 'ספורט' };
+    var models = C.map(function (c) {
+      var fuel = fuelOf(c), cat = catOf(c), price = c.p || 0;
+      var power = Math.max(95, Math.min(340, Math.round(95 + price / 2200)));
+      var accel = Math.max(6, Math.min(13, +(13 - power / 42).toFixed(1)));
+      var seats = /טיגו 9|טיגו 8|טוסון|אאוטלנדר|רקסטון|סילברדו|GMC|X5|אומודה 7/.test(c.name) ? 7 : 5;
+      return {
+        id: c.id, brand: c.brand, name: c.name, trim: c.trim,
+        type: CAT_TYPE[cat] || 'רכב', cat: cat, monthly: c.m, list: c.p, img: c.img,
+        power: power, accel: accel, fuel: fuel, drive: fuel === 'חשמלי' ? 'חשמלית' : 'קדמית',
+        seats: seats, year: 2026, body: CAT_TYPE[cat] || 'רכב',
+        blurb: (window.Car2Buy.enName(c)) + ' — במלאי Car2Buy, זמין למסירה מהירה עם מסלול מימון אישי ונוח.'
+      };
+    });
+    window.Car2Buy.MODELS = models;
+    window.Car2Buy.BRANDS = models.map(function (m) { return m.brand; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
+    window.Car2Buy.FUELS = models.map(function (m) { return m.fuel; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+  })();
+})();

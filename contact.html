@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>צור קשר · Car2Buy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="contact">
+<div id="site-header"></div>
+
+<main>
+
+<section class="section" style="padding-top:140px;">
+  <div class="wrap">
+    <div class="contact-grid">
+      <div class="reveal">
+        <span class="eyebrow">בואו נתחיל</span>
+        <h1 class="h-sec">הרכב הבא שלכם<br><span class="gold-text">מתחיל בשיחה אחת</span></h1>
+        <p class="lead">השאירו פרטים ויועץ אישי יחזור אליכם עם הצעה מותאמת — בלי התחייבות ובלי עלות.</p>
+        <div class="contact-info">
+          <div class="ci-row"><div class="ci-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"></path></svg></div><div><h4>טלפון</h4><a href="tel:+97237777777">03-777-7777</a></div></div>
+          <div class="ci-row"><div class="ci-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg></div><div><h4>אימייל</h4><a href="mailto:hello@car2buy.co.il">hello@car2buy.co.il</a></div></div>
+          <div class="ci-row"><div class="ci-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg></div><div><h4>כתובת</h4><p>רח׳ הרכב 12, תל אביב</p></div></div>
+          <div class="ci-row"><div class="ci-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div><div><h4>שעות פעילות</h4><p>א׳–ה׳ · 09:00–19:00</p></div></div>
+        </div>
+        <div class="map-frame reveal">
+          <iframe title="מפה" loading="lazy" src="https://www.google.com/maps?q=Rothschild+Blvd+Tel+Aviv&z=14&output=embed"></iframe>
+        </div>
+      </div>
+
+      <div class="lead-form reveal">
+        <form id="leadForm" novalidate>
+          <div class="field-row">
+            <div class="field"><label for="fname">שם מלא</label><input type="text" id="fname" name="name" placeholder="ישראל ישראלי" required></div>
+            <div class="field"><label for="fphone">טלפון</label><input type="tel" id="fphone" name="phone" placeholder="050-0000000" required></div>
+          </div>
+          <div class="field"><label for="femail">אימייל</label><input type="email" id="femail" name="email" placeholder="name@email.com"></div>
+          <div class="field"><label for="fcar">רכב שמעניין אתכם</label>
+            <select id="fcar" name="car">
+              <option value="">בחרו דגם (לא חובה)</option>
+              <option>Mercedes-AMG GT 63 Coupé</option>
+              <option>BMW M5 Competition</option>
+              <option>Audi RS7 Sportback</option>
+              <option>Porsche Panamera</option>
+              <option>Tesla Model S Plaid</option>
+              <option>Range Rover Evoque</option>
+              <option>Tesla Model 3</option>
+              <option>Lexus RX 450h</option>
+              <option>דגם אחר / עדיין מתלבט</option>
+            </select>
+          </div>
+          <div class="field"><label for="fmsg">הערה (אופציונלי)</label><textarea id="fmsg" name="message" placeholder="תקציב משוער, תקופה מועדפת, או כל שאלה אחרת"></textarea></div>
+          <label class="consent"><input type="checkbox" id="fconsent" required> אני מאשר/ת קבלת פנייה מ‑Car2Buy בנוגע להצעת ליסינג מימוני.</label>
+          <button type="submit" class="btn btn-gold btn-lg" style="width:100%;">שלחו ונחזור אליכם</button>
+        </form>
+        <div class="form-success" id="formSuccess">
+          <div class="check">✓</div>
+          <h3>תודה! קיבלנו את הפרטים</h3>
+          <p>יועץ אישי יחזור אליכם בהקדם. בינתיים אתם מוזמנים לשחק עם המחשבון או לעיין בדגמים.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BRANCHES ===== -->
+<section class="section testi-section">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow reveal">הסניפים שלנו</span>
+      <h2 class="h-sec reveal">בואו לבקר <span class="gold-text">באולם התצוגה</span></h2>
+      <p class="lead reveal">שני סניפים ברחבי הארץ, צוות יועצים אישי ומבחר רכבים להתרשמות. קפצו לקפה.</p>
+    </div>
+    <div class="branches">
+      <article class="branch reveal">
+        <div class="branch-img"><img loading="lazy" src="https://images.unsplash.com/photo-1562141961-b5d1dd6f0c8b?w=1100&q=80&auto=format&fit=crop" alt="סניף תל אביב"><span class="branch-tag">סניף ראשי</span></div>
+        <div class="branch-body">
+          <h3>תל אביב</h3>
+          <div class="branch-row"><span class="branch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg></span><p>רח׳ הרכב 12, תל אביב</p></div>
+          <div class="branch-row"><span class="branch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"></path></svg></span><a href="tel:+97237777777">03-777-7777</a></div>
+          <div class="branch-row"><span class="branch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><p>א׳–ה׳ 09:00–19:00 · ו׳ 09:00–13:00</p></div>
+          <a class="branch-link" href="https://www.google.com/maps?q=Rothschild+Blvd+Tel+Aviv" target="_blank" rel="noopener">נווטו לסניף ←</a>
+        </div>
+      </article>
+      <article class="branch reveal">
+        <div class="branch-img"><img loading="lazy" src="https://images.unsplash.com/photo-1567449303078-57ad995bd17a?w=1100&q=80&auto=format&fit=crop" alt="סניף חיפה"><span class="branch-tag">צפון</span></div>
+        <div class="branch-body">
+          <h3>חיפה</h3>
+          <div class="branch-row"><span class="branch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg></span><p>שד׳ ההסתדרות 220, חיפה</p></div>
+          <div class="branch-row"><span class="branch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"></path></svg></span><a href="tel:+97248888888">04-888-8888</a></div>
+          <div class="branch-row"><span class="branch-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><p>א׳–ה׳ 09:00–18:00 · ו׳ 09:00–13:00</p></div>
+          <a class="branch-link" href="https://www.google.com/maps?q=HaHistadrut+Haifa" target="_blank" rel="noopener">נווטו לסניף ←</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="models-data.js"></script>
+<script src="loan-cars.js"></script>
+<script src="site.js"></script>
+<script src="app.js"></script>
+
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>

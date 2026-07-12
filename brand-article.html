@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מאמר · Car2Buy</title>
+<meta name="description" id="metaDesc" content="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== hero ===== */
+  .art-hero { position: relative; display: flex; min-height: clamp(420px, 52vw, 600px); background: #0b0b0d; overflow: hidden; padding: 0; }
+  .art-hero-bg { position: absolute; inset: 0; }
+  .art-hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+  .art-hero-tint { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(8,8,10,.5) 0%, rgba(8,8,10,.12) 34%, rgba(8,8,10,.55) 70%, rgba(8,8,10,.92) 100%); }
+  .art-hero .wrap { position: relative; z-index: 3; width: 100%; display: flex; flex-direction: column; justify-content: space-between; padding-top: 24px; padding-bottom: 54px; }
+  .art-crumb { font-size: 13px; color: rgba(255,255,255,.72); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .art-crumb a { color: rgba(255,255,255,.72); }
+  .art-crumb a:hover { color: var(--gold); }
+  .art-crumb b { color: #fff; font-weight: 700; }
+  .art-head { max-width: 900px; margin: 0 auto; text-align: center; }
+  .art-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .05em; color: #fff; background: color-mix(in oklab, var(--gold) 78%, transparent); border-radius: 999px; padding: 5px 15px; }
+  .art-title { font-family: var(--display); font-size: clamp(30px, 5vw, 52px); font-weight: 900; line-height: 1.12; letter-spacing: -0.01em; color: #fff; margin: 16px 0 0; text-wrap: balance; text-shadow: 0 2px 34px rgba(0,0,0,.55); }
+  .art-dek { display: none; }
+  .art-meta { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 18px; font-size: 14px; color: rgba(255,255,255,.85); }
+  .art-meta .dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.45); }
+  .art-meta .auth { display: flex; align-items: center; gap: 9px; font-weight: 600; color: #fff; }
+  .art-meta .auth .av { width: 30px; height: 30px; border-radius: 50%; background: var(--gold); color: #1a1305; display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+
+  /* CTA button overlapping the hero */
+  .art-cta { position: relative; z-index: 5; max-width: 900px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: center; }
+  .art-cta .mag-info-btn { width: min(460px, 100%); margin: -28px 0 0; box-shadow: 0 20px 45px -14px rgba(0,0,0,.5); }
+
+  /* ===== two-column magazine layout ===== */
+  .mag { max-width: 1240px; margin: 0 auto; padding: clamp(34px, 5vw, 56px) 20px; display: grid; grid-template-columns: 1fr 330px; gap: clamp(30px, 4vw, 54px); align-items: start; }
+  @media (max-width: 980px) { .mag { grid-template-columns: 1fr; } .mag-aside { order: 2; } }
+
+  /* ---- main article ---- */
+  .mag-info-btn { width: 100%; background: #101013; color: #fff; border: 0; border-radius: 999px; padding: 15px 22px; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 26px; transition: .25s; }
+  .mag-info-btn:hover { background: #23232a; }
+  .mag-info-btn svg { width: 16px; height: 16px; }
+  .mag-lead { font-size: 19px; line-height: 1.85; color: var(--ink); font-weight: 500; margin: 0 0 8px; }
+  .mag-fig { margin: 30px 0; background: #fff; border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; aspect-ratio: 16/10; display: grid; place-items: center; }
+  .mag-fig img { width: 100%; height: 100%; object-fit: contain; padding: 18px; }
+  .mag-body { font-size: 17.5px; line-height: 1.95; color: var(--ink-soft); }
+  .mag-body h2 { font-family: var(--display); font-size: clamp(23px, 2.9vw, 30px); font-weight: 800; color: var(--gold-deep); margin: 40px 0 4px; line-height: 1.25; }
+  .mag-body h3 { font-size: clamp(19px, 2.2vw, 22px); font-weight: 700; color: var(--ink); margin: 30px 0 2px; }
+  .mag-body p { margin: 14px 0; }
+  .mag-body p b { color: var(--ink); font-weight: 700; }
+  .mag-body .ba-list { margin: 16px 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+  .mag-body .ba-list li { position: relative; padding-inline-start: 30px; line-height: 1.7; }
+  .mag-body .ba-list li::before { content: "✓"; position: absolute; inset-inline-start: 0; top: 1px; width: 21px; height: 21px; border-radius: 50%; background: color-mix(in oklab, var(--gold) 16%, transparent); color: var(--gold-deep); font-size: 12px; font-weight: 800; display: grid; place-items: center; }
+  .mag-body .ba-proscons { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 24px 0; }
+  @media (max-width: 620px) { .mag-body .ba-proscons { grid-template-columns: 1fr; } }
+  .mag-body .ba-pc { border: 1px solid var(--line-2); border-radius: 16px; padding: 20px 22px; background: var(--bg-card); }
+  .mag-body .ba-pc h3 { margin: 0 0 6px; font-size: 17px; }
+  .mag-body .ba-pc.pros { background: color-mix(in oklab, #1f8a4c 6%, var(--bg-card)); }
+  .mag-body .ba-pc.cons .ba-list li::before { content: "!"; background: color-mix(in oklab, #d98324 18%, transparent); color: #b96a12; }
+  .mag-body .ba-pc .ba-list { gap: 9px; margin: 8px 0 0; }
+  .mag-body .ba-pc .ba-list li { padding-inline-start: 27px; font-size: 15px; }
+
+  /* ---- gallery ---- */
+  .mag-gallery-h { font-family: var(--display); font-size: 22px; font-weight: 800; color: var(--ink); margin: 44px 0 16px; }
+  .mag-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 560px) { .mag-gallery { grid-template-columns: repeat(2, 1fr); } }
+  .mag-gallery a { display: block; aspect-ratio: 4/3; background: #fff; border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; }
+  .mag-gallery img { width: 100%; height: 100%; object-fit: contain; padding: 10px; transition: transform .4s var(--ease); }
+  .mag-gallery a:hover img { transform: scale(1.06); }
+
+  /* ---- sidebar ---- */
+  .mag-aside { position: sticky; top: 96px; display: flex; flex-direction: column; gap: 26px; }
+  @media (max-width: 980px) { .mag-aside { position: static; } }
+  .side-card { background: var(--bg-1); border: 1px solid var(--line-2); border-radius: 18px; padding: 24px 22px; }
+  .side-swap h3 { text-align: center; font-family: var(--display); font-size: 26px; font-weight: 800; color: var(--ink); }
+  .side-swap-btns { display: grid; gap: 10px; margin-top: 18px; }
+  .side-swap-btns a { display: block; text-align: center; padding: 14px; border-radius: 999px; font-weight: 700; font-size: 15px; transition: .25s; }
+  .side-swap-btns .sell { background: var(--gold); color: #1a1206; }
+  .side-swap-btns .sell:hover { background: var(--gold-deep); color: #fff; }
+  .side-swap-btns .buy { background: #101013; color: #fff; }
+  .side-swap-btns .buy:hover { background: #26262d; }
+  .side-google { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin-top: 18px; cursor: pointer; transition: .2s; }
+  .side-google:hover { box-shadow: 0 10px 24px -14px rgba(0,0,0,.3); }
+  .side-google .g { font-weight: 700; font-family: Arial, sans-serif; font-size: 15px; }
+  .side-google .g b:nth-child(1){color:#4285F4;} .side-google .g b:nth-child(2){color:#EA4335;} .side-google .g b:nth-child(3){color:#FBBC05;} .side-google .g b:nth-child(4){color:#4285F4;} .side-google .g b:nth-child(5){color:#34A853;} .side-google .g b:nth-child(6){color:#EA4335;}
+  .side-google .stars { color: #fbbc05; font-size: 15px; letter-spacing: 1px; }
+  .side-google .rev { font-size: 13px; color: var(--muted); }
+
+  .side-share { text-align: center; }
+  .side-share .lbl { font-size: 15px; color: var(--muted); margin-bottom: 14px; }
+  .side-share .icons { display: flex; justify-content: center; gap: 12px; }
+  .side-share .icons a { width: 42px; height: 42px; border-radius: 50%; background: #101013; color: #fff; display: grid; place-items: center; transition: .25s; }
+  .side-share .icons a:hover { background: var(--gold); color: #1a1305; transform: translateY(-3px); }
+  .side-share .icons svg { width: 18px; height: 18px; }
+
+  .side-form h3 { text-align: center; font-family: var(--display); font-size: 22px; font-weight: 800; color: var(--ink); line-height: 1.4; }
+  .side-form form { display: grid; gap: 12px; margin-top: 18px; }
+  .side-form input[type=text], .side-form input[type=tel], .side-form input[type=email] { width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 15px; background: #fff; text-align: right; }
+  .side-form input:focus { outline: none; border-color: var(--gold); }
+  .side-form .submit { background: #101013; color: #fff; border: 0; border-radius: 999px; padding: 15px; font-family: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; transition: .25s; }
+  .side-form .submit:hover { background: var(--gold); color: #1a1206; }
+  .side-consent { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+  .side-consent input { margin-top: 2px; flex: 0 0 auto; width: 16px; height: 16px; accent-color: var(--gold); }
+  .side-consent span { flex: 1; }
+  .side-consent a { color: var(--gold-deep); text-decoration: underline; }
+
+  /* ===== Google reviews popup ===== */
+  @keyframes lnPop { from { opacity:0; transform:translate(-50%,-46%) scale(.97); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }
+  .ln-grev-pop { position:fixed; inset:0; z-index:210; display:none; }
+  .ln-grev-pop.open { display:block; }
+  .ln-grev-pop-ov { position:absolute; inset:0; background:rgba(10,10,12,.5); backdrop-filter:blur(2px); }
+  .ln-grev-card { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:min(420px,calc(100vw - 28px)); max-height:min(620px,calc(100vh - 48px)); background:#fff; border-radius:16px; box-shadow:0 40px 90px -30px rgba(0,0,0,.6); display:flex; flex-direction:column; overflow:hidden; animation:lnPop .28s ease; }
+  .ln-grev-head { position:relative; display:flex; align-items:center; justify-content:center; gap:10px; padding:20px; border-bottom:1px solid var(--line-2); }
+  .ln-grev-head .gg { width:26px; height:26px; }
+  .ln-grev-head .gstars { color:#FBBC04; letter-spacing:1px; font-size:17px; }
+  .ln-grev-head .gtxt { font-size:15px; font-weight:700; color:var(--ink); }
+  .ln-grev-x { position:absolute; inset-inline-end:14px; top:50%; transform:translateY(-50%); width:30px; height:30px; border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; border-radius:50%; transition:.2s; }
+  .ln-grev-x:hover { background:var(--bg-2); color:var(--ink); }
+  .ln-grev-list { overflow-y:auto; padding:6px 0; }
+  .ln-grev-item { padding:20px 22px; border-bottom:1px solid var(--line-2); text-align:start; }
+  .ln-grev-item:last-child { border-bottom:0; }
+  .ln-grev-top { display:flex; align-items:center; gap:12px; }
+  .ln-grev-av { position:relative; width:42px; height:42px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:17px; font-family:var(--display); }
+  .ln-grev-av .ggm { position:absolute; inset-inline-end:-3px; bottom:-3px; width:18px; height:18px; background:#fff; border-radius:50%; display:grid; place-items:center; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .ln-grev-av .ggm svg { width:12px; height:12px; }
+  .ln-grev-name { font-weight:700; font-size:14.5px; color:var(--ink); }
+  .ln-grev-sub { font-size:12.5px; color:var(--muted); margin-top:1px; }
+  .ln-grev-meta { display:flex; align-items:center; gap:7px; margin-top:10px; }
+  .ln-grev-meta .gstars { color:#FBBC04; letter-spacing:.5px; font-size:13px; }
+  .ln-grev-ver { width:15px; height:15px; }
+  .ln-grev-time { font-size:12px; color:var(--muted-2); }
+  .ln-grev-body { font-size:13.5px; line-height:1.65; color:var(--ink-soft); margin-top:9px; text-wrap:pretty; }
+
+  /* ===== trade-in popup ===== */
+  .ti-pop { position: fixed; inset: 0; z-index: 220; display: none; }
+  .ti-pop.open { display: block; }
+  .ti-ov { position: absolute; inset: 0; background: rgba(10,10,12,.55); backdrop-filter: blur(3px); }
+  .ti-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(460px,calc(100vw - 28px)); max-height: calc(100vh - 40px); overflow-y: auto; background: #fff; border-radius: 22px; box-shadow: 0 40px 90px -30px rgba(0,0,0,.6); padding: clamp(22px,4vw,32px); }
+  .ti-x { position: absolute; inset-inline-end: 14px; top: 14px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink); font-size: 15px; cursor: pointer; z-index: 3; }
+  .ti-x:hover { background: var(--bg-2); }
+  .ti-modal .wizard { border: 0; box-shadow: none; padding: 0; margin: 0; background: none; max-width: none; }
+  .side-thanks { text-align: center; padding: 20px 0; color: #1f8a4c; font-weight: 700; display: none; }
+
+  .side-mag h3 { font-family: var(--display); font-size: 24px; font-weight: 800; color: var(--ink); margin-bottom: 16px; }
+  .side-mag-list { display: grid; gap: 14px; }
+  .side-mag-item { display: grid; grid-template-columns: 108px 1fr; gap: 14px; align-items: center; background: var(--bg-card); border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; color: inherit; transition: .25s; }
+  .side-mag-item:hover { border-color: var(--gold-line); transform: translateY(-2px); }
+  .side-mag-item .ph { aspect-ratio: 1/1; background: #fff; }
+  .side-mag-item .ph img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+  .side-mag-item .t { font-size: 14.5px; font-weight: 700; color: var(--gold-deep); line-height: 1.4; padding-inline-end: 12px; }
+
+  /* ===== info popup ===== */
+  .info-pop { position: fixed; inset: 0; z-index: 240; display: none; }
+  .info-pop.open { display: block; }
+  .info-pop-ov { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+  .info-pop-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(440px, calc(100vw - 32px)); background: #fff; border-radius: 20px; padding: 30px 28px; box-shadow: 0 40px 90px -30px rgba(0,0,0,.6); }
+  .info-pop-box h3 { font-family: var(--display); font-size: 24px; font-weight: 800; text-align: center; color: var(--ink); }
+  .info-pop-box p { text-align: center; color: var(--muted); font-size: 14px; margin-top: 8px; }
+  .info-pop-box form { display: grid; gap: 12px; margin-top: 18px; }
+  .info-pop-box input { width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 15px; text-align: right; }
+  .info-pop-box .submit { background: var(--gold); color: #1a1305; border: 0; border-radius: 999px; padding: 15px; font-weight: 800; font-size: 15.5px; cursor: pointer; }
+  .info-pop-x { position: absolute; top: 14px; inset-inline-start: 14px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 15px; color: var(--muted); }
+
+  /* ===== bottom CTA rail ===== */
+  .art-rail { background: #232323; padding: clamp(40px, 5vw, 64px) 0; }
+  .art-rail-grid { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+  @media (max-width: 900px) { .art-rail-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) { .art-rail-grid { grid-template-columns: repeat(2, 1fr); } }
+  .rail-card { background: #fff; border-radius: 16px; padding: 22px 18px; text-align: center; color: var(--ink); display: flex; flex-direction: column; align-items: center; gap: 12px; transition: .25s; }
+  .rail-card.hot { background: #101013; color: #fff; }
+  .rail-card.hot .ic { color: var(--gold); }
+  .rail-card:hover { transform: translateY(-4px); }
+  .rail-card .ic { width: 40px; height: 40px; display: grid; place-items: center; }
+  .rail-card .ic svg { width: 30px; height: 30px; }
+  .rail-card .tt { font-weight: 800; font-size: 15px; line-height: 1.35; }
+  .rail-card .arw { width: 34px; height: 34px; border-radius: 50%; background: color-mix(in oklab, currentColor 10%, transparent); display: grid; place-items: center; margin-top: auto; }
+  .rail-card .arw svg { width: 16px; height: 16px; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+</style>
+</head>
+<body data-page="magazine">
+<div id="site-header"></div>
+
+<main id="articlePage"></main>
+
+<!-- ===== Google reviews popup ===== -->
+<div class="ln-grev-pop" id="lnGrevPop" aria-hidden="true">
+  <div class="ln-grev-pop-ov" data-grev-close></div>
+  <div class="ln-grev-card" role="dialog" aria-modal="true" aria-label="ביקורות גוגל על Car2Buy">
+    <div class="ln-grev-head">
+      <svg class="gg" viewBox="0 0 48 48"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>
+      <span class="gstars">★★★★★</span>
+      <span class="gtxt">313 ביקורות</span>
+      <button type="button" class="ln-grev-x" data-grev-close aria-label="סגור">✕</button>
+    </div>
+    <div class="ln-grev-list" id="lnGrevList"></div>
+  </div>
+</div>
+
+<!-- ===== trade-in popup (yad2 wizard, wired by app.js) ===== -->
+<div class="ti-pop" id="tiPop" aria-hidden="true">
+  <div class="ti-ov" data-ti-close></div>
+  <div class="ti-modal" role="dialog" aria-modal="true" aria-label="בקשת הצעת טריד-אין">
+    <button type="button" class="ti-x" data-ti-close aria-label="סגור">✕</button>
+    <div class="wizard" id="tradeWizard">
+      <div class="wiz-head">
+        <div class="wiz-progress"><span class="wiz-dot active" data-dot="1"></span><span class="wiz-bar"></span><span class="wiz-dot" data-dot="2"></span><span class="wiz-bar"></span><span class="wiz-dot" data-dot="3"></span></div>
+        <div class="wiz-stepno">שלב <b id="wizNow">1</b> מתוך 3</div>
+      </div>
+
+      <!-- STEP 1 — plate + smart fetch -->
+      <div class="wiz-step active" data-step="1">
+        <h3 class="wiz-h">מה מספר הרכב שלכם?</h3>
+        <p class="wiz-sub">נמשוך אוטומטית את פרטי הרכב ממאגר משרד הרישוי.</p>
+        <div class="plate">
+          <span class="plate-il">IL</span>
+          <input type="tel" id="wizPlate" class="plate-input" placeholder="000-00-000" maxlength="10" inputmode="numeric">
+        </div>
+        <button class="btn btn-gold btn-lg wiz-fetch" id="wizFetch" style="width:100%;margin-top:20px;">משיכת פרטי הרכב</button>
+        <div class="wiz-loading" id="wizLoading" hidden><span class="wiz-spin"></span> מאתר פרטים במשרד הרישוי…</div>
+        <div class="wiz-details" id="wizDetails" hidden>
+          <div class="wiz-verify"><span class="wiz-check">✓</span> זיהינו את הרכב שלכם</div>
+          <div class="wiz-car" id="wizCar"></div>
+          <div class="wiz-field">
+            <label for="wizKm">כמה קילומטר עברתם?</label>
+            <input type="tel" id="wizKm" class="wiz-input" placeholder="לדוגמה: 85,000" inputmode="numeric">
+          </div>
+          <button class="btn btn-gold btn-lg" id="wizNext1" style="width:100%;">הפרטים נכונים, המשך ←</button>
+          <button class="wiz-link" id="wizReset">מספר רכב שגוי? נסו שוב</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 — next car interest -->
+      <div class="wiz-step" data-step="2">
+        <h3 class="wiz-h">חשבתם כבר על הרכב הבא?</h3>
+        <p class="wiz-sub">נתאים לכם הצעה מדויקת לצד הטריד-אין.</p>
+        <div class="wiz-choice" id="wizKind">
+          <button type="button" class="wiz-opt" data-v="רכב חדש">רכב חדש</button>
+          <button type="button" class="wiz-opt" data-v="רכב יד שנייה">רכב יד שנייה</button>
+        </div>
+        <div id="wizDecideWrap">
+          <h4 class="wiz-q">לאיזה רכב מתקדמים?</h4>
+          <div class="wiz-choice" id="wizDecide">
+            <button type="button" class="wiz-opt" data-v="specific">יש לי דגם ספציפי</button>
+            <button type="button" class="wiz-opt" data-v="browsing">עדיין מתלבט/ת</button>
+          </div>
+          <div class="wiz-modelpick" id="wizModelPick">
+            <label class="wiz-pick-label">בחרו יצרן</label>
+            <input type="search" id="wizBrandSearch" class="wiz-input" placeholder="הקלידו שם יצרן — מרצדס, BMW…" autocomplete="off" style="margin-bottom:10px;">
+            <div class="wiz-brandpick" id="wizBrandPick"></div>
+            <div class="wiz-field" id="wizModelField" hidden><label for="wizWantModel">דגם</label><select id="wizWantModel" class="ti-select"></select></div>
+          </div>
+        </div>
+        <button class="btn btn-gold" id="wizNext2" style="width:100%;margin-top:14px;">המשך ←</button>
+        <button class="wiz-link" id="wizBack2">← חזרה</button>
+      </div>
+
+      <!-- STEP 3 — contact -->
+      <div class="wiz-step" data-step="3">
+        <h3 class="wiz-h">לאן נחזור אליכם?</h3>
+        <p class="wiz-sub">נציג יחזור עם הצעת טריד-אין מותאמת לרכב שלכם.</p>
+        <div class="wiz-field"><label for="wizName">שם מלא</label><input type="text" id="wizName" class="wiz-input" placeholder="ישראל ישראלי"></div>
+        <div class="wiz-field"><label for="wizPhone">טלפון</label><input type="tel" id="wizPhone" class="wiz-input" placeholder="050-0000000"></div>
+        <label class="consent" style="margin-top:4px;"><input type="checkbox" id="wizConsent" checked> אני מאשר/ת קבלת פנייה מ‑Car2Buy בנוגע להצעת טריד-אין.</label>
+        <button class="btn btn-gold btn-lg" id="wizSubmit" style="width:100%;">שליחת הפרטים</button>
+        <button class="wiz-link" id="wizBack">← חזרה</button>
+      </div>
+
+      <p class="calc-disclaimer" style="text-align:center;margin-top:22px;">* הפרטים נמשכים לצורך הדגמה. במערכת החיה הנתונים מאומתים מול מאגר משרד הרישוי. ההצעה הסופית כפופה לבדיקת הרכב בפועל.</p>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+
+<script src="models-data.js"></script>
+<script src="cars-data.js"></script>
+<script src="loan-cars.js"></script>
+<script src="customers-data.js"></script>
+<script src="brand-content.js"></script>
+<script src="brand-articles.js"></script>
+<script src="site.js"></script>
+<script src="app.js"></script>
+
+<script>
+(function () {
+  var root = document.getElementById('articlePage');
+  if (!root || !window.Car2Buy) return;
+  var C = window.Car2Buy;
+  var NIS = C.NIS || function (n) { return '₪' + (n || 0).toLocaleString('he-IL'); };
+  var params = new URLSearchParams(location.search);
+  var brand = params.get('brand') || '';
+  var brandDisp = C.dispBrand ? C.dispBrand(brand) : brand;
+  var aIdx = parseInt(params.get('a') || '0', 10) || 0;
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function fuelOf(c) {
+    var t = (c.type || '') + ' ' + (c.trim || '') + ' ' + (c.name || '');
+    var evBrands = ['זיקר', 'אווטר', 'ליפמוטור', 'וויה', 'סקיוואל', 'סמארט'];
+    if (/חשמלי|EV/i.test(t) || (evBrands.indexOf(c.brand) >= 0 && !/DM-?i|נטען|PHEV/i.test(t))) return 'חשמלי';
+    if (/נטען|PHEV|DM-?i/i.test(t)) return 'היברידי נטען';
+    if (/היבריד|HEV/i.test(t)) return 'היברידי';
+    return 'בנזין';
+  }
+  var FLAG = {};
+  (C.CARS || []).forEach(function (c) { FLAG[c.brand + '|' + c.model] = c.slug; });
+  function groupFor(b) {
+    var inv = (C.LOAN_CARS || []).filter(function (l) { return l.brand === b; });
+    var map = new Map();
+    inv.forEach(function (c) {
+      var key = c.name;
+      if (!map.has(key)) map.set(key, { brand: c.brand, name: c.name, type: c.type || '', img: c.img, fuel: fuelOf(c), year: c.year || 2026, minM: c.m, minP: c.p, trims: 0, slug: FLAG[c.brand + '|' + c.name] || c.id });
+      var g = map.get(key);
+      g.trims++;
+      if (c.m < g.minM) { g.minM = c.m; g.minP = c.p; g.slug = FLAG[c.brand + '|' + c.name] || c.id; }
+      if (!g.img && c.img) g.img = c.img;
+    });
+    return [...map.values()].sort(function (a, b) { return a.minM - b.minM; });
+  }
+
+  var models = groupFor(brand);
+  if (!brand || !models.length) {
+    root.innerHTML = '<section class="section"><div class="wrap" style="text-align:center;padding:100px 0;">'
+      + '<h1 style="font-size:34px;">המאמר לא נמצא</h1>'
+      + '<a href="models.html" class="btn btn-gold" style="margin-top:22px;">חזרה לקטלוג</a></div></section>';
+    return;
+  }
+
+  var helpers = { esc: esc, NIS: NIS, fuelOf: fuelOf };
+  var articles = window.C2B_BRAND_ARTICLES(brand, models, helpers);
+  if (aIdx < 0 || aIdx >= articles.length) aIdx = 0;
+  var art = articles[aIdx];
+
+  document.title = art.title + ' · Car2Buy';
+  var md = document.getElementById('metaDesc'); if (md) md.setAttribute('content', art.metaDesc);
+
+  var brandEnc = encodeURIComponent(brand);
+  var today = new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
+  var shareUrl = encodeURIComponent(location.href);
+  var enBrand = C.enBrand ? C.enBrand(brand) : brand;
+
+  // ---- intersperse model images between H2 sections ----
+  var imgs = models.map(function (m) { return m.img; }).filter(Boolean);
+  var bodyParts = art.bodyHtml.split('<h2>');
+  var bodyHtml = bodyParts[0];
+  var imgN = 0;
+  for (var i = 1; i < bodyParts.length; i++) {
+    if (i > 1 && imgs.length) {
+      bodyHtml += '<figure class="mag-fig reveal"><img loading="lazy" src="' + esc(imgs[imgN % imgs.length]) + '" alt="' + esc(enBrand) + '" onerror="this.closest(\'.mag-fig\').style.display=\'none\'"></figure>';
+      imgN++;
+    }
+    bodyHtml += '<h2>' + bodyParts[i];
+  }
+
+  // ---- gallery ----
+  var galImgs = imgs.slice();
+  while (galImgs.length && galImgs.length < 6) galImgs = galImgs.concat(imgs);
+  var galleryHtml = galImgs.slice(0, 9).map(function (src, i) {
+    var slug = models[i % models.length].slug;
+    return '<a href="car.html?car=' + slug + '"><img loading="lazy" src="' + esc(src) + '" alt="' + esc(enBrand) + '" onerror="this.parentNode.style.display=\'none\'"></a>';
+  }).join('');
+
+  // ---- "חדש במגזין" cross-brand teasers ----
+  var otherBrands = [];
+  (C.LOAN_CARS || []).forEach(function (l) { if (l.brand !== brand && otherBrands.indexOf(l.brand) < 0) otherBrands.push(l.brand); });
+  var teasers = otherBrands.slice(0, 3).map(function (b) {
+    var mm = groupFor(b);
+    var arts = window.C2B_BRAND_ARTICLES(b, mm, helpers);
+    var idx = arts.length > 1 ? 1 : 0;
+    return { brand: b, a: arts[idx], idx: idx, img: mm[mm.length - 1] ? mm[mm.length - 1].img : (mm[0] && mm[0].img) };
+  });
+  var teaserHtml = teasers.map(function (o) {
+    return '<a class="side-mag-item" href="brand-article.html?brand=' + encodeURIComponent(o.brand) + '&a=' + o.idx + '">'
+      + '<div class="ph"><img loading="lazy" src="' + esc(o.img) + '" alt="' + esc(o.a.title) + '" onerror="this.style.display=\'none\'"></div>'
+      + '<div class="t">' + esc(o.a.title) + '</div></a>';
+  }).join('');
+
+  function ic(path) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>'; }
+  var railItems = [
+    { t: 'עסקת טרייד-אין דיגיטלית', href: 'trade-in.html', p: '<path d="M3 7h13l5 5v5h-3M3 7v10h3"/><circle cx="7.5" cy="17" r="2"/><circle cx="17.5" cy="17" r="2"/>' },
+    { t: 'קבלו הלוואה לרכב חדש', href: 'car-loan.html', p: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>' },
+    { t: 'בואו אלינו לפגישה', href: 'contact.html', hot: true, p: '<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="5"/><line x1="10" y1="2" x2="10" y2="5"/>' },
+    { t: 'דברו איתנו בוואטסאפ', href: 'https://wa.me/972500000000', hot: true, p: '<path d="M21 11.5a8.5 8.5 0 0 1-12.8 7.3L3 21l2.3-5.1A8.5 8.5 0 1 1 21 11.5Z"/>' },
+    { t: 'השוואת סוגי רכבים', href: 'compare.html', p: '<line x1="12" y1="3" x2="12" y2="21"/><path d="M6 8 3 14h6ZM18 8l-3 6h6Z"/>' },
+    { t: 'המומלצים של Car2Buy', href: 'models.html', p: '<path d="m12 3 2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5-2.9 1-5.5-4-3.9 5.5-.8Z"/>' }
+  ];
+  var railHtml = railItems.map(function (r) {
+    return '<a class="rail-card' + (r.hot ? ' hot' : '') + '" href="' + r.href + '">'
+      + '<span class="ic">' + ic(r.p) + '</span><span class="tt">' + r.t + '</span>'
+      + '<span class="arw">' + ic('<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>') + '</span></a>';
+  }).join('');
+
+  root.innerHTML =
+    '<section class="art-hero">'
+      + '<div class="art-hero-bg"><img src="' + esc(art.heroImg) + '" alt="' + esc(art.title) + '" onerror="this.style.display=\'none\'"></div>'
+      + '<div class="art-hero-tint"></div>'
+      + '<div class="wrap">'
+        + '<nav class="art-crumb"><a href="index.html">ראשי</a> <span>›</span> <a href="models.html">קטלוג רכבים</a> <span>›</span> '
+        + '<a href="brand.html?brand=' + brandEnc + '">' + esc(brandDisp) + '</a> <span>›</span> <b>' + esc(art.tag) + '</b></nav>'
+        + '<div class="art-head">'
+          + '<span class="art-tag">' + esc(art.tag) + '</span>'
+          + '<h1 class="art-title">' + esc(art.title) + '</h1>'
+          + '<div class="art-meta">'
+            + '<span class="auth"><span class="av">C2</span> מערכת Car2Buy</span>'
+            + '<span class="dot"></span><span>' + today + '</span>'
+            + '<span class="dot"></span><span>' + art.readMin + ' דק׳ קריאה</span>'
+          + '</div>'
+        + '</div>'
+      + '</div>'
+    + '</section>'
+
+    + '<div class="art-cta"><button class="mag-info-btn" data-open-info>' + ic('<polyline points="6 9 12 15 18 9"/>') + ' אני רוצה לקבל מידע נוסף</button></div>'
+
+    + '<div class="mag">'
+      // ---- main ----
+      + '<article class="mag-main">'
+        + '<div class="mag-body">' + bodyHtml + '</div>'
+        + '<h3 class="mag-gallery-h">גלריית תמונות · ' + esc(brandDisp) + '</h3>'
+        + '<div class="mag-gallery">' + galleryHtml + '</div>'
+      + '</article>'
+
+      // ---- sidebar ----
+      + '<aside class="mag-aside">'
+        + '<div class="side-card side-swap">'
+          + '<h3>מחליפים רכב?</h3>'
+          + '<div class="side-swap-btns">'
+            + '<a class="sell" href="#" data-open-tradein>מכירת הרכב הישן</a>'
+            + '<a class="buy" href="models.html">חיפוש רכב חדש</a>'
+          + '</div>'
+          + '<div class="side-google" data-open-grev>'
+            + '<span class="g"><b>G</b><b>o</b><b>o</b><b>g</b><b>l</b><b>e</b></span>'
+            + '<span class="stars">★★★★★</span>'
+            + '<span class="rev">4.9 · 313 ביקורות</span>'
+          + '</div>'
+        + '</div>'
+
+        + '<div class="side-card side-share">'
+          + '<div class="lbl">שתפו את המאמר</div>'
+          + '<div class="icons">'
+            + '<a target="_blank" rel="noopener" href="https://t.me/share/url?url=' + shareUrl + '" aria-label="Telegram">' + ic('<path d="M22 3 2 10.5l6 2 2.5 6.5L14 15l5 5 3-17Z"/>') + '</a>'
+            + '<a href="mailto:?body=' + shareUrl + '" aria-label="Email">' + ic('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/>') + '</a>'
+            + '<a target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url=' + shareUrl + '" aria-label="LinkedIn">' + ic('<rect x="2" y="9" width="4" height="11"/><circle cx="4" cy="4" r="2"/><path d="M9 9h4v2a3 3 0 0 1 6 0v9h-4v-8a1 1 0 0 0-2 0v8H9Z"/>') + '</a>'
+            + '<a target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=' + shareUrl + '" aria-label="Facebook">' + ic('<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v2H7v4h3v8h4v-8h3l1-4h-4V8a1 1 0 0 1 1-1Z"/>') + '</a>'
+            + '<a target="_blank" rel="noopener" href="https://wa.me/?text=' + shareUrl + '" aria-label="WhatsApp">' + ic('<path d="M21 11.5a8.5 8.5 0 0 1-12.8 7.3L3 21l2.3-5.1A8.5 8.5 0 1 1 21 11.5Z"/>') + '</a>'
+          + '</div>'
+        + '</div>'
+
+        + '<div class="side-card side-form">'
+          + '<h3>רוצים לדבר איתנו? השאירו פרטים ונחזור אליכם בהקדם</h3>'
+          + '<form id="sideForm">'
+            + '<input type="text" name="name" placeholder="שם מלא" required>'
+            + '<input type="tel" name="phone" placeholder="מספר טלפון" required>'
+            + '<input type="email" name="email" placeholder="אימייל">'
+            + '<label class="side-consent"><input type="checkbox" required> <span>אני מאשר/ת את <a href="#">מדיניות הפרטיות</a> ומסכים/ה לקבל מידע פרסומי מ-Car2Buy</span></label>'
+            + '<button type="submit" class="submit">צרו איתי קשר</button>'
+          + '</form>'
+          + '<div class="side-thanks" id="sideThanks">תודה! ניצור איתכם קשר בהקדם ✓</div>'
+        + '</div>'
+
+        + '<div class="side-card side-mag">'
+          + '<h3>חדש במגזין</h3>'
+          + '<div class="side-mag-list">' + teaserHtml + '</div>'
+        + '</div>'
+      + '</aside>'
+    + '</div>'
+
+    + '<section class="art-rail"><div class="art-rail-grid">' + railHtml + '</div></section>'
+
+    // info popup
+    + '<div class="info-pop" id="infoPop"><div class="info-pop-ov" data-close-info></div>'
+      + '<div class="info-pop-box">'
+        + '<button class="info-pop-x" data-close-info>✕</button>'
+        + '<h3>קבלו מידע נוסף על ' + esc(brandDisp) + '</h3>'
+        + '<p>השאירו פרטים ונחזור אליכם עם כל המידע וההצעה המשתלמת ביותר.</p>'
+        + '<form id="infoForm">'
+          + '<input type="text" name="name" placeholder="שם מלא" required>'
+          + '<input type="tel" name="phone" placeholder="מספר טלפון" required>'
+          + '<button type="submit" class="submit">שליחה</button>'
+        + '</form>'
+      + '</div></div>';
+
+  // ---- interactions ----
+  var infoPop = document.getElementById('infoPop');
+  var tiPop = document.getElementById('tiPop');
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-open-info]')) { infoPop.classList.add('open'); }
+    if (e.target.closest('[data-close-info]')) { infoPop.classList.remove('open'); }
+    if (e.target.closest('[data-open-tradein]')) { e.preventDefault(); if (tiPop) { tiPop.classList.add('open'); tiPop.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; } }
+    if (e.target.closest('[data-ti-close]')) { if (tiPop) { tiPop.classList.remove('open'); tiPop.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; } }
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { infoPop.classList.remove('open'); if (tiPop) { tiPop.classList.remove('open'); tiPop.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; } } });
+
+  var sf = document.getElementById('sideForm');
+  if (sf) sf.addEventListener('submit', function (e) { e.preventDefault(); sf.style.display = 'none'; document.getElementById('sideThanks').style.display = 'block'; });
+  var inf = document.getElementById('infoForm');
+  if (inf) inf.addEventListener('submit', function (e) { e.preventDefault(); inf.innerHTML = '<p style="text-align:center;color:#1f8a4c;font-weight:700;padding:10px 0;">תודה! ניצור קשר בהקדם ✓</p>'; });
+
+  // ---- Google reviews popup ----
+  (function () {
+    var pop = document.getElementById('lnGrevPop'), list = document.getElementById('lnGrevList');
+    if (!pop || !list) return;
+    var AV = ['#1A73E8', '#E8453C', '#34A853', '#9334E6', '#F9AB00', '#00897B'];
+    var reviews = [
+      { n: 'Shahar As', c: 5, t: 'לפני שבוע', s: 5, b: 'רכב שני שאני קונה דרך Car2Buy, מספר 1 בשירות. ליווי צמוד מההתחלה ועד מסירת הרכב. תודה לכל הצוות!' },
+      { n: 'אפרים גניש', c: 6, t: 'לפני שבועיים', s: 5, b: 'מספר אחת! פשוט מספר אחת, אלופי העולם. שירות מקצועי, יחס אישי וסבלנות אינסופית. ממליץ בחום על Car2Buy לכל מי שמחפש רכב חדש.' },
+      { n: 'דניאל מזרחי', c: 3, t: 'לפני חודש', s: 5, b: 'תהליך חכם ונוח. הסוכן היה בקשר תמידי איתי בכל שלב, ענה על כל שאלה. תוך מספר ימים קיבלתי את רכב החלומות שלי. אלוף האלופים!' },
+      { n: 'שירה לוי', c: 8, t: 'לפני חודש', s: 5, b: 'המלצה חמה! חיפשתי רכב בצבע ספציפי ולא מצאתי בשום מקום, גם לא אצל היבואן. ב-Car2Buy סידרו לי בדיוק את מה שרציתי בתנאי מימון מעולים.' },
+      { n: 'Avi Cohen', c: 2, t: 'לפני חודשיים', s: 5, b: 'שירות מעולה ואדיב, תוך מספר ימים קיבלתי את הרכב המושלם שלי. השירות של סוכן המכירות היה ברמה הגבוהה ביותר. בהחלט אחזור.' },
+      { n: 'מאיה ברק', c: 4, t: 'לפני חודשיים', s: 5, b: 'תשלומים גמישים והחזר חודשי קבוע, בדיוק מה שחיפשתי. הכל שקוף ובלי הפתעות. תודה רבה על הליווי הצמוד עד הסוף.' },
+      { n: 'יוסי אברהם', c: 1, t: 'לפני 3 חודשים', s: 5, b: 'עברתי לרכב חשמלי דרך Car2Buy והחוויה הייתה מושלמת. צוות מקצועי שמבין עניין, עדכנו אותי בכל שלב עד המסירה.' },
+      { n: 'Noa Friedman', c: 7, t: 'לפני 3 חודשים', s: 5, b: 'אחרי שהשוויתי המון מקומות, Car2Buy נתנו לי את ההצעה הכי משתלמת. שירות אנושי, מהיר ואמין. ממליצה לכולם.' }
+    ];
+    function rinit(n) { return n.replace(/[^\u05D0-\u05EAA-Za-z ]/g, '').trim().charAt(0) || 'G'; }
+    var gsvg = '<svg viewBox="0 0 48 48"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>';
+    list.innerHTML = reviews.map(function (r, i) {
+      var stars = '';
+      for (var k = 0; k < 5; k++) stars += k < r.s ? '★' : '☆';
+      return '<div class="ln-grev-item"><div class="ln-grev-top">'
+        + '<div class="ln-grev-av" style="background:' + AV[i % AV.length] + '">' + rinit(r.n) + '<span class="ggm">' + gsvg + '</span></div>'
+        + '<div><div class="ln-grev-name">' + r.n + '</div><div class="ln-grev-sub">' + r.c + ' ביקורות</div></div></div>'
+        + '<div class="ln-grev-meta"><span class="gstars">' + stars + '</span>'
+        + '<svg class="ln-grev-ver" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1A73E8"/><path d="m8 12.5 2.5 2.5 5-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        + '<span class="ln-grev-time">' + r.t + '</span></div>'
+        + '<div class="ln-grev-body">' + r.b + '</div></div>';
+    }).join('');
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-open-grev]')) { e.preventDefault(); pop.classList.add('open'); pop.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+      else if (e.target.closest('[data-grev-close]')) { pop.classList.remove('open'); pop.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { pop.classList.remove('open'); pop.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; } });
+  })();
+
+  var io = new IntersectionObserver(function (ents) {
+    ents.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { threshold: 0.08 });
+  root.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  window.scrollTo(0, 0);
+})();
+</script>
+
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>

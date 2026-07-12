@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>דגמים · Car2Buy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="models">
+<div id="site-header"></div>
+
+<main>
+
+<!-- ===== PAGE HERO ===== -->
+<section class="media-hero page">
+  <div class="mh-bg"><img src="https://images.pexels.com/photos/164634/pexels-photo-164634.jpeg?auto=compress&cs=tinysrgb&w=2000" alt="צי רכבי יוקרה"></div>
+  <div class="mh-overlay"></div>
+  <div class="wrap">
+    <div class="mh-content">
+      <span class="eyebrow reveal">20 דגמים נבחרים</span>
+      <h1 class="reveal">קטלוג <span class="gold-text">רכבים</span></h1>
+      <p class="lead reveal">מבחר רכבי פרימיום — סדאן, ספורט, פנאי וחשמלי. כל המחירים הם החזר חודשי משוער בליסינג מימוני.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SHOP (sidebar filter + grid) ===== -->
+<section class="section">
+  <div class="wrap">
+    <button class="filter-toggle" id="filterToggle">☰ סינון</button>
+    <div class="shop">
+      <aside class="filters" id="filters"></aside>
+      <div class="shop-main">
+        <div class="shop-bar">
+          <div class="shop-count"><b id="shopCount">20</b> דגמים זמינים</div>
+          <label class="shop-sort">מיון
+            <select id="shopSort">
+              <option value="default">מומלצים</option>
+              <option value="price-asc">החזר: מהנמוך לגבוה</option>
+              <option value="price-desc">החזר: מהגבוה לנמוך</option>
+              <option value="name">לפי שם</option>
+            </select>
+          </label>
+        </div>
+        <div class="gallery" id="modelGrid"></div>
+        <p class="cat-disclaimer reveal">ההחזר החודשי המוצג הוא משוער בלבד ואינו מהווה הצעה מחייבת. תנאי העסקה כפופים לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי.</p>
+        <p class="plans-note reveal" style="margin-top:24px;">לא מצאתם את הדגם? אנחנו משיגים <strong>כל רכב</strong> — <a href="contact.html">ספרו לנו מה חיפשתם</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HELP CTA STRIP ===== -->
+<section class="help-strip">
+  <div class="wrap">
+    <h2 class="help-strip-h reveal">נציגי השירות שלנו ישמחו לסייע לך למצוא את הרכב המתאים ביותר עבורך</h2>
+    <div class="help-strip-actions reveal">
+      <a href="contact.html" class="help-btn help-btn-blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"></path></svg>
+        תיאום פגישה בסניף הקרוב
+      </a>
+      <a href="https://wa.me/97237777777?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A2%D7%96%D7%A8%D7%94%20%D7%91%D7%91%D7%97%D7%99%D7%A8%D7%AA%20%D7%A8%D7%9B%D7%91" target="_blank" rel="noopener" class="help-btn help-btn-wa" data-track="whatsapp_click">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.15-1.7-.84-2-.94-.27-.1-.47-.15-.66.15-.2.3-.76.94-.93 1.13-.17.2-.34.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.6.13-.14.3-.34.45-.51.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.66-1.6-.9-2.18-.24-.57-.48-.5-.66-.5l-.56-.01c-.2 0-.52.07-.79.37s-1.04 1.01-1.04 2.47 1.06 2.87 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.7-.7 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.27-.2-.57-.34M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20"></path></svg>
+        פנייה מיידית בוואטסאפ
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="site-footer"></div>
+
+<script src="models-data.js"></script>
+<script src="cars-data.js"></script>
+<script src="loan-cars.js"></script>
+<script src="site.js"></script>
+<script src="app.js"></script>
+
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>

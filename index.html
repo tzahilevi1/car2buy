@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Car2Buy · ליסינג מימוני פרטי לרכבי יוקרה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="home">
+<div id="site-header"></div>
+
+<main>
+
+<!-- ===== HERO ===== -->
+<section class="media-hero home">
+  <div class="mh-bg"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=2000&q=80&auto=format&fit=crop" alt="רכב יוקרה"></div>
+  <div class="mh-overlay"></div>
+  <div class="wrap">
+    <div class="mh-content hero-cols">
+      <div class="hero-text">
+        <span class="eyebrow reveal">עסקת מימון לרכב · מבחר רחב ממותגים מובילים</span>
+        <h1 class="reveal">הרכב הבא שלכם מתחיל<br><span class="gold-text">בעסקת מימון חכמה</span></h1>
+        <p class="lead reveal">מבחר רחב של רכבים ממותגים מובילים, החזר חודשי מותאם אישית, טרייד-אין ושירות אישי עד קבלת הרכב.</p>
+        <div class="hero-trust reveal">
+          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v8H3z"></path><path d="M16 10h3l2 3v2h-5z"></path><circle cx="7" cy="17" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg></span><div class="ht-tx"><b>מלאי רחב</b><span>מותגים מובילים</span></div></div>
+          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span><div class="ht-tx"><b>החזר מותאם</b><span>אישית לתקציב</span></div></div>
+          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"></path></svg></span><div class="ht-tx"><b>אספקה מהירה</b><span>בהתאם למלאי</span></div></div>
+        </div>
+      </div>
+      <div class="hero-search-wrap reveal">
+        <div class="hsw-head">
+          <span class="hsw-kicker">מנוע חיפוש חכם</span>
+          <div class="hsw-title">איזה רכב אתם מחפשים?</div>
+        </div>
+        <div class="instant" id="instant">
+          <input type="search" id="instantInput" class="instant-input" placeholder="הקלידו יצרן או דגם — BMW, Tesla, פנמרה…" autocomplete="off">
+          <div class="instant-results" id="instantResults"></div>
+        </div>
+        <div class="hero-search" id="heroSearch"></div>
+        <div class="hsw-foot">למעלה מ‑2,400 לקוחות כבר מצאו כאן את הרכב הבא שלהם</div>
+      </div>
+    </div>
+    <div class="hero-quick reveal">
+      <div class="hq-cta">
+        <a href="models.html" class="btn btn-gold">קטלוג רכבים חדשים</a>
+        <a href="yad2.html" class="btn btn-gold">קטלוג רכבי יד 2</a>
+      </div>
+      <div class="hq-links">
+        <a class="hq-link" href="trade-in.html"><span class="hq-ic">↻</span><span>עסקת טריד-אין דיגיטלית</span><span class="hq-go">←</span></a>
+        <a class="hq-link" href="financing.html"><span class="hq-ic">₪</span><span>קבלו הלוואה לרכב חדש</span><span class="hq-go">←</span></a>
+        <a class="hq-link" href="contact.html"><span class="hq-ic">☕</span><span>באו אלינו לפגישה</span><span class="hq-go">←</span></a>
+        <a class="hq-link" href="https://wa.me/97237777777" target="_blank" rel="noopener"><span class="hq-ic">✆</span><span>דברו איתנו בוואטסאפ</span><span class="hq-go">←</span></a>
+        <a class="hq-link" href="compare.html"><span class="hq-ic">⇄</span><span>השוואת סוגי רכבים</span><span class="hq-go">←</span></a>
+        <a class="hq-link" href="testimonials.html"><span class="hq-ic">★</span><span>המומלצים של Car2Buy</span><span class="hq-go">←</span></a>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>גלול</span><span class="bar"></span></div>
+</section>
+
+<!-- ===== QUICK CONTACT ===== -->
+<section class="quick-contact">
+  <div class="wrap">
+    <div class="qc-panel">
+      <div class="qc-aside">
+        <span class="eyebrow">דברו איתנו</span>
+        <h2 class="qc-h">נחזור אליכם <span class="gold-text">תוך דקות</span></h2>
+        <p class="qc-p">השאירו פרטים ויועץ אישי יחזור אליכם עם הצעה מותאמת — בלי התחייבות ובלי עלות.</p>
+        <a href="tel:+97237777777" class="qc-phone">☎ 03-777-7777</a>
+      </div>
+      <form class="qc-form" id="quickForm" novalidate>
+        <div class="qc-grid">
+          <div class="qc-field"><input type="text" id="qcName" name="name" placeholder="שם מלא" required></div>
+          <div class="qc-field"><input type="tel" id="qcPhone" name="phone" placeholder="טלפון" required></div>
+          <div class="qc-field"><input type="email" id="qcEmail" name="email" placeholder="אימייל"></div>
+          <button type="submit" class="btn btn-gold qc-submit">שלחו פרטים</button>
+        </div>
+        <label class="qc-consent"><input type="checkbox" id="qcConsent" required> אני מאשר/ת קבלת פנייה ומסכים/ה ל<a href="#">מדיניות הפרטיות</a> ולתנאי השימוש.</label>
+        <div class="qc-success" id="qcSuccess">✓ תודה! קיבלנו את הפרטים ונחזור אליכם בהקדם.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURED MODELS ===== -->
+<section class="section">
+  <div class="wrap">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+      <div>
+        <span class="eyebrow reveal">דגמים נבחרים</span>
+        <h2 class="h-sec reveal">יוקרה <span class="gold-text">שמגיעה אליכם</span></h2>
+      </div>
+      <a href="models.html" class="btn btn-ghost reveal">לכל 20 הדגמים ←</a>
+    </div>
+    <div class="gallery" id="featuredGrid"></div>
+  </div>
+</section>
+
+<!-- ===== PRESS ===== -->
+<section class="section" style="padding-block:clamp(48px,6vw,72px);">
+  <div class="wrap center">
+    <span class="eyebrow reveal" style="justify-content:center;">מה כותבים עלינו</span>
+    <div class="press-strip" id="pressStrip"></div>
+  </div>
+</section>
+
+<!-- ===== BRANDS ===== -->
+<section class="section light-section">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow reveal">המותגים שלנו</span>
+      <h2 class="h-sec reveal">כל <span class="gold-text">היצרנים המובילים</span></h2>
+      <p class="lead reveal">מהיוקרה האירופית ועד החשמלי האמריקאי — לחצו על מותג כדי לראות את הדגמים.</p>
+    </div>
+    <div class="brands-strip" id="brandsStrip"></div>
+  </div>
+</section>
+
+<!-- ===== VIDEO ===== -->
+<section class="section">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow reveal">סרטון תדמית</span>
+      <h2 class="h-sec reveal">הדרך שלכם <span class="gold-text">מתחילה כאן</span></h2>
+      <p class="lead reveal">הצצה לחוויית Car2Buy — מהרגע שבוחרים רכב ועד שמקבלים את המפתח.</p>
+    </div>
+    <div class="video-box reveal" data-video="https://assets.mixkit.co/videos/preview/mixkit-luxury-sedan-driving-on-the-road-in-the-city-42770-large.mp4" style="margin-top:48px;">
+      <img class="poster" src="https://images.unsplash.com/photo-1556189250-72ba954cfc2b?w=1600&q=80&auto=format&fit=crop" alt="סרטון תדמית">
+      <div class="video-overlay"><button class="video-play" aria-label="נגן"><span class="tri"></span></button></div>
+      <div class="video-cap"><div class="t">Car2Buy · ליסינג מימוני</div><div class="s">לחצו לצפייה</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="proc-track light-section" id="procTrack">
+  <div class="proc-stage">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">התהליך</span>
+        <h2 class="h-sec">ארבעה צעדים <span class="gold-text">לרכב החדש</span></h2>
+      </div>
+      <div class="proc-body">
+        <div class="proc-rail" id="procRail">
+          <button class="proc-dot active" data-i="0"><b>01</b><span>בוחרים רכב</span></button>
+          <button class="proc-dot" data-i="1"><b>02</b><span>בונים תוכנית</span></button>
+          <button class="proc-dot" data-i="2"><b>03</b><span>מקבלים אישור</span></button>
+          <button class="proc-dot" data-i="3"><b>04</b><span>נוסעים</span></button>
+          <div class="proc-progress"><span id="procFill"></span></div>
+        </div>
+        <div class="proc-cards">
+          <article class="proc-card active" data-i="0">
+            <div class="proc-media"><img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=1100&q=80&auto=format&fit=crop" alt="בוחרים רכב"><span class="proc-media-num">01</span></div>
+            <div class="proc-text"><div class="proc-kick">שלב 01</div><h3>בוחרים רכב</h3><p>כל יצרן, כל דגם — חדש מהאולם או יד ראשונה מובחרת. אנחנו משיגים את המחיר הטוב ביותר ומלווים אתכם בבחירה.</p></div>
+          </article>
+          <article class="proc-card" data-i="1">
+            <div class="proc-media"><img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1100&q=80&auto=format&fit=crop" alt="בונים תוכנית"><span class="proc-media-num">02</span></div>
+            <div class="proc-text"><div class="proc-kick">שלב 02</div><h3>בונים תוכנית</h3><p>תקופה, מקדמה ותשלום בלון שמתאימים בדיוק ליכולת ולסגנון החיים שלכם — שקוף, בלי הפתעות.</p></div>
+          </article>
+          <article class="proc-card" data-i="2">
+            <div class="proc-media"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1100&q=80&auto=format&fit=crop" alt="מקבלים אישור"><span class="proc-media-num">03</span></div>
+            <div class="proc-text"><div class="proc-kick">שלב 03</div><h3>מקבלים אישור</h3><p>אישור עקרוני תוך 24 שעות, גם לעצמאים ובעלי עסקים. אנחנו מטפלים במימון, בביטוח ובכל הניירת.</p></div>
+          </article>
+          <article class="proc-card" data-i="3">
+            <div class="proc-media"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1100&q=80&auto=format&fit=crop" alt="נוסעים"><span class="proc-media-num">04</span></div>
+            <div class="proc-text"><div class="proc-kick">שלב 04</div><h3>נוסעים</h3><p>מקבלים את המפתח ונהנים מהדרך. בסוף התקופה — הרכב עובר לבעלותכם המלאה.</p></div>
+          </article>
+        </div>
+      </div>
+      <div class="center proc-foot"><a href="how-it-works.html" class="btn btn-ghost">איך זה עובד לעומק ←</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== VALUES ===== -->
+<section class="section testi-section">
+  <div class="wrap">
+    <span class="eyebrow reveal">למה Car2Buy</span>
+    <h2 class="h-sec reveal">היתרון שלכם, <span class="gold-text">שחור על גבי זהב</span></h2>
+    <div class="values">
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg></div><h3>ליווי אישי</h3><p>יועץ צמוד שמכיר את התיק שלכם מהשיחה הראשונה ועד המפתח ביד.</p></div>
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v8H3z"></path><path d="M16 10h3l2 3v2h-5z"></path><circle cx="7" cy="17" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg></div><h3>מעטפת אחת</h3><p>מימון, ביטוח, רישוי וניירת — הכל מרוכז במקום אחד, בלי כאב ראש.</p></div>
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v4H3z"></path><path d="M5 7v13h14V7"></path><path d="M9 11h6"></path></svg></div><h3>מלאי רכבים עצום</h3><p>עובדים עם כל היבואנים — כמעט כל דגם, כל גימור וכל צבע בהישג יד.</p></div>
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"></path><path d="m21 3-7 7"></path><path d="M8 21H3v-5"></path><path d="m3 21 7-7"></path></svg></div><h3>טרייד-אין במקום אחד</h3><p>מחלקת טרייד-אין שמעריכה, קונה ומקזזת את הרכב הישן — הכל אצלנו.</p></div>
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div><h3>ההחזר הזול בישראל</h3><p>מתחייבים להחזר החודשי הזול ביותר — מצאתם זול יותר? נשווה.</p></div>
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><path d="M21 12c0 5-3.5 7.5-8.5 9.5C7.5 19.5 4 17 4 12V6l8-3 8 3z"></path></svg></div><h3>התחייבות לרכישה חוזרת</h3><p>מתחייבים לקנות את הרכב שלכם לאחר 3 שנים לפי מחירון לוי יצחק.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CUSTOMERS ===== -->
+<section class="section testi-section">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow reveal">לקוחות מספרים</span>
+      <h2 class="h-sec reveal">הם כבר <span class="gold-text">על הכביש</span></h2>
+      <p class="lead reveal">מאות לקוחות מאושרים שקיבלו את הרכב שחלמו עליו. הצטרפו אליהם.</p>
+    </div>
+  </div>
+  <div class="cmarquee" id="custMarquee" aria-label="תמונות לקוחות"><div class="cmarquee-track" id="custMarqueeTrack"></div></div>
+  <div class="wrap">
+    <div class="vtest reveal" id="vtest">
+      <button class="vtest-nav prev" id="vtPrev" aria-label="הקודם">‹</button>
+      <div class="vtest-viewport"><div class="vtest-track" id="vtTrack"></div></div>
+      <button class="vtest-nav next" id="vtNext" aria-label="הבא">›</button>
+      <div class="vtest-dots" id="vtDots"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRADEIN PROMO ===== -->
+<section class="section">
+  <div class="wrap">
+    <div class="split">
+      <div class="split-media reveal"><img src="https://images.unsplash.com/photo-1556189250-72ba954cfc2b?w=1400&q=80&auto=format&fit=crop" alt="טריד-אין"></div>
+      <div class="reveal">
+        <div class="split-tag">טריד-אין</div>
+        <h3>הרכב הישן שלכם — חלק מהעסקה</h3>
+        <p>קבלו הערכת שווי מיידית אונליין וקזזו את הרכב הנוכחי מהרכב החדש. בלי טרחה, בלי מודעות יד 2, בלי קונים שמתמקחים.</p>
+        <div style="margin-top:26px;"><a href="trade-in.html" class="btn btn-gold">להערכת שווי מיידית ←</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PLANS TEASER ===== -->
+<section class="section light-section">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow reveal">השיטה שלנו</span>
+      <h2 class="h-sec reveal">העסקה שלנו <span class="gold-text">בכמה צעדים מהירים</span></h2>
+    </div>
+    <div class="dealsteps">
+      <article class="dstep reveal">
+        <div class="dstep-num">01</div>
+        <div class="dstep-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16v-3.3l1.7-3.9A2 2 0 0 1 8.6 7.6h6.8a2 2 0 0 1 1.9 1.2L19 12.7V16"></path><path d="M4 16h16v2.2a.8.8 0 0 1-.8.8h-1.4a.8.8 0 0 1-.8-.8V17H7v1.2a.8.8 0 0 1-.8.8H4.8a.8.8 0 0 1-.8-.8Z"></path><circle cx="7.5" cy="13.5" r="1"></circle><circle cx="16.5" cy="13.5" r="1"></circle></svg></div>
+        <h3>בחירת הרכב הבא שלכם</h3>
+        <p>אצלנו תוכלו להנות מרכבים מכל היבואנים בארץ. אז באיזה רכב אתם בוחרים?</p>
+      </article>
+      <article class="dstep featured reveal">
+        <div class="dstep-num">02</div>
+        <div class="dstep-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5"></path><path d="M5 10.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8.5"></path><path d="M9.5 20v-5h5v5"></path></svg></div>
+        <h3>בחירת מסלול מימון</h3>
+        <p>כל האופציות פתוחות בפניכם, אבל כמובן שנדאג לבחור בדרך הטובה ביותר. אנחנו נמצא את תנאי המימון הכי טובים שיש!</p>
+      </article>
+      <article class="dstep reveal">
+        <div class="dstep-num">03</div>
+        <div class="dstep-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"></path><path d="M21 4.5V9h-4.5"></path><path d="M12 8v4l2.5 1.5"></path></svg></div>
+        <h3>תתחדשו — אנחנו כאן גם בהמשך</h3>
+        <p>אנחנו איתכם גם אחרי שתקרעו את הניילונים. לאחר 3 שנים שבהן תהנו מרכב חדש, ייפתחו לכם מגוון אפשרויות החלפה.</p>
+      </article>
+    </div>
+    <div class="center" style="margin-top:48px;"><a href="financing.html" class="btn btn-ghost reveal">לשיטה שלנו במלואה ←</a></div>
+  </div>
+</section>
+
+<!-- ===== CTA BAND ===== -->
+<section class="section lead-section">
+  <div class="lead-bg"></div>
+  <div class="wrap" style="position:relative;z-index:1;text-align:center;">
+    <span class="eyebrow reveal" style="justify-content:center;">בואו נתחיל</span>
+    <h2 class="h-sec reveal">הרכב הבא שלכם <span class="gold-text">מתחיל בשיחה אחת</span></h2>
+    <p class="lead reveal" style="margin-inline:auto;">השאירו פרטים ויועץ אישי יחזור אליכם עם הצעה מותאמת — בלי התחייבות ובלי עלות.</p>
+    <div class="mh-actions reveal" style="justify-content:center;">
+      <a href="contact.html" class="btn btn-gold btn-lg">השארת פרטים</a>
+      <a href="contact.html?meeting=1" class="btn btn-ghost btn-lg">לתיאום פגישה</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="site-footer"></div>
+
+<script src="models-data.js"></script>
+<script src="loan-cars.js"></script>
+<script src="site.js"></script>
+<script src="app.js"></script>
+
+<!-- Tweaks panel (React) -->
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>

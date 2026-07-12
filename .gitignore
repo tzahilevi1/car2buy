@@ -1,0 +1,19 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.thumbnail
+*.swp
+.vscode/
+.idea/
+
+# Design-tool export artifacts
+*-print-*.html
+Canvas*.dc.html
+
+# Node (אם יתווסף build/tooling בעתיד)
+node_modules/
+dist/
+.cache/
+
+# Logs
+*.log

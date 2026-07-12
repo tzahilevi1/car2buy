@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הלקוחות שלנו · אלפי לקוחות מרוצים | Car2Buy</title>
+<meta name="description" content="אלפי לקוחות כבר הגשימו את חלום הרכב החדש עם Car2Buy. גלריית לקוחות מרוצים — סננו לפי יצרן, חפשו דגם וראו עוד ועוד לקוחות שבחרו בנו.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .cu-hero { position:relative; padding:120px 0 clamp(40px,6vw,64px); background:#0d1018; overflow:hidden; }
+  .cu-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center; opacity:.32; }
+  .cu-hero::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(13,16,24,.6),rgba(13,16,24,.9)); }
+  .cu-hero-in { position:relative; z-index:1; text-align:center; color:#fff; }
+  .cu-hero .eyebrow { justify-content:center; color:var(--gold-bright); }
+  .cu-hero h1 { font-size:clamp(34px,5.4vw,64px); margin-top:10px; }
+  .cu-hero p { color:rgba(255,255,255,.82); font-size:clamp(16px,1.9vw,21px); margin-top:14px; max-width:60ch; margin-inline:auto; }
+  .cu-stats { display:flex; gap:clamp(24px,5vw,64px); justify-content:center; margin-top:34px; flex-wrap:wrap; }
+  .cu-stat .n { font-family:var(--display); font-weight:800; font-size:clamp(26px,4vw,40px); color:#fff; }
+  .cu-stat .l { color:rgba(255,255,255,.7); font-size:13.5px; margin-top:2px; }
+
+  /* controls */
+  .cu-controls { position:sticky; top:122px; z-index:40; background:color-mix(in oklab,var(--bg) 94%, transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line-2); padding:14px 0; }
+  .cu-controls-in { display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  .cu-search { flex:1; min-width:200px; padding:12px 16px; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:15px; text-align:right; }
+  .cu-search:focus { outline:none; border-color:var(--gold); }
+  .cu-brands { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; }
+  .cu-brands::-webkit-scrollbar { display:none; }
+  .cu-brand { white-space:nowrap; font-size:13.5px; font-weight:600; color:var(--ink-soft); padding:9px 16px; border-radius:999px; border:1px solid var(--line-2); background:var(--bg-card); cursor:pointer; transition:.2s; }
+  .cu-brand:hover { border-color:var(--gold-line); }
+  .cu-brand.active { background:linear-gradient(135deg,var(--gold-bright),var(--gold-deep)); color:#fff; border-color:transparent; }
+
+  /* mosaic */
+  .cu-wrap { padding:clamp(28px,4vw,48px) 0 80px; }
+  .cu-count { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .cu-mosaic { display:grid; grid-template-columns:repeat(5,1fr); grid-auto-rows:clamp(120px,11vw,160px); gap:14px; grid-auto-flow:dense; }
+  @media (max-width:980px){ .cu-mosaic { grid-template-columns:repeat(3,1fr); } }
+  @media (max-width:600px){ .cu-mosaic { grid-template-columns:repeat(2,1fr); } }
+  .cu-cell { position:relative; overflow:hidden; border-radius:16px; border:1px solid var(--line-2); background:var(--bg-1); cursor:zoom-in; box-shadow:0 18px 40px -34px rgba(0,0,0,.5); opacity:0; transform:translateY(12px); transition:opacity .5s, transform .5s; }
+  .cu-cell.in { opacity:1; transform:none; }
+  .cu-cell img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .6s var(--ease); }
+  .cu-cell:hover img { transform:scale(1.07); }
+  .cu-cell::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.5)); opacity:0; transition:.3s; }
+  .cu-cell:hover::after { opacity:1; }
+  .cu-cap { position:absolute; inset-inline-start:11px; bottom:10px; z-index:1; color:#fff; opacity:0; transform:translateY(6px); transition:.3s; text-shadow:0 1px 5px rgba(0,0,0,.7); }
+  .cu-cell:hover .cu-cap { opacity:1; transform:none; }
+  .cu-cap .nm { font-weight:700; font-size:13.5px; }
+  .cu-cap .cr { font-size:12px; opacity:.85; }
+  .cu-cell.big { grid-column:span 2; grid-row:span 2; }
+  .cu-cell.tall { grid-row:span 2; }
+  @media (max-width:600px){ .cu-cell.big { grid-column:span 2; grid-row:span 2; } }
+
+  .cu-sentinel { height:40px; }
+  .cu-more { text-align:center; margin-top:32px; }
+  .cu-empty { text-align:center; padding:60px 20px; color:var(--muted); }
+  .cu-empty .ic { font-size:40px; }
+
+  /* lightbox */
+  .cu-lb { position:fixed; inset:0; z-index:200; display:none; }
+  .cu-lb.open { display:block; }
+  .cu-lb-ov { position:absolute; inset:0; background:rgba(8,8,12,.9); }
+  .cu-lb-img { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); max-width:90vw; max-height:86vh; border-radius:12px; box-shadow:0 30px 80px rgba(0,0,0,.6); }
+  .cu-lb-x, .cu-lb-nav { position:absolute; z-index:2; background:rgba(255,255,255,.14); color:#fff; border:0; cursor:pointer; border-radius:50%; display:grid; place-items:center; }
+  .cu-lb-x { top:20px; inset-inline-end:20px; width:44px; height:44px; font-size:18px; }
+  .cu-lb-nav { top:50%; transform:translateY(-50%); width:52px; height:52px; font-size:26px; }
+  .cu-lb-prev { inset-inline-start:20px; } .cu-lb-next { inset-inline-end:20px; }
+  .cu-lb-nav:hover, .cu-lb-x:hover { background:rgba(255,255,255,.26); }
+</style>
+</head>
+<body data-page="customers">
+<div id="site-header"></div>
+
+<main>
+  <section class="cu-hero">
+    <div class="cu-hero-bg" style="background-image:url(https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1800&q=80&auto=format&fit=crop)"></div>
+    <div class="wrap cu-hero-in">
+      <span class="eyebrow">לקוחות Car2Buy</span>
+      <h1>אלפי לקוחות כבר בחרו בנו</h1>
+      <p>מאחורי כל תמונה יש חלום שהתגשם — לקוחות אמיתיים שקיבלו את הרכב החדש שלהם איתנו, בליווי אישי ובתנאי מימון משתלמים.</p>
+      <div class="cu-stats">
+        <div class="cu-stat"><div class="n">+8,000</div><div class="l">לקוחות מרוצים</div></div>
+        <div class="cu-stat"><div class="n">מ-2013</div><div class="l">שנות פעילות</div></div>
+        <div class="cu-stat"><div class="n">4.8★</div><div class="l">דירוג ממוצע</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cu-controls">
+    <div class="wrap cu-controls-in">
+      <div class="cu-count" id="cuCount"></div>
+    </div>
+  </div>
+
+  <section class="cu-wrap">
+    <div class="wrap">
+      <div class="cu-mosaic" id="cuMosaic"></div>
+      <div class="cu-sentinel" id="cuSentinel"></div>
+      <div class="cu-more" id="cuMore" hidden><button class="btn btn-ghost" id="cuMoreBtn">טעינת עוד לקוחות</button></div>
+    </div>
+  </section>
+</main>
+
+<div class="cu-lb" id="cuLb" aria-hidden="true">
+  <div class="cu-lb-ov" data-culb-close></div>
+  <button class="cu-lb-x" data-culb-close aria-label="סגור">✕</button>
+  <button class="cu-lb-nav cu-lb-prev" data-culb-prev aria-label="הקודם">‹</button>
+  <img class="cu-lb-img" id="cuLbImg" alt="לקוח Car2Buy">
+  <button class="cu-lb-nav cu-lb-next" data-culb-next aria-label="הבא">›</button>
+</div>
+
+<div id="site-footer"></div>
+
+<script src="models-data.js"></script>
+<script src="loan-cars.js"></script>
+<script src="customers-data.js"></script>
+<script src="site.js"></script>
+<script src="app.js"></script>
+
+<script>
+(function () {
+  var people = (window.Car2Buy && window.Car2Buy.CUSTOMER_PEOPLE) ? window.Car2Buy.CUSTOMER_PEOPLE.slice() : [];
+  // build a varied, people-only gallery from the real customer photos
+  var expanded = [];
+  var combos = [
+    '&fit=crop&crop=faces&w=700&h=700',
+    '&fit=crop&crop=faces&w=700&h=1000',
+    '&fit=crop&crop=entropy&w=800&h=700&flip=h',
+    '&fit=crop&crop=faces&w=700&h=700&sat=-100',
+    '&fit=crop&crop=top&w=700&h=900',
+    '&fit=crop&crop=faces&w=900&h=700&flip=h',
+    '&fit=crop&crop=entropy&w=700&h=700',
+    '&fit=crop&crop=faces&w=700&h=1000&flip=h'
+  ];
+  for (var r = 0; r < 16; r++) {
+    people.forEach(function (p, i) {
+      var base = p.img.split('?')[0];
+      var c = combos[(r + i) % combos.length];
+      expanded.push({ img: base + '?q=80&auto=format' + c, name: p.name, car: p.car });
+    });
+  }
+
+  var esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+  var mosaic = document.getElementById('cuMosaic');
+  var countEl = document.getElementById('cuCount');
+  var sentinel = document.getElementById('cuSentinel');
+  var moreWrap = document.getElementById('cuMore');
+
+  var PAGE = 24;
+  var filtered = expanded.slice(0, 100);
+  var shown = 0;
+  var visibleSrcs = [];
+  countEl.textContent = filtered.length + ' לקוחות שכבר בחרו ב-Car2Buy';
+
+  function loadMore() {
+    var slice = filtered.slice(shown, shown + PAGE);
+    var frag = document.createDocumentFragment();
+    slice.forEach(function (x, k) {
+      var idx = shown + k;
+      var cls = idx % 11 === 0 ? ' big' : (idx % 7 === 3 ? ' tall' : '');
+      var cell = document.createElement('div');
+      cell.className = 'cu-cell' + cls;
+      cell.setAttribute('data-i', visibleSrcs.length);
+      cell.innerHTML = '<img loading="lazy" src="' + esc(x.img) + '" alt="לקוח מרוצה של Car2Buy" onerror="this.closest(\'.cu-cell\').style.display=\'none\'">' +
+        '<div class="cu-cap"><div class="nm">' + esc(x.name) + '</div><div class="cr">לקוח/ה מרוצה</div></div>';
+      visibleSrcs.push(x.img);
+      frag.appendChild(cell);
+      requestAnimationFrame(function () { setTimeout(function () { cell.classList.add('in'); }, (k % PAGE) * 22); });
+    });
+    mosaic.appendChild(frag);
+    shown += slice.length;
+    moreWrap.hidden = shown >= filtered.length;
+  }
+
+  // infinite scroll
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting && shown < filtered.length) loadMore();
+    }, { rootMargin: '300px' });
+    io.observe(sentinel);
+  }
+  document.getElementById('cuMoreBtn').addEventListener('click', loadMore);
+
+  // lightbox
+  var lb = document.getElementById('cuLb'), lbImg = document.getElementById('cuLbImg'), li = 0;
+  function show(i) { li = (i + visibleSrcs.length) % visibleSrcs.length; lbImg.src = visibleSrcs[li]; }
+  function open(i) { show(i); lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+  function close() { lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+  mosaic.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-i]'); if (c) open(+c.getAttribute('data-i'));
+  });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-culb-close]')) close();
+    else if (e.target.closest('[data-culb-prev]')) show(li - 1);
+    else if (e.target.closest('[data-culb-next]')) show(li + 1);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowRight') show(li - 1);
+    else if (e.key === 'ArrowLeft') show(li + 1);
+  });
+
+  applyFilterDone();
+  function applyFilterDone() { loadMore(); }
+})();
+</script>
+
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>

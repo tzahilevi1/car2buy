@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מגזין Car2Buy · מדריכים לליסינג מימוני, מימון רכב וטריד-אין</title>
+<meta name="description" content="מגזין Car2Buy: מדריכים מקצועיים על ליסינג מימוני פרטי, מימון רכב, רכב חשמלי, טריד-אין וחישוב החזר חודשי — הכל בשפה פשוטה וברורה.">
+<meta property="og:title" content="מגזין Car2Buy — כל מה שכדאי לדעת לפני שנוסעים">
+<meta property="og:description" content="מדריכים וטיפים על ליסינג מימוני, מימון רכב וטריד-אין.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="magazine">
+<div id="site-header"></div>
+
+<main>
+  <section class="media-hero page">
+    <div class="mh-bg"><img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=2000&q=80&auto=format&fit=crop" alt="מגזין"></div>
+    <div class="mh-overlay"></div>
+    <div class="wrap"><div class="mh-content">
+      <span class="eyebrow reveal">מגזין Car2Buy</span>
+      <h1 class="reveal">כל מה שכדאי <span class="gold-text">לדעת לפני שנוסעים</span></h1>
+      <p class="lead reveal">מדריכים, טיפים ותובנות על ליסינג מימוני, מימון רכב וטריד-אין — בשפה פשוטה.</p>
+    </div></div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="mag-layout">
+        <div class="mag-main">
+          <div class="mag-filter" id="magFilter"></div>
+          <div id="magFeatured"></div>
+          <h2 class="mag-grid-h">כל הכתבות</h2>
+          <div class="posts" id="magGrid"></div>
+        </div>
+        <aside class="mag-side">
+          <div class="mag-widget">
+            <div class="mag-w-h">חיפוש במגזין</div>
+            <input type="search" id="magSearch" class="mag-search" placeholder="נושא, דגם או מילת מפתח…" autocomplete="off">
+          </div>
+          <div class="mag-widget">
+            <div class="mag-w-h">קטגוריות</div>
+            <div class="mag-cats" id="magCats"></div>
+          </div>
+          <div class="mag-widget">
+            <div class="mag-w-h">הנקראות ביותר</div>
+            <div class="mag-popular" id="magPopular"></div>
+          </div>
+          <div class="mag-widget mag-news">
+            <div class="mag-w-h">הצטרפו לניוזלטר</div>
+            <p class="mag-news-p">טיפים ומדריכים על ליסינג ומימון רכב, ישר למייל.</p>
+            <form class="mag-news-form" id="magNews">
+              <input type="email" placeholder="כתובת אימייל" required>
+              <button type="submit" class="btn btn-gold">הרשמה</button>
+              <div class="mag-news-ok" id="magNewsOk">✓ תודה! נרשמתם בהצלחה.</div>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="models-data.js"></script>
+<script src="loan-cars.js"></script>
+<script src="articles-data.js"></script>
+<script src="site.js"></script>
+<script src="app.js"></script>
+
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>

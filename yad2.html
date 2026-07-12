@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יד 2 · רכבים משומשים · Car2Buy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== client gallery carousel (ported from car-loan, straddles hero) ===== */
+  .media-hero.page .mh-content { padding-bottom: 160px; }
+  .ln-gallery { overflow: hidden; position: relative; z-index: 5; margin-top: clamp(-165px, -12vw, -120px); background: transparent; direction: ltr; }
+  .ln-gallery-track { display: flex; width: max-content; direction: ltr; animation: lnScroll 70s linear infinite; }
+  .ln-gallery:hover .ln-gallery-track { animation-play-state: paused; }
+  .ln-gallery-cell { flex: 0 0 auto; width: clamp(240px, 24vw, 320px); aspect-ratio: 4/3; margin-inline-end: 16px; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 40px -28px rgba(0,0,0,.45); }
+  .ln-gallery-cell img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+  .ln-gallery-cell:hover img { transform: scale(1.05); }
+  @keyframes lnScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .ln-gallery-track { animation: none; } }
+
+  /* ===== Capital-style used-car card ===== */
+  .ucard.car { background: #fff; border: 1px solid #e8e8e8; color: #232323; border-radius: 20px; box-shadow: 0 20px 50px -34px rgba(0,0,0,.4); overflow: hidden; }
+  .ucard.car:hover { border-color: var(--gold-line); transform: translateY(-5px); }
+  .uc-hit { display: block; color: inherit; }
+  .uc-ph { position: relative; aspect-ratio: 4/3; overflow: hidden; background: #eef0f2; }
+  .uc-ph img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .8s var(--ease); }
+  .ucard.car:hover .uc-ph img { transform: scale(1.06); }
+  .uc-fuel { position: absolute; inset-block-start: 14px; inset-inline-start: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: #fff; box-shadow: 0 6px 16px -8px rgba(0,0,0,.5); }
+  .uc-fuel svg { width: 14px; height: 14px; }
+  .uc-fuel.ev { background: #1f8a4c; }
+  .uc-fuel.hyb { background: #0d8f8f; }
+  .uc-fuel.gas { background: #3a3a3f; }
+  .uc-media { position: absolute; inset-block-end: 14px; inset-inline-end: 14px; z-index: 2; display: flex; gap: 8px; }
+  .uc-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.94); color: #232323; font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 999px; box-shadow: 0 6px 16px -8px rgba(0,0,0,.4); }
+  .uc-chip svg { width: 13px; height: 13px; }
+  .uc-name { text-align: center; font-family: var(--display); font-weight: 800; font-size: 20px; color: #232323; padding: 18px 18px 0; }
+  .uc-immediate { display: block; width: calc(100% - 44px); margin: 14px auto 2px; text-align: center; background: linear-gradient(150deg, var(--gold-bright), var(--gold-deep)); color: #fff; font-weight: 800; font-size: 14.5px; padding: 11px 14px; border-radius: 999px; transition: .2s; }
+  .uc-immediate:hover { filter: brightness(1.06); }
+  .uc-specs { padding: 6px 22px 4px; }
+  .uc-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #ececec; font-size: 14px; }
+  .uc-row:last-child { border-bottom: 0; }
+  .uc-row .rk { color: #8a8a8a; }
+  .uc-row .rv { color: #232323; font-weight: 700; }
+  .uc-foot { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 10px 18px 20px; }
+  .uc-pay { display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(150deg, var(--gold-bright), var(--gold-deep)); color: #fff; font-weight: 800; font-size: 14.5px; padding: 13px 14px; border-radius: 14px; line-height: 1.2; transition: .2s; }
+  .uc-pay:hover { filter: brightness(1.06); }
+  .uc-fav { display: inline-flex; align-items: center; gap: 7px; background: #101013; color: #fff; border: 0; font-family: inherit; font-weight: 700; font-size: 14px; padding: 0 18px; border-radius: 14px; cursor: pointer; transition: .2s; }
+  .uc-fav svg { width: 16px; height: 16px; }
+  .uc-fav:hover { background: #23232a; }
+  .uc-fav.is-fav { background: var(--gold-deep); }
+  .uc-fav.is-fav svg { fill: #fff; }
+</style>
+</head>
+<body data-page="yad2">
+<div id="site-header"></div>
+
+<main>
+
+<section class="media-hero page">
+  <div class="mh-bg"><img src="https://images.pexels.com/photos/164634/pexels-photo-164634.jpeg?auto=compress&cs=tinysrgb&w=2000" alt="רכבים משומשים"></div>
+  <div class="mh-overlay"></div>
+  <div class="wrap"><div class="mh-content">
+    <span class="eyebrow reveal">יד 2 · רכבים משומשים</span>
+    <h1 class="reveal">יד שנייה, <span class="gold-text">ביטחון ראשון</span></h1>
+    <p class="lead reveal">מבחר רכבי יד שנייה מובחרים — כל רכב עובר בדיקה מקיפה, עם אפשרות מימון מלא והחזר חודשי נוח.</p>
+  </div></div>
+</section>
+
+<!-- ===== CLIENT GALLERY BAND (straddles hero) ===== -->
+<div class="ln-gallery" aria-label="תמונות לקוחות"><div class="ln-gallery-track" id="lnGalleryTrack"></div></div>
+
+<section class="section testi-section" style="padding-top:clamp(24px,3vw,36px);">
+  <div class="wrap">
+    <div class="usearch reveal">
+      <div class="usearch-title">
+        <span class="eyebrow" style="justify-content:center;">המלאי שלנו · חיפוש חכם</span>
+        <h2>מצאו את היד שנייה <span class="gold-text">המושלמת</span></h2>
+        <p>סננו לפי יצרן, דגם, סוג רכב ויד — והזיזו את המחוונים. המלאי מתעדכן בזמן אמת.</p>
+      </div>
+      <div class="usearch-grid">
+        <div class="usearch-field usearch-text">
+          <label for="uSearch">חיפוש חופשי</label>
+          <input type="search" id="uSearch" placeholder="יצרן או דגם…" autocomplete="off">
+        </div>
+        <div class="usearch-field"><label for="uBrand">יצרן</label><select id="uBrand" class="ti-select"></select></div>
+        <div class="usearch-field"><label for="uModel">דגם</label><select id="uModel" class="ti-select"></select></div>
+        <div class="usearch-field"><label for="uType">סוג רכב</label><select id="uType" class="ti-select"></select></div>
+      </div>
+      <div class="usearch-sliders">
+        <div class="usearch-field">
+          <div class="usearch-row"><label>החזר חודשי עד</label><b id="uMonthlyVal">—</b></div>
+          <input type="range" id="uMonthly" min="0" max="100" value="100">
+        </div>
+        <div class="usearch-field">
+          <div class="usearch-row"><label>קילומטראז׳ עד</label><b id="uKmVal">—</b></div>
+          <input type="range" id="uKm" min="0" max="500000" step="5000" value="500000">
+        </div>
+      </div>
+      <div class="usearch-foot">
+        <div class="usearch-count"><b id="uCount">0</b> רכבים תואמים</div>
+        <button type="button" class="filter-reset" id="uReset">איפוס תצוגה</button>
+      </div>
+    </div>
+    <div class="gallery" id="usedGrid" style="margin-top:40px;"></div>
+    <p class="cat-disclaimer reveal">ההחזר החודשי המוצג הוא משוער בלבד ואינו מהווה הצעה מחייבת. תנאי העסקה כפופים לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי.</p>
+    <p class="plans-note reveal" style="margin-top:24px;">מחפשים דגם ספציפי יד שנייה? <a href="contact.html">ספרו לנו</a> ונאתר עבורכם.</p>
+  </div>
+</section>
+
+<!-- ===== WHAT WE DO WITH YAD2 ===== -->
+<section class="section yad2-do">
+  <div class="yad2-do-bg"></div>
+  <div class="wrap yad2-do-inner">
+    <div class="yad2-do-feats reveal">
+      <div class="ydf"><span class="ydf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><path d="M21 12c0 5-3.5 7.5-8.5 9.5C7.5 19.5 4 17 4 12V6l8-3 8 3z"></path></svg></span><div><b>בדיקה ואימות</b><span>כל רכב עובר בדיקה טכנית והיסטוריית טיפולים</span></div></div>
+      <div class="ydf"><span class="ydf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span><div><b>מימון מלא</b><span>אותה מעטפת מימון של רכב חדש, גם על יד שנייה</span></div></div>
+      <div class="ydf"><span class="ydf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"></path><path d="m21 3-7 7"></path><path d="M8 21H3v-5"></path><path d="m3 21 7-7"></path></svg></span><div><b>טרייד-אין</b><span>מקזזים את הרכב הישן ישירות מהעסקה</span></div></div>
+    </div>
+    <div class="yad2-do-card reveal">
+      <div class="eyebrow">רכבי יד 2 ב‑Car2Buy</div>
+      <h2>מה אנחנו עושים<br>עם רכבי יד שנייה?</h2>
+      <p>כל רכב יד שנייה שמגיע אלינו עובר בדיקה מקיפה, שיפוץ ותיעוד מלא — לפני שהוא מגיע אליכם. אנחנו מתמחים בהפיכת רכב משומש לעסקה בטוחה ומשתלמת, עם מימון מלא, אחריות וליווי אישי לכל אורך הדרך.</p>
+      <a href="contact.html" class="btn btn-gold">דברו איתנו על יד 2</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY YAD2 ===== -->
+<section class="section light-section">
+  <div class="wrap">
+    <div class="center">
+      <span class="eyebrow reveal">היתרונות שלנו</span>
+      <h2 class="h-sec reveal">למה לבחור יד 2 <span class="gold-text">של Car2Buy?</span></h2>
+    </div>
+    <div class="values">
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><path d="M21 12c0 5-3.5 7.5-8.5 9.5C7.5 19.5 4 17 4 12V6l8-3 8 3z"></path></svg></div><h3>שקט נפשי מלא</h3><p>כל רכב נבדק לעומק, עם דו״ח מצב והיסטוריית טיפולים שקופה — בלי הפתעות.</p></div>
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v8H3z"></path><path d="M16 10h3l2 3v2h-5z"></path><circle cx="7" cy="17" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg></div><h3>מימון עד 100%</h3><p>החזר חודשי נוח ומותאם אישית, בדיוק כמו ברכב חדש — בלי הון התחלתי.</p></div>
+      <div class="value reveal"><div class="vic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg></div><h3>ליווי אישי</h3><p>יועץ צמוד שמלווה אתכם מהבחירה ועד המפתח, וגם אחרי קבלת הרכב.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section lead-section">
+  <div class="lead-bg"></div>
+  <div class="wrap" style="position:relative;z-index:1;text-align:center;">
+    <h2 class="h-sec reveal">רוצים <span class="gold-text">להחליף רכב?</span></h2>
+    <p class="lead reveal" style="margin-inline:auto;">שלבו טרייד-אין על הרכב הנוכחי וקבלו הצעה משולבת.</p>
+    <div class="mh-actions reveal" style="justify-content:center;">
+      <a href="trade-in.html" class="btn btn-gold btn-lg">הערכת טרייד-אין</a>
+      <a href="contact.html" class="btn btn-ghost btn-lg">השארת פרטים</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="site-footer"></div>
+
+<script src="models-data.js"></script>
+<script src="loan-cars.js"></script>
+<script src="customers-data.js"></script>
+<script src="site.js"></script>
+<script src="app.js"></script>
+<script>
+(function () {
+  var gt = document.getElementById('lnGalleryTrack');
+  if (gt && window.Car2Buy) {
+    var pool = [];
+    (window.Car2Buy.CUSTOMERS || []).forEach(function (c) { if (c.img) pool.push(c.img); });
+    (window.Car2Buy.MODELS || []).forEach(function (m) { if (m.img) pool.push(m.img); });
+    (window.Car2Buy.USED || []).forEach(function (u) { if (u.img) pool.push(u.img); });
+    if (window.Car2Buy.IMG) { for (var k in window.Car2Buy.IMG) pool.push(window.Car2Buy.IMG[k]); }
+    pool = pool.filter(function (v, i) { return v && pool.indexOf(v) === i; });
+    if (pool.length > 35) pool = pool.slice(0, 35);
+    var cells = pool.map(function (src) {
+      return '<div class="ln-gallery-cell"><img loading="eager" src="' + src + '" alt=""></div>';
+    }).join('');
+    gt.innerHTML = cells + cells;
+    gt.style.animationDuration = Math.round(pool.length * 4.5) + 's';
+  }
+  document.addEventListener('click', function (e) {
+    var fav = e.target.closest('.uc-fav');
+    if (fav) { e.preventDefault(); fav.classList.toggle('is-fav'); }
+  });
+})();
+</script>
+
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>

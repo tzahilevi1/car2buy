@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>השוואת רכבים · Car2Buy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== compare page (Capital-style, Car2Buy palette) ===== */
+  .cmp-hero { position:relative; min-height:clamp(300px,34vw,420px); display:grid; place-items:center; overflow:hidden; background:linear-gradient(180deg,#f5f6f8,#eceef1); padding-top:132px; padding-bottom:40px; }
+  .cmp-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center; opacity:.14; }
+  .cmp-hero h1 { position:relative; z-index:1; font-family:var(--display); font-weight:900; font-size:clamp(34px,6vw,68px); color:var(--gold-deep); text-align:center; }
+
+  /* add panel */
+  .cmp-add { background:#fff; padding-bottom:clamp(44px,6vw,76px); }
+  .cmp-add-card { max-width:1040px; margin:clamp(-60px,-6vw,-48px) auto 0; position:relative; z-index:5; background:#fff; border:1px solid var(--line-2); border-radius:22px; box-shadow:0 40px 90px -60px rgba(0,0,0,.5); padding:clamp(26px,4vw,42px); text-align:center; }
+  .cmp-add-card h2 { font-family:var(--display); font-weight:800; font-size:clamp(22px,3vw,32px); color:var(--ink); }
+  .cmp-add-card .sub { color:var(--muted); margin-top:8px; font-size:clamp(14px,1.7vw,16px); }
+  .cmp-search { position:relative; max-width:640px; margin:clamp(20px,3vw,28px) auto 0; }
+  .cmp-search .ic { position:absolute; inset-inline-start:18px; top:50%; transform:translateY(-50%); color:var(--muted); }
+  .cmp-search input { width:100%; border:1px solid var(--line); border-radius:14px; padding:16px 52px 16px 18px; font-family:inherit; font-size:16px; color:var(--ink); background:var(--bg-1); text-align:right; }
+  .cmp-search input:focus { outline:none; border-color:var(--gold); background:#fff; }
+  .cmp-results { position:absolute; z-index:20; inset-inline:0; top:calc(100% + 6px); background:#fff; border:1px solid var(--line-2); border-radius:14px; box-shadow:0 30px 60px -30px rgba(0,0,0,.45); max-height:340px; overflow-y:auto; display:none; text-align:right; }
+  .cmp-results.open { display:block; }
+  .cmp-res { display:flex; align-items:center; gap:12px; padding:11px 16px; cursor:pointer; border-bottom:1px solid var(--line-2); }
+  .cmp-res:last-child { border-bottom:0; }
+  .cmp-res:hover { background:var(--bg-2); }
+  .cmp-res img { width:56px; height:40px; object-fit:contain; flex:0 0 auto; }
+  .cmp-res .rn { font-weight:700; color:var(--ink); font-size:14.5px; }
+  .cmp-res .rt { font-size:12.5px; color:var(--muted); }
+  .cmp-res .rp { margin-inline-start:auto; font-weight:700; color:var(--gold-deep); font-size:14px; white-space:nowrap; }
+  .cmp-res-empty { padding:18px; color:var(--muted); font-size:14px; }
+  .cmp-count { margin-top:16px; color:var(--muted); font-size:14px; }
+  .cmp-count b { color:var(--ink); }
+
+  /* comparison table */
+  .cmp-tablewrap { max-width:1100px; margin:clamp(24px,3vw,34px) auto 0; overflow-x:auto; }
+  .cmp-empty { text-align:center; color:var(--muted); padding:34px 20px; font-size:15px; }
+  .cmp-toolbar { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:20px; flex-wrap:wrap; }
+  .cmp-diff { display:inline-flex; align-items:center; gap:9px; font-size:14px; font-weight:600; color:var(--ink); cursor:pointer; background:var(--bg-2); border:1px solid var(--line-2); padding:9px 16px; border-radius:999px; }
+  .cmp-diff input { accent-color:var(--gold-deep); width:16px; height:16px; }
+  .cmp-clear { background:none; border:0; color:var(--muted); font-family:inherit; font-size:13.5px; cursor:pointer; text-decoration:underline; }
+  table.cmp-table { border-collapse:separate; border-spacing:0; margin:22px auto 0; width:100%; }
+  .cmp-table th, .cmp-table td { padding:14px 16px; text-align:center; border-bottom:1px solid var(--line-2); }
+  .cmp-table thead th { vertical-align:bottom; }
+  .cmp-card { display:flex; flex-direction:column; align-items:center; gap:8px; min-width:150px; }
+  .cmp-card img { width:150px; height:100px; object-fit:contain; }
+  .cmp-card .nm { font-family:var(--display); font-weight:800; font-size:15px; color:var(--ink); }
+  .cmp-card .br { font-size:12px; color:var(--muted); }
+  .cmp-card .rm { background:none; border:0; color:#c0392b; font-size:12px; cursor:pointer; text-decoration:underline; }
+  .cmp-rk { text-align:right; font-weight:700; color:var(--ink); font-size:14px; background:var(--bg-1); white-space:nowrap; }
+  .cmp-table td.hi { color:var(--gold-deep); font-weight:800; }
+  .cmp-table td.yes { color:#1f8a4c; font-weight:800; font-size:17px; }
+  .cmp-table td.no { color:var(--muted-2,#b8b8b8); font-size:15px; }
+  .cmp-delta { display:inline-block; margin-inline-start:5px; font-size:11.5px; font-weight:700; }
+  .cmp-delta.up { color:#1f8a4c; }
+  .cmp-delta.down { color:#1f8a4c; }
+  tr.cmp-grp .cmp-grp-h { background:#101013; color:#fff; font-family:var(--display); font-weight:800; font-size:15px; text-align:right; padding:12px 16px; border-radius:8px; }
+  .cmp-table tr.cmp-grp td { border-bottom:0; }
+  .cmp-src { text-align:center; color:var(--muted); font-size:12.5px; margin-top:16px; line-height:1.6; }
+  .cmp-rk .vf { color:#1f8a4c; font-weight:800; margin-inline-start:5px; }
+  .cmp-mono-hd { font-family:var(--display); font-weight:900; color:var(--gold-deep); font-size:18px; }
+
+  /* FAQ chips */
+  .cmp-chips { display:flex; flex-wrap:wrap; justify-content:center; gap:14px; margin:clamp(30px,4vw,44px) auto 0; max-width:900px; }
+  .cmp-chip { background:var(--bg-1); border:1px solid var(--line-2); border-radius:999px; padding:11px 22px; font-size:14.5px; font-weight:600; color:var(--ink); cursor:pointer; transition:.2s; }
+  .cmp-chip:hover { border-color:var(--gold-line); color:var(--gold-deep); }
+
+  /* dark step band */
+  .cmp-band { position:relative; background:#0d0e11; color:#fff; padding:clamp(60px,8vw,110px) 0; overflow:hidden; text-align:center; }
+  .cmp-band-bg { position:absolute; inset:0; background-size:cover; background-position:center; opacity:.16; }
+  .cmp-band-inner { position:relative; z-index:1; }
+  .cmp-band h2 { font-family:var(--display); font-weight:900; font-size:clamp(26px,4vw,44px); color:#fff; }
+  .cmp-band .rule { width:80px; height:3px; background:var(--gold); border-radius:3px; margin:16px auto clamp(34px,5vw,56px); }
+  .cmp-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(20px,3vw,40px); max-width:980px; margin-inline:auto; }
+  @media (max-width:760px){ .cmp-steps { grid-template-columns:1fr; } }
+  .cmp-step { display:flex; align-items:center; justify-content:center; gap:14px; }
+  .cmp-step .n { font-family:var(--display); font-weight:900; font-size:clamp(46px,6vw,72px); color:var(--gold); line-height:1; }
+  .cmp-step .t { font-size:clamp(17px,2vw,21px); font-weight:600; color:#fff; text-align:right; max-width:190px; }
+
+  /* why-compare cards */
+  .cmp-why { background:var(--bg-1); padding:clamp(56px,7vw,96px) 0; }
+  .cmp-why-head { text-align:center; margin-bottom:clamp(34px,5vw,56px); }
+  .cmp-why-head h2 { font-family:var(--display); font-weight:900; font-size:clamp(26px,3.6vw,42px); color:var(--gold-deep); }
+  .cmp-why-head p { color:var(--muted); margin-top:12px; font-size:clamp(15px,1.8vw,18px); }
+  .cmp-why-list { display:flex; flex-direction:column; gap:clamp(20px,3vw,32px); max-width:1000px; margin-inline:auto; }
+  .cmp-why-card { display:grid; grid-template-columns:1fr 340px; gap:clamp(20px,3vw,36px); align-items:center; background:#fff; border:1px solid var(--line-2); border-radius:22px; padding:clamp(22px,3vw,38px); box-shadow:0 26px 60px -50px rgba(0,0,0,.5); }
+  @media (max-width:720px){ .cmp-why-card { grid-template-columns:1fr; } .cmp-why-card .cmp-why-img { order:-1; } }
+  .cmp-why-card h3 { font-family:var(--display); font-weight:800; font-size:clamp(20px,2.4vw,27px); color:var(--ink); text-align:right; }
+  .cmp-why-card p { color:var(--ink-soft); line-height:1.8; margin-top:14px; text-align:right; font-size:15px; }
+  .cmp-why-card a { color:var(--gold-deep); text-decoration:underline; }
+  .cmp-why-img { border-radius:16px; overflow:hidden; aspect-ratio:16/11; background:var(--bg-2); }
+  .cmp-why-img img { width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* data columns (dark) */
+  .cmp-data-cols { display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(16px,2vw,26px); max-width:1120px; margin-inline:auto; }
+  @media (max-width:900px){ .cmp-data-cols { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:520px){ .cmp-data-cols { grid-template-columns:1fr; } }
+  .cmp-dc { text-align:center; }
+  .cmp-dc .ic { width:56px; height:56px; margin:0 auto 14px; display:grid; place-items:center; color:var(--gold); }
+  .cmp-dc .ic svg { width:40px; height:40px; }
+  .cmp-dc h3 { font-family:var(--display); font-weight:800; font-size:clamp(17px,2vw,21px); color:var(--gold-bright); margin-bottom:10px; }
+  .cmp-dc p { color:rgba(255,255,255,.8); font-size:14px; line-height:1.7; }
+  .cmp-dc a { color:#fff; text-decoration:underline; }
+
+  /* how-to steps */
+  .cmp-how { background:var(--bg-1); padding:clamp(56px,7vw,96px) 0; }
+  .cmp-how h2 { text-align:center; font-family:var(--display); font-weight:900; font-size:clamp(26px,3.6vw,42px); color:var(--gold-deep); margin-bottom:clamp(34px,5vw,52px); }
+  .cmp-how-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(18px,2.6vw,30px); max-width:1000px; margin-inline:auto; }
+  @media (max-width:640px){ .cmp-how-grid { grid-template-columns:1fr; } }
+  .cmp-how-card { background:#fff; border:1px solid var(--line-2); border-radius:20px; padding:clamp(24px,3vw,36px); box-shadow:0 22px 50px -46px rgba(0,0,0,.5); }
+  .cmp-how-card h3 { font-family:var(--display); font-weight:800; font-size:clamp(19px,2.2vw,24px); color:var(--gold-deep); }
+  .cmp-how-card p { color:var(--ink-soft); margin-top:12px; line-height:1.7; font-size:15px; }
+  .cmp-how-card a { color:var(--gold-deep); text-decoration:underline; }
+  .cmp-how-photo { position:relative; border-radius:20px; overflow:hidden; min-height:200px; background:var(--bg-2); display:grid; place-items:center; }
+  .cmp-how-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+  .cmp-how-photo .go { position:absolute; inset-block-end:22px; inset-inline-start:50%; transform:translateX(-50%); background:linear-gradient(150deg,var(--gold-bright),var(--gold-deep)); color:#1a1305; border:0; border-radius:999px; padding:13px 30px; font-family:inherit; font-weight:800; font-size:15px; cursor:pointer; box-shadow:0 14px 30px -14px rgba(0,0,0,.6); }
+
+  /* tips (dark) */
+  .cmp-tips { position:relative; background:#0d0e11; color:#fff; padding:clamp(56px,7vw,96px) 0; overflow:hidden; }
+  .cmp-tips-bg { position:absolute; inset:0; background-size:cover; background-position:center; opacity:.16; }
+  .cmp-tips-inner { position:relative; z-index:1; }
+  .cmp-tips h2 { text-align:center; font-family:var(--display); font-weight:900; font-size:clamp(26px,3.6vw,42px); color:#fff; }
+  .cmp-tips .rule { width:80px; height:3px; background:var(--gold); border-radius:3px; margin:16px auto clamp(30px,4vw,44px); }
+  .cmp-tips-grid { display:grid; grid-template-columns:1fr 420px; gap:clamp(24px,4vw,50px); align-items:center; max-width:1040px; margin-inline:auto; }
+  @media (max-width:820px){ .cmp-tips-grid { grid-template-columns:1fr; } }
+  .cmp-tips-grid ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:18px; }
+  .cmp-tips-grid li { position:relative; padding-inline-start:22px; line-height:1.7; color:rgba(255,255,255,.85); font-size:15.5px; }
+  .cmp-tips-grid li::before { content:""; position:absolute; inset-inline-start:0; top:9px; width:8px; height:8px; border-radius:50%; background:var(--gold); }
+  .cmp-tips-grid li a { color:var(--gold-bright); text-decoration:underline; }
+  .cmp-tips-img { border-radius:18px; overflow:hidden; aspect-ratio:16/10; background:#16181d; box-shadow:0 30px 60px -34px rgba(0,0,0,.8); }
+  .cmp-tips-img img { width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* faq */
+  .cmp-faq { background:#fff; padding:clamp(56px,7vw,96px) 0; }
+  .cmp-faq-card { max-width:900px; margin-inline:auto; background:#fff; border:1px solid var(--line-2); border-radius:24px; padding:clamp(30px,5vw,60px); box-shadow:0 30px 70px -60px rgba(0,0,0,.5); }
+  .cmp-faq-card h2 { text-align:center; font-family:var(--display); font-weight:900; font-size:clamp(26px,3.6vw,42px); color:var(--gold-deep); }
+  .cmp-faq-card .rule { width:64px; height:2px; background:var(--line); margin:14px auto clamp(24px,3vw,36px); }
+  .cmp-faq-item { border-bottom:1px solid var(--line-2); }
+  .cmp-faq-q { width:100%; background:none; border:0; text-align:right; font-family:var(--display); font-weight:700; font-size:clamp(16px,2vw,19px); color:var(--gold-deep); padding:20px 0; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+  .cmp-faq-q .pm { flex:0 0 auto; width:24px; height:24px; position:relative; }
+  .cmp-faq-q .pm::before, .cmp-faq-q .pm::after { content:""; position:absolute; background:var(--gold-deep); border-radius:2px; transition:.25s; }
+  .cmp-faq-q .pm::before { inset-inline:0; top:11px; height:2px; }
+  .cmp-faq-q .pm::after { inset-block:0; inset-inline-start:11px; width:2px; }
+  .cmp-faq-item.open .pm::after { transform:scaleY(0); }
+  .cmp-faq-a { max-height:0; overflow:hidden; transition:max-height .3s ease; }
+  .cmp-faq-a p { color:var(--ink-soft); line-height:1.8; padding-bottom:20px; font-size:15px; }
+</style>
+</head>
+<body data-page="compare">
+<div id="site-header"></div>
+
+<main id="cmpMain">
+  <!-- 1. HERO -->
+  <section class="cmp-hero">
+    <div class="cmp-hero-bg" id="cmpHeroBg"></div>
+    <h1>השוואת רכבים</h1>
+  </section>
+
+  <!-- 2. ADD PANEL -->
+  <section class="cmp-add">
+    <div class="wrap">
+      <div class="cmp-add-card">
+        <h2>הוסף רכבים להשוואה</h2>
+        <p class="sub">בחר יצרן ← דגם ← רמת גימור להוספה לטבלת ההשוואה</p>
+        <div class="cmp-search">
+          <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+          <input type="search" id="cmpSearch" placeholder="חפש יצרן או דגם..." autocomplete="off">
+          <div class="cmp-results" id="cmpResults"></div>
+        </div>
+        <div class="cmp-count">משווה כרגע <b id="cmpCount">0</b> רמות גימור</div>
+        <div class="cmp-tablewrap" id="cmpTableWrap"></div>
+      </div>
+
+      <!-- FAQ chips -->
+      <div class="cmp-chips">
+        <button class="cmp-chip" data-goto="cmpTips">טיפים והמלצות</button>
+        <button class="cmp-chip" data-goto="cmpWhy">למה חשוב להשוות?</button>
+        <button class="cmp-chip" data-goto="cmpHow">איך משתמשים בזה?</button>
+        <button class="cmp-chip" data-goto="cmpData">איזה נתונים חשובים?</button>
+        <button class="cmp-chip" data-goto="cmpFaq">שאלות נפוצות</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. DARK STEP BAND -->
+  <section class="cmp-band">
+    <div class="cmp-band-bg" id="cmpBand1Bg"></div>
+    <div class="cmp-band-inner wrap">
+      <h2>השוואת רכבים לפני קניה</h2>
+      <span class="rule"></span>
+      <div class="cmp-steps">
+        <div class="cmp-step"><span class="n">1</span><span class="t">בחרו מספר רכבים להשוואה</span></div>
+        <div class="cmp-step"><span class="n">2</span><span class="t">עשו השוואה בין המחירים לבין התמורה</span></div>
+        <div class="cmp-step"><span class="n">3</span><span class="t">גלו איזה רכב מתאים לכם יותר</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. WHY COMPARE -->
+  <section class="cmp-why" id="cmpWhy">
+    <div class="wrap">
+      <div class="cmp-why-head">
+        <h2>למה חשוב שתעשו השוואת רכבים לפני קניה?</h2>
+        <p>השוואת רכבים תעזור לכם לבחור את הרכב הנכון:</p>
+      </div>
+      <div class="cmp-why-list" id="cmpWhyList"></div>
+    </div>
+  </section>
+
+  <!-- 5. DATA COLUMNS (dark) -->
+  <section class="cmp-band" id="cmpData">
+    <div class="cmp-band-bg" id="cmpBand2Bg"></div>
+    <div class="cmp-band-inner wrap">
+      <h2>נתונים חשובים להשוואה</h2>
+      <span class="rule"></span>
+      <div class="cmp-data-cols" id="cmpDataCols"></div>
+    </div>
+  </section>
+
+  <!-- 6. HOW TO -->
+  <section class="cmp-how" id="cmpHow">
+    <div class="wrap">
+      <h2>איך להשתמש במערכת ההשוואה?</h2>
+      <div class="cmp-how-grid" id="cmpHowGrid"></div>
+    </div>
+  </section>
+
+  <!-- 7. TIPS (dark) -->
+  <section class="cmp-tips" id="cmpTips">
+    <div class="cmp-tips-bg" id="cmpTipsBg"></div>
+    <div class="cmp-tips-inner wrap">
+      <h2>טיפים חשובים</h2>
+      <span class="rule"></span>
+      <div class="cmp-tips-grid">
+        <ul>
+          <li>אל תשכחו את עלויות האחזקה: ביטוח, דלק ו<a href="how-it-works.html">טיפולים שוטפים</a>.</li>
+          <li>ירידת ערך: יש דגמים שהערך שלהם יורד מהר יותר משל דגמים אחרים.</li>
+          <li>אל תחפשו רק מספרים גדולים: כי למשל נפח מנוע גדול יותר כמעט תמיד מעיד גם על צריכת דלק גבוהה יותר.</li>
+          <li>מידות הרכב: זכרו שאתם תצטרכו להחנות אותו בסוף כל נסיעה. ומצד שני, אם יש לכם משפחה גדולה, תדאגו שלכל אחד יהיה מקום ישיבה.</li>
+        </ul>
+        <div class="cmp-tips-img" id="cmpTipsImg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. FAQ -->
+  <section class="cmp-faq" id="cmpFaq">
+    <div class="wrap">
+      <div class="cmp-faq-card">
+        <h2>שאלות נפוצות</h2>
+        <span class="rule"></span>
+        <div id="cmpFaqList"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="models-data.js"></script>
+<script src="loan-cars.js"></script>
+<script src="gov-data.js"></script>
+<script src="site.js"></script>
+<script src="app.js"></script>
+<script src="compare-page.js"></script>
+
+<div id="tweaks-root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+</body>
+</html>
