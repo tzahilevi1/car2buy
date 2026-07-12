@@ -976,6 +976,7 @@
   var metaTitle = fullName + (car.trim ? ' ' + car.trim : '') + ' ' + car.year + ' – מחיר, מפרט וחוות דעת | Car2Buy';
   var metaDesc = 'כל מה שצריך לדעת על ' + fullName + ' ' + car.year + ': עיצוב, ביצועים, בטיחות, צריכה, יתרונות וחסרונות, השוואה למתחרים והחזר חודשי במימון 60% החל מ-' + fmt(car.monthly60) + '. סקירה מלאה ומימון לרכב ב-Car2Buy.';
   document.title = metaTitle;
+  try { window.C2B_setMeta && C2B_setMeta({ image: (typeof car !== 'undefined' && car && car.img) ? car.img : undefined }); } catch (e) {}
   (function (d) {
     var m = d.querySelector('meta[name="description"]');
     if (!m) { m = d.createElement('meta'); m.setAttribute('name', 'description'); d.head.appendChild(m); }
@@ -1312,6 +1313,7 @@
     '</div>';
 
   document.title = metaTitle;
+  try { window.C2B_setMeta && C2B_setMeta({ image: (typeof car !== 'undefined' && car && car.img) ? car.img : undefined }); } catch (e) {}
 
   // ---- video popup ----
   var vmodal = document.getElementById('cdVideo');

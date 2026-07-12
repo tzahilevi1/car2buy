@@ -577,6 +577,7 @@
     } else {
       document.title = `${a.title} · מגזין Car2Buy`;
       if (a.desc) { let m = document.querySelector('meta[name="description"]'); if (!m) { m = document.createElement('meta'); m.name = 'description'; document.head.appendChild(m); } m.content = a.desc; }
+      try { window.C2B_setMeta && C2B_setMeta({ description: a.desc || a.excerpt, image: a.img, type: 'article' }); } catch (e) {}
       const more = ARTICLES.filter((x) => x.id !== a.id && x.cat === a.cat).concat(ARTICLES.filter((x) => x.id !== a.id && x.cat !== a.cat)).slice(0, 3);
       const words = a.body.map((b) => typeof b === 'string' ? b : (b.p || b.h2 || (b.ul ? b.ul.join(' ') : ''))).join(' ').replace(/<[^>]+>/g, ' ').split(/\s+/).length;
       const readMin = Math.max(3, Math.round(words / 220));
@@ -757,6 +758,7 @@
         <div style="margin-top:30px;"><a href="models.html" class="btn btn-gold btn-lg">לכל הדגמים</a></div></div></section>`;
     } else {
       document.title = `${m.brand} ${m.name} · Car2Buy`;
+      try { window.C2B_setMeta && C2B_setMeta({ description: `${m.brand} ${m.name} — מפרט, ביצועים והחזר חודשי מוערך של ${window.Car2Buy && Car2Buy.NIS ? Car2Buy.NIS(m.monthly) : m.monthly + '₪'} לחודש ב-Car2Buy.`, image: m.img }); } catch (e) {}
       if (window.c2bTrack) c2bTrack('car_page_view', { car: m.brand + ' ' + m.name, id: m.id });
       const FIT = {
         suv: ['משפחה שמחפשת רכב פנאי נוח ומרווח', 'נהגים שצריכים תא מטען גדול וישיבה גבוהה', 'מי שרוצה תחושת ביטחון ושדה ראייה רחב'],
