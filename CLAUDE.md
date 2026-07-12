@@ -3,6 +3,9 @@
 אתר תדמית/לידים בעברית (RTL) לתחום רכב — מימון, השוואת רכבים, מותגים, יבוא אישי, טרייד-אין ועוד.
 יובא מייצוא של כלי עיצוב (Claude) והועבר לפרויקט מקומי זה.
 
+**כתובת חיה (GitHub Pages):** https://tzahilevi1.github.io/car2buy/
+פרסום: כל push ל-branch `main` מתעדכן אוטומטית באתר החי.
+
 ## סטאק
 - **אתר סטטי טהור**: HTML + CSS + JavaScript (Vanilla). אין framework, אין build step, אין package.json.
 - שפה: עברית, כיווניות RTL.
@@ -44,10 +47,9 @@ images/             נכסי האתר (כולל images/customers/)
 - **קבצי דאטה** (מקור התוכן — לרוב כאן עורכים תוכן): `cars-data.js`, `models-data.js`, `loan-cars.js`, `articles-data.js`, `brand-articles.js`, `brand-content.js`, `customers-data.js`, `gov-data.js`
 
 ## הערות תחזוקה
-- **פאנל עריכה של כלי העיצוב**: כמעט כל עמוד טוען `tweaks-panel.jsx` + `tweaks-app.jsx` יחד עם React+Babel מ-unpkg CDN
-  (`<script type="text/babel" ...>` לפני `</body>`). זה overlay עריכה של כלי העיצוב, **רדום** בדפדפן רגיל (מחכה להודעת
-  `__activate_edit_mode` מהכלי המארח) ואינו חלק מהאתר הסופי. מומלץ להסיר לפני העלאה לפרודקשן: למחוק את שני קבצי ה-jsx
-  ואת תגיות ה-`<script>` שטוענות React/Babel/tweaks מכל עמודי ה-HTML. (לא הוסר עדיין כדי לא לגעת ב-~31 קבצים ללא אישור.)
+- **כלי-העריכה של כלי-העיצוב הוסרו**: תגיות React/Babel מ-unpkg + `tweaks-panel.jsx` + `tweaks-app.jsx` + `<div id="tweaks-root">`
+  הוסרו מכל 31 עמודי ה-HTML, וקובצי ה-tooling היתומים (`tweaks-*.jsx`, `support.js` שהיה dc-runtime לא-מקושר) נמחקו.
+  האתר כולו Vanilla JS ללא תלות ב-React.
 - הנכסים הגולמיים של כלי העיצוב (`uploads/` — צילומי מסך, תמונות WhatsApp, דוחות `.docx`) **אינם** בפרויקט; הועברו ל-
   `C:\Users\zahci\Downloads\Car2Buy-uploads-backup`. הם לא היו מקושרים מאף עמוד.
 - קובצי ייצוא זמניים (`*-print-*.html`, `Canvas*.dc.html`, `.thumbnail`) הוסרו בייבוא.
