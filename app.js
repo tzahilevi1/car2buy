@@ -578,6 +578,22 @@
       document.title = `${a.title} · מגזין Car2Buy`;
       if (a.desc) { let m = document.querySelector('meta[name="description"]'); if (!m) { m = document.createElement('meta'); m.name = 'description'; document.head.appendChild(m); } m.content = a.desc; }
       try { window.C2B_setMeta && C2B_setMeta({ description: a.desc || a.excerpt, image: a.img, type: 'article' }); } catch (e) {}
+      try {
+        const old = document.getElementById('c2bArticleSchema'); if (old) old.remove();
+        const as = document.createElement('script');
+        as.type = 'application/ld+json'; as.id = 'c2bArticleSchema';
+        as.textContent = JSON.stringify({
+          "@context": "https://schema.org", "@type": "Article",
+          "headline": a.title,
+          "description": a.desc || a.excerpt || '',
+          "image": new URL(a.img, location.href).href,
+          "articleSection": a.cat || undefined,
+          "author": { "@type": "Organization", "name": "Car2Buy" },
+          "publisher": { "@type": "Organization", "name": "Car2Buy" },
+          "mainEntityOfPage": location.href
+        });
+        document.head.appendChild(as);
+      } catch (e) {}
       const more = ARTICLES.filter((x) => x.id !== a.id && x.cat === a.cat).concat(ARTICLES.filter((x) => x.id !== a.id && x.cat !== a.cat)).slice(0, 3);
       const words = a.body.map((b) => typeof b === 'string' ? b : (b.p || b.h2 || (b.ul ? b.ul.join(' ') : ''))).join(' ').replace(/<[^>]+>/g, ' ').split(/\s+/).length;
       const readMin = Math.max(3, Math.round(words / 220));

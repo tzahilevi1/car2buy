@@ -336,18 +336,36 @@
 
   // ===== SEO: JSON-LD structured data =====
   if (!document.getElementById('c2bSchema')) {
+    const BASE = new URL('.', location.href).href; // site root (handles the /car2buy/ subpath)
     const ld = {
       "@context": "https://schema.org",
-      "@type": "AutoDealer",
-      "name": "Car2Buy",
-      "description": "עסקאות מימון לרכב — מבחר רחב ממותגים מובילים, החזר חודשי מותאם אישית, טרייד-אין ושירות אישי.",
-      "url": location.origin,
-      "telephone": "+972-3-777-7777",
-      "email": "hello@car2buy.co.il",
-      "address": { "@type": "PostalAddress", "streetAddress": "רח׳ הרכב 12", "addressLocality": "תל אביב", "addressCountry": "IL" },
-      "openingHours": "Su-Th 09:00-19:00",
-      "areaServed": "IL",
-      "priceRange": "₪₪"
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": BASE + "#website",
+          "name": "Car2Buy",
+          "url": BASE,
+          "inLanguage": "he-IL",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": { "@type": "EntryPoint", "urlTemplate": BASE + "models.html?q={search_term_string}" },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "AutoDealer",
+          "@id": BASE + "#dealer",
+          "name": "Car2Buy",
+          "description": "עסקאות מימון לרכב — מבחר רחב ממותגים מובילים, החזר חודשי מותאם אישית, טרייד-אין ושירות אישי.",
+          "url": BASE,
+          "telephone": "+972-3-777-7777",
+          "email": "hello@car2buy.co.il",
+          "address": { "@type": "PostalAddress", "streetAddress": "רח׳ הרכב 12", "addressLocality": "תל אביב", "addressCountry": "IL" },
+          "openingHours": "Su-Th 09:00-19:00",
+          "areaServed": "IL",
+          "priceRange": "₪₪"
+        }
+      ]
     };
     const s = document.createElement('script');
     s.type = 'application/ld+json'; s.id = 'c2bSchema';
