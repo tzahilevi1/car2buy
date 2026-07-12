@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /thank-you.html
+
+Sitemap: https://tzahilevi1.github.io/car2buy/sitemap.xml

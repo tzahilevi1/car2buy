@@ -355,6 +355,50 @@
     document.head.appendChild(s);
   }
 
+  // ===== SEO: favicon, manifest, theme-color, canonical, Open Graph, Twitter =====
+  (function seoHead() {
+    const head = document.head;
+    if (!head.querySelector('link[rel="icon"]')) {
+      head.insertAdjacentHTML('beforeend',
+        '<link rel="icon" href="favicon.svg" type="image/svg+xml">' +
+        '<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">' +
+        '<link rel="icon" href="favicon-16.png" sizes="16x16" type="image/png">' +
+        '<link rel="apple-touch-icon" href="apple-touch-icon.png">' +
+        '<link rel="manifest" href="site.webmanifest">');
+    }
+    if (!head.querySelector('meta[name="theme-color"]')) {
+      head.insertAdjacentHTML('beforeend', '<meta name="theme-color" content="#F5691E">');
+    }
+    function meta(attr, key) {
+      let el = head.querySelector('meta[' + attr + '="' + key + '"]');
+      if (!el) { el = document.createElement('meta'); el.setAttribute(attr, key); head.appendChild(el); }
+      return el;
+    }
+    function link(rel) {
+      let el = head.querySelector('link[rel="' + rel + '"]');
+      if (!el) { el = document.createElement('link'); el.rel = rel; head.appendChild(el); }
+      return el;
+    }
+    const DEFAULT_DESC = 'ליסינג מימוני פרטי, מימון והשוואת רכבים — רכב חדש בקלות ובפשטות, בהחזר חודשי מותאם אישית. Car2Buy.';
+    // exposed so dynamic template pages (car/model/brand/article) can refresh meta after rendering an item
+    window.C2B_setMeta = function (opts) {
+      opts = opts || {};
+      if (opts.title) document.title = opts.title;
+      const title = opts.title || document.title;
+      const descEl = meta('name', 'description');
+      const desc = opts.description || descEl.getAttribute('content') || DEFAULT_DESC;
+      descEl.setAttribute('content', desc);
+      const canonical = location.origin + location.pathname + location.search;
+      link('canonical').setAttribute('href', canonical);
+      const image = new URL(opts.image || 'og-default.jpg', location.href).href;
+      const og = { 'og:site_name': 'Car2Buy', 'og:type': opts.type || 'website', 'og:title': title, 'og:description': desc, 'og:url': canonical, 'og:image': image, 'og:locale': 'he_IL' };
+      Object.keys(og).forEach((k) => meta('property', k).setAttribute('content', og[k]));
+      const tw = { 'twitter:card': 'summary_large_image', 'twitter:title': title, 'twitter:description': desc, 'twitter:image': image };
+      Object.keys(tw).forEach((k) => meta('name', k).setAttribute('content', tw[k]));
+    };
+    window.C2B_setMeta();
+  })();
+
   // ===== cookie consent (Consent Mode friendly) =====
   if (!localStorage.getItem('c2b_consent') && !document.getElementById('cookieBar')) {
     document.body.insertAdjacentHTML('beforeend',
