@@ -313,8 +313,9 @@
   function exportCsv(rows, name) {
     if (!rows.length) { alert('אין נתונים לייצוא'); return; }
     var cols = ['created_at', 'name', 'phone', 'email', 'car', 'source', 'message', 'page_url'];
+    function cell(v) { v = String(v == null ? '' : v); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; }
     var csv = cols.join(',') + '\n' + rows.map(function (r) {
-      return cols.map(function (c) { return '"' + String(r[c] == null ? '' : r[c]).replace(/"/g, '""') + '"'; }).join(',');
+      return cols.map(function (c) { return cell(r[c]); }).join(',');
     }).join('\n');
     var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     var a = document.createElement('a');
