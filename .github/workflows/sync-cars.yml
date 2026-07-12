@@ -1,0 +1,37 @@
+name: Sync cars from Google Sheet
+
+# Pulls the new-car inventory from the Google Sheet into cars.json and
+# commits it, so the live site updates automatically after Sheet edits.
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # every ~15 minutes (GitHub may delay under load)
+  workflow_dispatch: {}        # allow a manual "Run workflow" for an instant sync
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-cars
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Fetch sheet → cars.json
+        run: node scripts/sync-cars.mjs
+      - name: Commit if changed
+        run: |
+          if [[ -n "$(git status --porcelain cars.json)" ]]; then
+            git config user.name "car2buy-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add cars.json
+            git commit -m "chore: sync cars from Google Sheet [skip ci]"
+            git push
+          else
+            echo "cars.json unchanged"
+          fi
