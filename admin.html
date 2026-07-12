@@ -103,8 +103,7 @@
   /* ---------- drawer ---------- */
   #overlay{position:fixed;inset:0;background:rgba(10,12,16,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
   #overlay.open{opacity:1;pointer-events:auto}
-  #drawer{position:fixed;top:0;inset-inline-start:0;height:100vh;width:min(680px,94vw);background:var(--surface);box-shadow:var(--shadow);transform:translateX(-102%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:50;overflow-y:auto}
-  [dir="rtl"] #drawer{inset-inline-start:0;transform:translateX(-102%)}
+  #drawer{position:fixed;top:0;right:0;height:100vh;width:min(680px,94vw);background:var(--surface);box-shadow:var(--shadow);transform:translateX(102%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:50;overflow-y:auto}
   #drawer.open{transform:translateX(0)}
   .dw-head{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);padding:16px 20px;z-index:2}
   .dw-body{padding:18px 20px}
