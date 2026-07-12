@@ -34,7 +34,7 @@
     return sbInsert('appointments', {
       name: d.name || null, phone: d.phone || null, email: d.email || null,
       type: d.type || null, branch: d.branch || null, note: d.note || null,
-      appt_date: d.date || null, appt_time: d.time || null
+      appt_date: d.date || null, appt_time: d.time || null, appt_at: d.appt_at || null
     });
   };
 

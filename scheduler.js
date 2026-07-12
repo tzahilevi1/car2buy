@@ -149,6 +149,7 @@
       if (!name || !phone || !email) { err.textContent = 'מלאו שם, טלפון ואימייל.'; return; }
       err.textContent = '';
       const data = { name, phone, email, type: root.querySelector('#sType').value, branch: root.querySelector('#sBranch').value, note: root.querySelector('#sNote').value.trim(), date: fmtDate(selDate), time: selTime };
+      try { const _ap = new Date(selDate); const _t = String(selTime).split(':'); _ap.setHours(+_t[0] || 0, +_t[1] || 0, 0, 0); data.appt_at = _ap.toISOString(); } catch (e) {}
       if (window.c2bTrack) c2bTrack('meeting_scheduled', { date: data.date, time: data.time, type: data.type });
       if (window.submitLead) submitLead({ name: data.name, phone: data.phone, email: data.email, message: data.note, car: data.type, source: 'scheduler', meta: { branch: data.branch, date: data.date, time: data.time, type: data.type } });
       // persist the appointment (triggers the email-notification webhook server-side)
