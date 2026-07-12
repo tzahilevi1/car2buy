@@ -274,7 +274,7 @@
         <div class="car-actions">
           <a class="car-cta-main" href="car.html?car=${m.id}">כמה יעלה לי להפוך את זה למציאות?</a>
           <div class="car-act-row">
-            <a class="car-act wa" href="https://wa.me/97237777777?text=${waMsg}" target="_blank" rel="noopener" data-track="whatsapp_click"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.6 6L4 29l8.2-1.6c1.7.9 3.7 1.4 5.8 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3z" transform="scale(0.83)"></path></svg> וואטסאפ</a>
+            <a class="car-act wa" href="https://wa.me/972584700706?text=${waMsg}" target="_blank" rel="noopener" data-track="whatsapp_click"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.6 6L4 29l8.2-1.6c1.7.9 3.7 1.4 5.8 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3z" transform="scale(0.83)"></path></svg> וואטסאפ</a>
             <a class="car-act contact" href="contact.html?car=${encodeURIComponent(dispFull)}">יצירת קשר</a>
           </div>
         </div>

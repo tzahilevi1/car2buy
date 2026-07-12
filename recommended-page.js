@@ -56,7 +56,7 @@
   }
 
   var tradeBanner = '<div class="rc-banner"><div class="bt"><h3>רוצים להחליף את הרכב הישן?</h3><p>לקבלת הצעת מחיר בעסקת טרייד-אין</p></div><a class="btn btn-gold btn-lg" href="trade-in.html">התחילו כאן ←</a></div>';
-  var helpBanner = '<div class="rc-banner help"><div class="bt"><h3>לא מצאתם את הרכב המושלם?</h3><p>תמיד אפשר לבקש ייעוץ אישי</p></div><div class="rc-banner-btns"><a class="btn btn-gold btn-lg" href="https://wa.me/97237777777" target="_blank" rel="noopener">דברו איתנו בוואטסאפ</a><button type="button" class="btn btn-ghost btn-lg" data-open-appt style="color:#fff;border-color:rgba(255,255,255,.4);">קובעים פגישה בקליק</button></div></div>';
+  var helpBanner = '<div class="rc-banner help"><div class="bt"><h3>לא מצאתם את הרכב המושלם?</h3><p>תמיד אפשר לבקש ייעוץ אישי</p></div><div class="rc-banner-btns"><a class="btn btn-gold btn-lg" href="https://wa.me/972584700706" target="_blank" rel="noopener">דברו איתנו בוואטסאפ</a><button type="button" class="btn btn-ghost btn-lg" data-open-appt style="color:#fff;border-color:rgba(255,255,255,.4);">קובעים פגישה בקליק</button></div></div>';
 
   // build grid: cards with banners interspersed every ~6 cards
   var grid = document.getElementById('rcGrid');

@@ -6,8 +6,8 @@
    wire to a real backend/calendar API for production.)
    ============================================================ */
 (function () {
-  const ADVISOR_EMAIL = 'advisors@car2buy.co.il'; // second recipient
-  const BRANCHES = ['תל אביב — רח׳ הרכב 12', 'חיפה — שד׳ ההסתדרות 220'];
+  const ADVISOR_EMAIL = 'zahcilevi111@gmail.com'; // second recipient
+  const BRANCHES = ['נצרת — הר הקפיצה', 'ראשון לציון — פלוטיצקי 6'];
   const PREP = [
     'תעודת זהות + רישיון נהיגה בתוקף',
     'שלושת תלושי השכר האחרונים (או אישור רו״ח לעצמאים)',

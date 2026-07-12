@@ -69,7 +69,7 @@
     { t: 'עסקת טרייד אין דיגיטלית', href: 'trade-in.html', ic: '<path d="M4 17l5-5-5-5M20 7l-5 5 5 5"/>' },
     { t: 'קבלו הלוואה לרכב חדש', href: 'car-loan.html', ic: '<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>' },
     { t: 'בואו אלינו לפגישה', href: 'contact.html', on: true, ic: '<path d="M4 19h16M6 19V9l6-4 6 4v10M9 13h1M14 13h1"/>' },
-    { t: 'דברו איתנו בווטסאפ', href: 'https://wa.me/97237777777', on: true, ic: '<path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z"/>' },
+    { t: 'דברו איתנו בווטסאפ', href: 'https://wa.me/972584700706', on: true, ic: '<path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z"/>' },
     { t: 'השוואת סוגי רכבים', href: 'compare.html', ic: '<path d="M12 3v18M6 8l-3 6h6l-3-6ZM18 8l-3 6h6l-3-6Z"/>' },
     { t: 'המומלצים של קפיטל', href: 'models.html', ic: '<path d="m12 3 2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"/>' }
   ];
