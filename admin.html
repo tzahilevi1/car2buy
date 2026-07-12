@@ -71,6 +71,25 @@
   .icon-btn{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;width:38px;height:38px;font-size:16px;color:var(--txt);display:inline-flex;align-items:center;justify-content:center}
   .who{color:var(--muted);font-size:13px}
   .content{padding:22px;max-width:1240px;width:100%;margin:0 auto}
+  .bell-badge{position:absolute;top:-4px;inset-inline-start:-4px;background:var(--danger);color:#fff;font-size:10px;font-weight:800;min-width:16px;height:16px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+  .bell-menu{position:absolute;top:46px;inset-inline-start:0;width:330px;max-height:400px;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);z-index:40;padding:6px}
+  .bell-menu .bt{padding:10px 12px;border-radius:10px;display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+  .bell-menu .bt:hover{background:var(--surface-2)}
+  .bell-menu .bt .d{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:none}
+  .bell-menu .bt.over .d{background:var(--danger)}.bell-menu .bt.up .d{background:var(--ok)}
+  /* full lead page */
+  .lead-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .lead-nav{display:flex;gap:6px}
+  .lead-grid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.lead-grid{grid-template-columns:1fr}}
+  .stmenu{position:absolute;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:45;padding:6px;min-width:180px}
+  .stmenu .si{padding:8px 12px;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:600}
+  .stmenu .si:hover{background:var(--surface-2)}
+  .ac-box{position:relative}
+  .ac-res{position:absolute;top:42px;inset-inline-start:0;inset-inline-end:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:260px;overflow:auto;z-index:30}
+  .ac-res .ai{padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
+  .ac-res .ai:hover{background:var(--surface-2)}
+  .wa-ic{color:#25D366;font-size:18px}
 
   /* ---------- components ---------- */
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
@@ -161,6 +180,7 @@
       <div class="nav-item" data-nav="appointments"><span class="ic">📅</span> יומן פגישות</div>
       <div class="nav-item" data-nav="tasks"><span class="ic">✅</span> משימות <span class="badge" id="bTasks">0</span></div>
       <div class="nav-item" data-nav="analytics"><span class="ic">📊</span> אנליטיקס</div>
+      <div class="nav-item" data-nav="reports"><span class="ic">📈</span> דוחות</div>
       <div class="nav-group-label">בקרוב</div>
       <div class="nav-item" data-nav="soon:quotes"><span class="ic">📄</span> הצעות מחיר</div>
       <div class="nav-item" data-nav="soon:documents"><span class="ic">✍️</span> מסמכים והסכמים</div>
@@ -168,7 +188,6 @@
       <div class="nav-item" data-nav="soon:emails"><span class="ic">📧</span> מיילים</div>
       <div class="nav-item" data-nav="soon:sms"><span class="ic">📱</span> SMS</div>
       <div class="nav-item" data-nav="soon:automations"><span class="ic">🤖</span> אוטומציות</div>
-      <div class="nav-item" data-nav="soon:reports"><span class="ic">📈</span> דוחות</div>
       <div class="nav-item" data-nav="soon:sales"><span class="ic">👤</span> אנשי מכירות</div>
       <div class="nav-item" data-nav="soon:branches"><span class="ic">🏢</span> סניפים</div>
       <div class="nav-item" data-nav="soon:settings"><span class="ic">⚙️</span> הגדרות</div>
@@ -180,6 +199,10 @@
       <button class="burger" id="burger">☰</button>
       <div class="search"><span class="sic">🔎</span><input id="gsearch" placeholder="חיפוש ליד לפי שם / טלפון…" autocomplete="off"><div class="search-res hidden" id="gsres"></div></div>
       <div class="sp"></div>
+      <div style="position:relative">
+        <button class="icon-btn" id="bell" title="משימות">🔔<span id="bellBadge" class="bell-badge hidden">0</span></button>
+        <div id="bellMenu" class="bell-menu hidden"></div>
+      </div>
       <button class="icon-btn" id="themeToggle" title="מצב כהה/בהיר">🌙</button>
       <span class="who" id="whoami"></span>
       <button class="btn btn-ghost btn-sm" id="logout">יציאה</button>

@@ -44,6 +44,23 @@
   });
   $('burger').addEventListener('click', function () { $('side').classList.toggle('open'); });
 
+  // ---------- tasks bell ----------
+  function loadBell() {
+    db.from('tasks').select('id,title,due_at,done,lead_id').eq('done', false).order('due_at', { ascending: true }).then(function (r) {
+      var tasks = r.data || [], now = Date.now();
+      var over = tasks.filter(function (t) { return t.due_at && new Date(t.due_at).getTime() < now; });
+      var b = $('bellBadge');
+      if (tasks.length) { b.textContent = tasks.length; b.classList.remove('hidden'); b.style.background = over.length ? 'var(--danger)' : 'var(--ok)'; } else b.classList.add('hidden');
+      $('bellMenu').innerHTML = tasks.map(function (t) {
+        var isOver = t.due_at && new Date(t.due_at).getTime() < now;
+        return '<div class="bt ' + (isOver ? 'over' : 'up') + '"' + (t.lead_id ? ' data-lead="' + t.lead_id + '"' : '') + '><span class="d"></span><div style="flex:1"><div>' + esc(t.title) + '</div><div class="muted" style="font-size:12px">' + (t.due_at ? fmtDateTime(t.due_at) : 'ללא מועד') + '</div></div></div>';
+      }).join('') || '<div class="bt muted">אין משימות פתוחות 🎉</div>';
+      $('bellMenu').querySelectorAll('.bt[data-lead]').forEach(function (el) { el.addEventListener('click', function () { $('bellMenu').classList.add('hidden'); window.C2B_openLeadCard(el.dataset.lead); }); });
+    }).catch(function () {});
+  }
+  $('bell').addEventListener('click', function (e) { e.stopPropagation(); $('bellMenu').classList.toggle('hidden'); loadBell(); });
+  document.addEventListener('click', function (e) { if (!e.target.closest('#bell') && !e.target.closest('#bellMenu')) $('bellMenu').classList.add('hidden'); });
+
   // ---------- auth ----------
   function showLogin() { $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
   function showApp(session) { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('whoami').textContent = session.user.email; refreshBadges(); go('dashboard'); }
@@ -75,6 +92,7 @@
     if (nav === 'appointments') return renderAppointments();
     if (nav === 'tasks') return renderTasks();
     if (nav === 'analytics') return renderAnalytics();
+    if (nav === 'reports') return renderReports();
     if (nav.indexOf('soon:') === 0) return renderSoon(nav.slice(5));
     return window.C2B_renderDashboard && window.C2B_renderDashboard();
   }
@@ -86,6 +104,7 @@
   function refreshBadges() {
     db.from('leads').select('id', { count: 'exact', head: true }).then(function (r) { if (r.count != null) $('bLeads').textContent = r.count; });
     db.from('tasks').select('id', { count: 'exact', head: true }).eq('done', false).then(function (r) { if (r.count != null) $('bTasks').textContent = r.count; }).catch(function () {});
+    loadBell();
   }
 
   // ---------- global search ----------
@@ -169,6 +188,50 @@
         '<div class="card"><h3>עמודים מובילים</h3><div class="table-scroll"><table><tbody>' + (top.map(function (p) { return '<tr><td class="wrap">' + esc(p) + '</td><td>' + byPage[p] + '</td><td style="width:45%"><div class="bar"><span style="width:' + Math.round(byPage[p] / mx * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') + '</tbody></table></div></div>');
     });
   }
+
+  // ---------- REPORTS (marketing / sales / manager) ----------
+  function renderReports() {
+    loading();
+    Promise.all([
+      db.from('leads').select('status,source,created_at,first_response_at,assigned_to'),
+      db.from('appointments').select('status'),
+      db.from('events').select('type,session_id'),
+      db.from('tasks').select('done'),
+      db.from('profiles').select('user_id,full_name')
+    ]).then(function (res) {
+      var leads = res[0].data || [], appts = res[1].data || [], events = res[2].data || [], tasks = res[3].data || [];
+      var prof = {}; (res[4].data || []).forEach(function (p) { prof[p.user_id] = p.full_name; });
+      var ST = window.C2B_STATUSES || [];
+      var bdg = window.C2B_badge || function (k) { return k; };
+      var by = {}; ST.forEach(function (s) { by[s.k] = 0; });
+      leads.forEach(function (l) { by[l.status || 'new'] = (by[l.status || 'new'] || 0) + 1; });
+      var won = by.won || 0, lost = by.lost || 0, conv = (won + lost) ? Math.round(won / (won + lost) * 100) : 0;
+      var pv = events.filter(function (e) { return e.type === 'pageview'; }).length;
+      var sess = {}; events.forEach(function (e) { if (e.session_id) sess[e.session_id] = 1; });
+      var rts = leads.filter(function (l) { return l.first_response_at; }).map(function (l) { return (new Date(l.first_response_at) - new Date(l.created_at)) / 60000; });
+      var avgRt = rts.length ? Math.round(rts.reduce(function (a, b) { return a + b; }, 0) / rts.length) : 0;
+
+      // by source (with won)
+      var src = {}; leads.forEach(function (l) { var s = l.source || 'לא ידוע'; src[s] = src[s] || { t: 0, w: 0 }; src[s].t++; if (l.status === 'won') src[s].w++; });
+      var srcRows = Object.keys(src).sort(function (a, b) { return src[b].t - src[a].t; }).map(function (s) { var o = src[s]; return '<tr><td>' + esc(s) + '</td><td>' + o.t + '</td><td>' + o.w + '</td><td>' + (o.t ? Math.round(o.w / o.t * 100) : 0) + '%</td></tr>'; }).join('');
+      // by salesperson
+      var sp = {}; leads.forEach(function (l) { var n = prof[l.assigned_to] || 'לא שויך'; sp[n] = sp[n] || { t: 0, w: 0 }; sp[n].t++; if (l.status === 'won') sp[n].w++; });
+      var spRows = Object.keys(sp).map(function (n) { var o = sp[n]; return '<tr><td>' + esc(n) + '</td><td>' + o.t + '</td><td>' + o.w + '</td><td>' + (o.t ? Math.round(o.w / o.t * 100) : 0) + '%</td></tr>'; }).join('');
+
+      var panels = {
+        marketing: '<div class="cards">' + stat('סה"כ לידים', leads.length, true) + stat('צפיות באתר', pv) + stat('מבקרים', Object.keys(sess).length) + stat('פגישות', appts.length) + '</div>' +
+          '<div class="card"><h3>לידים והמרה לפי מקור</h3><div class="table-scroll"><table><thead><tr><th>מקור</th><th>לידים</th><th>עסקאות</th><th>המרה</th></tr></thead><tbody>' + (srcRows || '<tr><td class="empty">אין נתונים</td></tr>') + '</tbody></table></div></div>',
+        sales: '<div class="cards">' + stat('עסקאות שנסגרו', won, true) + stat('אבודות', lost) + stat('אחוז סגירה', conv + '%') + stat('זמן תגובה ממוצע', avgRt ? avgRt + ' דק\'' : '—') + '</div>' +
+          '<div class="card"><h3>משפך מכירות (לפי סטטוס)</h3><div class="table-scroll"><table><tbody>' + ST.map(function (s) { var pct = leads.length ? Math.round((by[s.k] || 0) / leads.length * 100) : 0; return '<tr><td>' + bdg(s.k) + '</td><td>' + (by[s.k] || 0) + '</td><td style="width:45%"><div class="bar"><span style="width:' + pct + '%;background:' + s.color + '"></span></div></td></tr>'; }).join('') + '</tbody></table></div></div>',
+        manager: '<div class="cards">' + stat('סה"כ לידים', leads.length) + stat('עסקאות', won) + stat('בצנרת (פעילים)', (by.in_progress || 0) + (by.meeting_set || 0) + (by.quote_sent || 0) + (by.underwriting || 0), true) + stat('משימות פתוחות', tasks.filter(function (t) { return !t.done; }).length) + stat('אחוז סגירה', conv + '%') + '</div>' +
+          '<div class="card"><h3>ביצועי אנשי מכירות</h3><div class="table-scroll"><table><thead><tr><th>איש מכירות</th><th>לידים</th><th>עסקאות</th><th>המרה</th></tr></thead><tbody>' + (spRows || '<tr><td class="empty">אין נתונים</td></tr>') + '</tbody></table></div></div>'
+      };
+      function tab(k, label) { return '<button data-rep="' + k + '"' + (repTab === k ? ' class="active"' : '') + '>' + label + '</button>'; }
+      view('<nav class="tabs" id="repTabs">' + tab('marketing', '📣 שיווק') + tab('sales', '💼 מכירות') + tab('manager', '👔 מנהל') + '</nav><div id="repPanel">' + panels[repTab] + '</div>');
+      $('repTabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-rep]'); if (!b) return; repTab = b.dataset.rep; $('repTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x.dataset.rep === repTab); }); $('repPanel').innerHTML = panels[repTab]; });
+    }).catch(function (e) { errBox(e.message || e); });
+  }
+  var repTab = 'marketing';
 
   // ---------- SOON placeholders ----------
   var SOON = {
