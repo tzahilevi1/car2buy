@@ -214,48 +214,31 @@
     });
   }
 
-  // ---------- CARS ----------
-  var carFilter = 'all';
+  // ---------- CARS (read-only; new cars are managed in the Google Sheet → cars.json) ----------
+  var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LiK--j3BCPnHO4rZQj7N2RetdnExEmwimWTwn7kmWe8/edit';
+  function carRowsHtml(list) {
+    return list.map(function (c) {
+      return '<tr><td>' + (c.img ? '<img src="' + esc(c.img) + '" style="width:54px;height:36px;object-fit:cover;border-radius:6px" onerror="this.style.display=\'none\'">' : '') +
+        '</td><td>' + esc(c.brand) + '</td><td>' + esc(c.name) + '</td><td class="muted">' + esc(c.trim) + '</td><td>' + nis(c.m) + '</td><td>' + nis(c.p) + '</td></tr>';
+    }).join('');
+  }
   function renderCars() {
-    db.from('cars').select('*').order('condition', { ascending: true }).order('sort_order', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false }).then(function (r) {
-      if (r.error) return errBox(r.error.message);
-      var all = r.data || [];
-      var cnt = { all: all.length, new: 0, used: 0 };
-      all.forEach(function (c) { (c.condition === 'used') ? cnt.used++ : cnt.new++; });
-      var cars = carFilter === 'all' ? all : all.filter(function (c) { return (c.condition || 'new') === carFilter; });
-      var rows = cars.map(function (c) {
-        var cond = c.condition === 'used' ? '<span class="tag">יד 2</span>' : '<span class="tag handled">חדש</span>';
-        var extra = c.extra || {};
-        var sub = c.condition === 'used' ? (esc(c.year) + ' · ' + (extra.km ? Number(extra.km).toLocaleString('en-US') + ' ק״מ' : '') + (extra.hand ? ' · יד ' + esc(extra.hand) : '')) : esc(c.trim);
-        return '<tr><td>' + (c.img ? '<img src="' + esc(c.img) + '" style="width:54px;height:36px;object-fit:cover;border-radius:6px">' : '') +
-          '</td><td>' + cond + '</td><td>' + esc(c.brand) + '</td><td>' + esc(c.name) + '</td><td class="muted">' + sub + '</td><td>' + nis(c.monthly) +
-          '</td><td>' + nis(c.price) + '</td><td>' + (c.active ? '<span class="tag handled">פעיל</span>' : '<span class="tag">מוסתר</span>') +
-          '</td><td><button class="btn btn-ghost btn-sm" data-edit="' + c.id + '">עריכה</button> ' +
-          '<button class="btn btn-ghost btn-sm" data-del="' + c.id + '" style="border-color:var(--danger);color:var(--danger)">מחיקה</button></td></tr>';
-      }).join('');
-      function tabBtn(v, label) { return '<button data-cf="' + v + '"' + (carFilter === v ? ' class="active"' : '') + '>' + label + '</button>'; }
+    fetch('cars.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (cars) {
+      cars = cars || [];
       view(
-        '<div class="card"><div class="row-between"><h3>ניהול רכבים</h3><button class="btn btn-sm" id="carAdd">+ הוספת רכב</button></div>' +
-        '<nav class="tabs" id="carTabs" style="margin-bottom:14px">' + tabBtn('all', 'הכל (' + cnt.all + ')') + tabBtn('new', 'חדשים (' + cnt.new + ')') + tabBtn('used', 'יד 2 (' + cnt.used + ')') + '</nav>' +
-        '<div class="table-scroll"><table><thead><tr><th>תמונה</th><th>סוג</th><th>מותג</th><th>דגם</th><th>פרטים</th><th>החזר</th><th>מחיר</th><th>סטטוס</th><th></th></tr></thead><tbody>' +
-        (rows || '<tr><td colspan="9" class="muted">אין רכבים בקבוצה זו.</td></tr>') + '</tbody></table></div></div>' +
-        '<div id="carFormWrap"></div>'
+        '<div class="card"><div class="row-between"><h3>רכבים חדשים (' + cars.length + ')</h3>' +
+        '<div><input class="inp" id="carQ" placeholder="חיפוש מותג/דגם" style="width:200px"> ' +
+        '<a class="btn btn-sm" href="' + SHEET_URL + '" target="_blank" rel="noopener">✎ פתח את הגיליון</a></div></div>' +
+        '<p class="muted" style="font-size:13px">הרכבים מנוהלים ב-Google Sheet ומתעדכנים באתר אוטומטית (~15 דק\'). להוספה / עריכה / מחיקה — ערוך את הגיליון.</p>' +
+        '<div class="table-scroll"><table><thead><tr><th>תמונה</th><th>מותג</th><th>דגם</th><th>גרסה</th><th>החזר</th><th>מחיר</th></tr></thead>' +
+        '<tbody id="carRows">' + (carRowsHtml(cars) || '<tr><td colspan="6" class="muted">אין רכבים ב-cars.json עדיין</td></tr>') + '</tbody></table></div></div>'
       );
-      $('carTabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-cf]'); if (b) { carFilter = b.dataset.cf; renderCars(); } });
-      $('carAdd').addEventListener('click', function () { carForm(null); });
-      $('view').querySelectorAll('button[data-edit]').forEach(function (b) {
-        b.addEventListener('click', function () { carForm(all.filter(function (c) { return c.id === b.dataset.edit; })[0]); });
+      $('carQ').addEventListener('input', function () {
+        var q = this.value.trim().toLowerCase();
+        var f = cars.filter(function (c) { return ((c.brand || '') + ' ' + (c.name || '')).toLowerCase().indexOf(q) >= 0; });
+        $('carRows').innerHTML = carRowsHtml(f) || '<tr><td colspan="6" class="muted">אין תואמים</td></tr>';
       });
-      $('view').querySelectorAll('button[data-del]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          if (!confirm('למחוק את הרכב?')) return;
-          db.from('cars').delete().eq('id', b.dataset.del).then(function (d) {
-            if (d.error) return alert('שגיאה: ' + d.error.message);
-            renderCars();
-          });
-        });
-      });
-    });
+    }).catch(function (e) { errBox(e.message || e); });
   }
   function carForm(car) {
     car = car || {};
