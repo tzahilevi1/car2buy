@@ -88,6 +88,7 @@
     var ok = true;
     [].slice.call(f.querySelectorAll('input[required]')).forEach(function (inp) { if (!inp.value.trim()) ok = false; });
     if (!ok) return;
+    if (window.submitLead) submitLead(window.collectForm ? collectForm(f, { source: 'trade_in' }) : { source: 'trade_in' });
     var c = f.parentNode.querySelector('.tp-consent'); if (c) c.style.display = 'none';
     f.outerHTML = '<div class="tp-form-done">תודה! נציג יחזור אליכם בהקדם ✓</div>';
   });

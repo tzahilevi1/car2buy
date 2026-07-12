@@ -494,9 +494,9 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { infoPop.classList.remove('open'); if (tiPop) { tiPop.classList.remove('open'); tiPop.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; } } });
 
   var sf = document.getElementById('sideForm');
-  if (sf) sf.addEventListener('submit', function (e) { e.preventDefault(); sf.style.display = 'none'; document.getElementById('sideThanks').style.display = 'block'; });
+  if (sf) sf.addEventListener('submit', function (e) { e.preventDefault(); if (window.submitLead) submitLead(window.collectForm ? collectForm(sf, { source: 'brand_article_side' }) : { source: 'brand_article_side' }); sf.style.display = 'none'; document.getElementById('sideThanks').style.display = 'block'; });
   var inf = document.getElementById('infoForm');
-  if (inf) inf.addEventListener('submit', function (e) { e.preventDefault(); inf.innerHTML = '<p style="text-align:center;color:#1f8a4c;font-weight:700;padding:10px 0;">תודה! ניצור קשר בהקדם ✓</p>'; });
+  if (inf) inf.addEventListener('submit', function (e) { e.preventDefault(); if (window.submitLead) submitLead(window.collectForm ? collectForm(inf, { source: 'brand_article_info' }) : { source: 'brand_article_info' }); inf.innerHTML = '<p style="text-align:center;color:#1f8a4c;font-weight:700;padding:10px 0;">תודה! ניצור קשר בהקדם ✓</p>'; });
 
   // ---- Google reviews popup ----
   (function () {

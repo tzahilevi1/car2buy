@@ -1513,6 +1513,7 @@
           if (inp.type === 'checkbox' ? !inp.checked : !inp.value.trim()) { ok = false; }
         });
         if (!ok) return;
+        if (window.submitLead) submitLead(window.collectForm ? collectForm(f, { source: id, car: (typeof fullName !== 'undefined' ? fullName : undefined) }) : { source: id });
         f.parentNode.querySelector('.uc-consent') && (f.parentNode.querySelector('.uc-consent').style.display = 'none');
         f.outerHTML = '<div class="uc-cform-done">תודה! נציג יחזור אליכם בהקדם ✓</div>';
       });
@@ -1604,6 +1605,7 @@
       var n = document.getElementById('idleName'), p = document.getElementById('idlePhone'), ok = true;
       [n, p].forEach(function (f) { if (!f.value.trim()) { f.style.borderColor = '#e25555'; ok = false; } else f.style.borderColor = ''; });
       if (!ok) return;
+      if (window.submitLead) submitLead({ name: n.value.trim(), phone: p.value.trim(), car: fullName, source: 'usedcar_idle_popup' });
       document.getElementById('idleForm').hidden = true;
       document.getElementById('idleDone').hidden = false;
       if (window.c2bTrack) window.c2bTrack('idle_lead', { car: fullName });

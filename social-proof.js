@@ -98,6 +98,7 @@
     const err = el.querySelector('#exitErr');
     if (!name.value.trim() || !phone.value.trim()) { err.textContent = 'מלאו שם וטלפון.'; return; }
     err.textContent = '';
+    if (window.submitLead) submitLead({ name: name.value.trim(), phone: phone.value.trim(), source: 'exit_popup' });
     if (window.c2bTrack) c2bTrack('lead_submit', { source: 'exit_popup' });
     modal.querySelector('.exit-grid').style.display = 'none';
     el.querySelector('#exitSuccess').classList.add('show');

@@ -118,6 +118,7 @@
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = 'var(--gold-deep)'; ok = false; } else f.style.borderColor = ''; });
       if (consent && !consent.checked) { consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
       if (!ok) return;
+      if (window.submitLead) submitLead(window.collectForm ? collectForm(form, { source: 'contact' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'contact' });
       if (window.c2bTrack) c2bTrack('lead_form_submit', { car: (carSelect && carSelect.value) || '' });
       form.style.display = 'none';
       if (success) success.classList.add('show');
@@ -506,7 +507,7 @@
 
     // newsletter
     const news = document.getElementById('magNews');
-    if (news) news.addEventListener('submit', (e) => { e.preventDefault(); news.querySelector('input').style.display = 'none'; news.querySelector('button').style.display = 'none'; const ok = document.getElementById('magNewsOk'); if (ok) ok.classList.add('show'); });
+    if (news) news.addEventListener('submit', (e) => { e.preventDefault(); const em = news.querySelector('input'); if (window.submitLead && em && em.value.trim()) submitLead({ email: em.value.trim(), source: 'newsletter_magazine' }); news.querySelector('input').style.display = 'none'; news.querySelector('button').style.display = 'none'; const ok = document.getElementById('magNewsOk'); if (ok) ok.classList.add('show'); });
   }
 
   /* ---------- press strip ---------- */
@@ -683,6 +684,7 @@
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = 'var(--gold-deep)'; ok = false; } else f.style.borderColor = ''; });
       if (consent && !consent.checked) { consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
       if (!ok) return;
+      if (window.submitLead) submitLead(window.collectForm ? collectForm(quickForm, { source: 'home_quick' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'home_quick' });
       quickForm.classList.add('sent');
       const s = document.getElementById('qcSuccess');
       if (s) s.classList.add('show');

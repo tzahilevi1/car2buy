@@ -17,6 +17,13 @@
   ];
   const active = document.body.dataset.page || 'home';
 
+  // load Supabase lead-capture helper (defines window.submitLead) on every page
+  if (!window.submitLead && !document.getElementById('c2bSupabase')) {
+    const sb = document.createElement('script');
+    sb.src = 'supabase.js'; sb.id = 'c2bSupabase';
+    document.head.appendChild(sb);
+  }
+
   const PRICE_RANGES = [
     { label: 'עד ₪3,000 בחודש', max: 3000 },
     { label: 'עד ₪4,000 בחודש', max: 4000 },
