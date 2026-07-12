@@ -17,3 +17,8 @@ dist/
 
 # Logs
 *.log
+
+# Secrets — NEVER commit (הסודות נשארים מקומיים בלבד)
+.env
+.env.*
+!.env.example
