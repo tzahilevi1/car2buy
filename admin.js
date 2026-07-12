@@ -29,6 +29,14 @@
   function loading() { view('<div class="loading">טוען…</div>'); }
   function errBox(msg) { view('<div class="card"><p class="err">שגיאה: ' + esc(msg) + '</p></div>'); }
 
+  // shared context so admin-crm.js can reuse the client + helpers + navigation
+  window.C2B = {
+    db: db, $: $, esc: esc, fmt: fmtDateTime, nis: nis,
+    view: view, loading: loading, errBox: errBox,
+    stat: function () { return stat.apply(null, arguments); },
+    route: function (t) { return route(t); }
+  };
+
   // ---------- auth ----------
   function showLogin() { $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
   function showApp(session) {
@@ -50,7 +58,11 @@
   $('logout').addEventListener('click', function () { db.auth.signOut().then(showLogin); });
 
   // ---------- routing ----------
-  var TABS = { overview: renderOverview, leads: renderLeads, appointments: renderAppointments, analytics: renderAnalytics, cars: renderCars };
+  var TABS = {
+    overview: function () { (window.C2B_renderDashboard || renderOverview)(); },
+    leads: function () { (window.C2B_renderLeads || renderLeads)(); },
+    appointments: renderAppointments, analytics: renderAnalytics, cars: renderCars
+  };
   function route(tab) {
     var btns = $('tabs').querySelectorAll('button');
     for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', btns[i].dataset.tab === tab);
