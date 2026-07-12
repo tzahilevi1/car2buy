@@ -151,8 +151,8 @@
       const data = { name, phone, email, type: root.querySelector('#sType').value, branch: root.querySelector('#sBranch').value, note: root.querySelector('#sNote').value.trim(), date: fmtDate(selDate), time: selTime };
       if (window.c2bTrack) c2bTrack('meeting_scheduled', { date: data.date, time: data.time, type: data.type });
       if (window.submitLead) submitLead({ name: data.name, phone: data.phone, email: data.email, message: data.note, car: data.type, source: 'scheduler', meta: { branch: data.branch, date: data.date, time: data.time, type: data.type } });
-      // simulate email dispatch to client + advisor
-      try { console.info('[Car2Buy] meeting confirmation →', data.email, '+', ADVISOR_EMAIL, data); } catch (e) {}
+      // persist the appointment (triggers the email-notification webhook server-side)
+      if (window.submitAppointment) submitAppointment(data);
       renderSuccess(data);
     });
   }

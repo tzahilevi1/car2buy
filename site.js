@@ -23,6 +23,12 @@
     sb.src = 'supabase.js'; sb.id = 'c2bSupabase';
     document.head.appendChild(sb);
   }
+  // load first-party analytics tracker
+  if (!document.getElementById('c2bAnalytics')) {
+    const an = document.createElement('script');
+    an.src = 'analytics.js'; an.id = 'c2bAnalytics'; an.async = true;
+    document.head.appendChild(an);
+  }
 
   const PRICE_RANGES = [
     { label: 'עד ₪3,000 בחודש', max: 3000 },

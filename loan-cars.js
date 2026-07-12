@@ -158,7 +158,7 @@
   // ---- expose the REAL inventory as the site-wide MODELS (replaces demo cars) ----
   // so every surface (homepage featured, compare, AI concierge, carousels) uses
   // only the cars we actually stock — never invented ones.
-  (function () {
+  window.Car2Buy.rebuildModels = function () {
     function fuelOf(c) {
       var t = (c.name || '') + ' ' + (c.trim || '');
       if (/חשמלי|\bEV\b/i.test(t)) return 'חשמלי';
@@ -173,7 +173,7 @@
       return 'suv';
     }
     var CAT_TYPE = { ev: 'חשמלי', suv: 'רכב פנאי', sedan: 'סדאן', sport: 'ספורט' };
-    var models = C.map(function (c) {
+    var models = window.Car2Buy.LOAN_CARS.map(function (c) {
       var fuel = fuelOf(c), cat = catOf(c), price = c.p || 0;
       var power = Math.max(95, Math.min(340, Math.round(95 + price / 2200)));
       var accel = Math.max(6, Math.min(13, +(13 - power / 42).toFixed(1)));
@@ -189,5 +189,6 @@
     window.Car2Buy.MODELS = models;
     window.Car2Buy.BRANDS = models.map(function (m) { return m.brand; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
     window.Car2Buy.FUELS = models.map(function (m) { return m.fuel; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
-  })();
+  };
+  window.Car2Buy.rebuildModels();
 })();

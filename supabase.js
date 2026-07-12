@@ -8,6 +8,36 @@
   var SUPABASE_URL = 'https://tdxhqpauuqawcoivjnnm.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkeGhxcGF1dXFhd2NvaXZqbm5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NTE4MjgsImV4cCI6MjA5OTQyNzgyOH0.bKtres24IyE4IjyZ4h9y9Wtyhgacqw37ya5s9vNDltI';
 
+  // shared low-level POST helper for a Supabase table (anon, insert-only tables)
+  function sbInsert(table, body) {
+    return fetch(SUPABASE_URL + '/rest/v1/' + table, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      if (!res.ok) { return res.text().then(function (t) { console.warn('[Car2Buy] ' + table + ' insert failed', res.status, t); return false; }); }
+      return true;
+    }).catch(function (e) { console.warn('[Car2Buy] ' + table + ' insert error', e); return false; });
+  }
+
+  /**
+   * Save a scheduled appointment. Fires the email-notification webhook.
+   * @param {{name,phone,email,type,branch,note,date,time}} d
+   */
+  window.submitAppointment = function (d) {
+    d = d || {};
+    return sbInsert('appointments', {
+      name: d.name || null, phone: d.phone || null, email: d.email || null,
+      type: d.type || null, branch: d.branch || null, note: d.note || null,
+      appt_date: d.date || null, appt_time: d.time || null
+    });
+  };
+
   /**
    * Scan a <form> and normalise its fields into a lead payload.
    * Classifies by input type + name/id keywords (Hebrew & English).

@@ -127,8 +127,9 @@
   }
 
   /* ---------- models gallery render + sidebar filter ---------- */
-  const grid = document.getElementById('modelGrid');
-  if (grid && window.Car2Buy) {
+  function renderCatalog() {
+    const grid = document.getElementById('modelGrid');
+    if (!(grid && window.Car2Buy)) return;
     const { MODELS, CATS, BRANDS, FUELS, card, NIS } = window.Car2Buy;
 
     // real marketed inventory (from the ops sheet) — appended after demo models
@@ -327,6 +328,9 @@
       });
     }
   }
+  // render now, or wait for DB-sourced cars to merge first (db-cars.js)
+  if (window.Car2Buy && window.Car2Buy.carsLoading) document.addEventListener('c2b:cars-updated', renderCatalog, { once: true });
+  else renderCatalog();
 
   /* ---------- featured models strip (home) ---------- */
   const feat = document.getElementById('featuredGrid');
