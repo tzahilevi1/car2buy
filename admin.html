@@ -150,6 +150,11 @@
   .lead-fields .lf{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
   .lead-fields .lf .k{color:var(--muted);flex:none}
   .lead-fields .lf .v{text-align:left;word-break:break-word}
+  /* inline-editable field (no edit button — click and type) */
+  .lead-fields .lf .lf-edit{border:1px solid transparent;background:transparent;color:var(--txt);font-size:13.5px;text-align:left;padding:3px 7px;border-radius:7px;min-width:120px;max-width:62%;font-family:inherit;transition:background .1s,border-color .1s;cursor:text}
+  .lead-fields .lf select.lf-edit{cursor:pointer}
+  .lead-fields .lf .lf-edit:hover{border-color:var(--line);background:var(--surface-2)}
+  .lead-fields .lf .lf-edit:focus{outline:none;border-color:var(--brand);background:var(--surface)}
 
   /* prettier file-manager stage pills */
   .stage-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:700;border:1.5px solid transparent;line-height:1}
