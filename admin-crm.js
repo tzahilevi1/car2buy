@@ -634,6 +634,7 @@
     C.$('lpForm').innerHTML = '<div class="card" style="box-shadow:none;margin:6px 0 0;border:1px solid var(--line)"><h3>קביעת פגישה</h3><form id="mForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">' +
       '<div class="field" style="margin:0"><label>תאריך</label><input class="inp" type="date" name="date" required></div>' +
       '<div class="field" style="margin:0"><label>שעה</label><input class="inp" type="time" name="time" required></div>' +
+      '<div class="field" style="margin:0"><label>אופן</label><select class="inp" name="mode"><option>פרונטלי</option><option>טלפוני</option><option>וידאו</option><option>בסניף</option></select></div>' +
       '<button class="btn btn-sm">קבע ושלח אישור</button><button type="button" class="btn btn-ghost btn-sm" id="mCancel">ביטול</button></form></div>';
     C.$('mCancel').addEventListener('click', function () { C.$('lpForm').innerHTML = ''; });
     C.$('mForm').addEventListener('submit', function (e) {
@@ -641,7 +642,7 @@
       var d = this.date.value, t = this.time.value; if (!d || !t) return;
       var appt_at = new Date(d + 'T' + t).toISOString();
       var disp = new Date(d + 'T' + t).toLocaleDateString('he-IL');
-      db.from('appointments').insert({ lead_id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, type: lead.car || 'פגישה', branch: '', note: '', appt_date: disp, appt_time: t, appt_at: appt_at, status: 'new' }).then(function (r) {
+      db.from('appointments').insert({ lead_id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, type: lead.car || 'פגישה', brand: lead.brand || null, appt_mode: this.mode.value, branch: '', note: '', appt_date: disp, appt_time: t, appt_at: appt_at, status: 'new' }).then(function (r) {
         if (r.error) return alert('שגיאה: ' + r.error.message);
         logActivity(lead.id, 'meeting', 'נקבעה פגישה: ' + disp + ' ' + t);
         changeStatus(lead.id, 'meeting_set', lead, function () { window.C2B_openLeadCard(lead.id); });

@@ -313,19 +313,29 @@
       var past = appts.filter(function (a) { return a.status === 'handled' || whenMs(a) < now; });
       var list = apptFilter === 'upcoming' ? upcoming : apptFilter === 'past' ? past : appts;
       function tab(k, label, n) { return '<button data-af="' + k + '"' + (apptFilter === k ? ' class="active"' : '') + '>' + label + ' (' + n + ')</button>'; }
+      var MODES = ['פרונטלי', 'טלפוני', 'וידאו', 'בסניף'];
+      var brandOpts = ((window.C2B.lists && window.C2B.lists.brand) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+      function dtLocal(a) { var t = a.appt_at ? new Date(a.appt_at) : null; if (!t || isNaN(t)) return ''; var p = function (n) { return ('0' + n).slice(-2); }; return t.getFullYear() + '-' + p(t.getMonth() + 1) + '-' + p(t.getDate()) + 'T' + p(t.getHours()) + ':' + p(t.getMinutes()); }
       var rows = list.map(function (a) {
         var handled = a.status === 'handled', lid = leadOf(a), soon = !handled && whenMs(a) >= now;
-        var when = a.appt_at ? fmtDateTime(a.appt_at) : ((esc(a.appt_date) || '') + ' ' + (esc(a.appt_time) || ''));
-        return '<tr' + (handled ? ' style="background:rgba(22,163,74,.06)"' : '') + (lid ? ' data-lead="' + lid + '" title="פתח כרטיס לקוח"' : '') + ' style="' + (lid ? 'cursor:pointer;' : '') + (handled ? 'background:rgba(22,163,74,.06)' : '') + '">' +
+        return '<tr' + (lid ? ' data-lead="' + lid + '" title="פתח כרטיס לקוח"' : '') + ' style="' + (lid ? 'cursor:pointer;' : '') + (handled ? 'background:rgba(22,163,74,.06)' : '') + '">' +
           '<td>' + (handled ? '<span class="done-badge">✓ בוצעה</span>' : soon ? '<span class="task-open">● עתידית</span>' : '<span class="tag">חדשה</span>') + '</td>' +
           '<td><b>' + esc(a.name) + '</b>' + (lid ? ' <span class="muted" style="font-size:11px">→ לכרטיס</span>' : '') + '</td>' +
-          '<td>' + esc(a.phone) + '</td><td>' + when + '</td><td>' + esc(a.type || a.branch || '') + '</td>' +
+          '<td>' + esc(a.phone) + '</td>' +
+          '<td><input type="datetime-local" class="inp" data-appt-when="' + a.id + '" value="' + dtLocal(a) + '" onclick="event.stopPropagation()" style="font-size:12.5px"></td>' +
+          '<td><select class="inp" data-appt-mode="' + a.id + '" onclick="event.stopPropagation()" style="width:auto;font-size:12.5px"><option value="">אופן…</option>' + MODES.map(function (m) { return '<option' + (a.appt_mode === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select></td>' +
+          '<td><input class="inp" data-appt-brand="' + a.id + '" list="apBrand" value="' + esc(a.brand || '') + '" placeholder="מותג" onclick="event.stopPropagation()" style="width:110px;font-size:12.5px"></td>' +
+          '<td>' + esc(a.type || '') + '</td>' +
           '<td><button class="btn btn-sm ' + (handled ? 'btn-ghost' : '') + '" data-appt="' + a.id + '" data-to="' + (handled ? 'new' : 'handled') + '" onclick="event.stopPropagation()">' + (handled ? 'החזר' : 'סמן כבוצעה') + '</button></td></tr>';
       }).join('');
       view('<div class="card"><h3>📅 יומן פגישות</h3><nav class="tabs" id="apptTabs" style="margin-bottom:12px;flex-wrap:wrap">' + tab('all', 'הכל', appts.length) + tab('upcoming', 'עתידיות', upcoming.length) + tab('past', 'בוצעו / עברו', past.length) + '</nav>' +
-        '<div class="table-scroll"><table><thead><tr><th>סטטוס</th><th>שם</th><th>טלפון</th><th>מועד</th><th>עניין/סניף</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="6" class="empty">אין פגישות</td></tr>') + '</tbody></table></div></div>');
+        '<datalist id="apBrand">' + brandOpts + '</datalist>' +
+        '<div class="table-scroll"><table><thead><tr><th>סטטוס</th><th>שם</th><th>טלפון</th><th>מועד (ניתן לשינוי)</th><th>אופן</th><th>מותג</th><th>עניין</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="empty">אין פגישות</td></tr>') + '</tbody></table></div></div>');
       $('apptTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-af]'); if (b) { apptFilter = b.dataset.af; renderAppointments(); } });
       $('view').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openLeadCard(tr.dataset.lead); }); });
+      $('view').querySelectorAll('[data-appt-when]').forEach(function (inp) { inp.addEventListener('change', function () { var v = inp.value ? new Date(inp.value) : null; var patch = { appt_at: v ? v.toISOString() : null }; if (v) { patch.appt_date = v.toLocaleDateString('he-IL'); patch.appt_time = ('0' + v.getHours()).slice(-2) + ':' + ('0' + v.getMinutes()).slice(-2); } db.from('appointments').update(patch).eq('id', inp.dataset.apptWhen).then(renderAppointments); }); });
+      $('view').querySelectorAll('[data-appt-mode]').forEach(function (s) { s.addEventListener('change', function () { db.from('appointments').update({ appt_mode: s.value || null }).eq('id', s.dataset.apptMode); }); });
+      $('view').querySelectorAll('[data-appt-brand]').forEach(function (inp) { inp.addEventListener('change', function () { db.from('appointments').update({ brand: inp.value.trim() || null }).eq('id', inp.dataset.apptBrand); }); });
       $('view').querySelectorAll('button[data-appt]').forEach(function (b) { b.addEventListener('click', function () { db.from('appointments').update({ status: b.dataset.to }).eq('id', b.dataset.appt).then(renderAppointments); }); });
     });
   }
