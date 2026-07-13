@@ -125,6 +125,23 @@
   }
 
   // ---------- FULL LEAD PAGE ----------
+  // ---- consolidated, role-tailored action set (all actions in ONE bar) ----
+  var LEAD_ACTIONS = [
+    { k: 'call', icon: '📞', label: 'התקשר', roles: ['admin', 'sales', 'files'] },
+    { k: 'wa', icon: '💬', label: 'WhatsApp', roles: ['admin', 'sales', 'files'] },
+    { k: 'mail', icon: '📧', label: 'מייל', roles: ['admin', 'sales', 'files', 'accounting'] },
+    { k: 'note', icon: '📝', label: 'הערה', roles: ['admin', 'sales', 'files', 'accounting'] },
+    { k: 'call_log', icon: '📒', label: 'תיעוד שיחה', roles: ['admin', 'sales', 'files'] },
+    { k: 'task', icon: '✅', label: 'משימה', roles: ['admin', 'sales', 'files', 'accounting'] },
+    { k: 'doc', icon: '📎', label: 'מסמך', roles: ['admin', 'sales', 'files', 'accounting'] },
+    { k: 'meeting', icon: '📅', label: 'קבע פגישה', roles: ['admin', 'sales', 'files'] },
+    { k: 'car', icon: '🚗', label: 'בחר רכב', roles: ['admin', 'sales'] },
+    { k: 'deal', icon: '💰', label: 'סגירת עסקה', roles: ['admin', 'sales', 'files'] },
+    { k: 'contract', icon: '✍', label: 'הסכם', roles: ['admin', 'sales', 'files'] }
+  ];
+  function roleShort(role) { return { sales: 'מכירות', files: 'תיקי לקוחות', accounting: 'הנה״ח' }[role] || ''; }
+  function docIsImage(name) { return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name || ''); }
+
   window.C2B_openLeadCard = function (id) {
     loading();
     Promise.all([
@@ -133,49 +150,110 @@
       db.from('tasks').select('*').eq('lead_id', id).order('due_at', { ascending: true }),
       db.from('lead_documents').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
       db.from('deals').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
-      db.from('profiles').select('user_id,full_name')
+      db.from('profiles').select('user_id,full_name'),
+      db.from('payments').select('*').eq('lead_id', id).order('created_at', { ascending: false })
     ]).then(function (r) {
       if (r[0].error) return errBox(r[0].error.message);
-      var lead = r[0].data, acts = r[1].data || [], tasks = r[2].data || [], docs = r[3].data || [], deals = (r[4] && r[4].data) || [];
+      var lead = r[0].data, acts = r[1].data || [], tasks = r[2].data || [], docs = r[3].data || [], deals = (r[4] && r[4].data) || [], pays = (r[6] && r[6].data) || [];
       if (r[5] && r[5].data) { profiles = {}; r[5].data.forEach(function (p) { profiles[p.user_id] = p.full_name; }); }
       curDeals = deals;
-      var wa = waLink(lead.phone);
-      var idx = orderIds.indexOf(id);
-      var prev = idx > 0 ? orderIds[idx - 1] : null, next = idx >= 0 && idx < orderIds.length - 1 ? orderIds[idx + 1] : null;
-      view(
-        '<div class="lead-top">' +
-          '<div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="lpBack">→ לרשימה</button>' +
-          '<div class="lead-nav"><button class="btn btn-ghost btn-sm" id="lpPrev"' + (prev ? '' : ' disabled') + '>‹ הקודם</button><button class="btn btn-ghost btn-sm" id="lpNext"' + (next ? '' : ' disabled') + '>הבא ›</button></div>' +
-          (idx >= 0 ? '<span class="muted" style="font-size:13px">' + (idx + 1) + ' / ' + orderIds.length + '</span>' : '') + '</div>' +
-          '<div style="display:flex;align-items:center;gap:12px"><span class="avatar" style="width:44px;height:44px;font-size:17px">' + esc(initials(lead.name)) + '</span><div><h3 style="margin:0">' + esc(lead.name || 'ליד') + '</h3><div class="muted" style="font-size:13px">' + esc(lead.phone) + (lead.car ? ' · ' + esc(lead.car) : '') + '</div></div><span id="lpStatus">' + badge(lead.status || 'new', true, lead.id) + '</span></div>' +
-        '</div>' +
-        '<div class="card" style="padding:14px"><div class="flow">' + flowBar(lead.status || 'new') + '</div>' +
-          '<div class="qa">' +
-            (lead.phone ? '<a href="tel:' + esc(lead.phone) + '">📞 התקשר</a>' : '') +
-            (wa ? '<a href="' + wa + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') +
-            (lead.email ? '<a href="mailto:' + esc(lead.email) + '">📧 מייל</a>' : '') +
-            '<button data-qa="meeting">📅 קבע פגישה</button><button data-qa="car">🚗 בחר רכב</button>' +
-            '<button data-qa="deal">💰 סגירת עסקה / הצעה</button><button data-qa="contract">✍ הסכם</button>' +
-          '</div><div id="qaArea"></div></div>' +
-        '<div class="lead-grid">' +
-          '<div><div class="card"><h3>פרטי לקוח</h3>' +
-            row('טלפון', esc(lead.phone)) + row('אימייל', esc(lead.email) || '—') + row('רכב', esc(lead.car) || '—') + row('מקור', esc(lead.source) || '—') + row('נוצר', fmt(lead.created_at)) +
-            (lead.status === 'lost' ? '<div style="margin-top:10px"><label class="muted" style="font-size:12px">סיבת סגירה</label><select class="inp" id="lpReason" style="width:100%;margin-top:4px"><option value="">בחר…</option>' + CLOSE_REASONS.map(function (x) { return '<option' + (lead.close_reason === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
-            (lead.message ? '<div style="margin-top:10px;font-size:14px">🗒️ ' + esc(lead.message) + '</div>' : '') + '</div>' +
-            '<div class="card"><h3>משימות</h3><div id="lpTasks">' + taskList(tasks) + '</div>' +
-              '<form id="lpTaskForm" style="margin-top:10px"><input class="inp" name="title" placeholder="משימה חדשה…" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:6px"><input class="inp" name="due" type="datetime-local" style="flex:1"><button class="btn btn-sm">הוסף</button></div></form></div>' +
-            '<div class="card"><h3>מסמכים</h3><div id="lpDocs">' + docList(docs) + '</div><input type="file" id="lpUp" style="margin-top:10px"></div>' +
-            '<div class="card"><div class="row-between"><h3 style="margin:0">עסקאות</h3><button class="btn btn-sm" id="lpNewDeal">+ עסקה</button></div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
-          '</div>' +
-          '<div class="card"><h3>ציר זמן</h3>' +
-            '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">' + ['note', 'call', 'whatsapp', 'email'].map(function (t) { return '<button class="btn btn-ghost btn-sm" data-act="' + t + '">' + ACT_ICON[t] + ' ' + ({ note: 'הערה', call: 'שיחה', whatsapp: 'WhatsApp', email: 'מייל' }[t]) + '</button>'; }).join('') + '</div>' +
-            '<form id="lpActForm" style="display:none;margin-bottom:12px"><textarea class="inp" name="body" rows="2" style="width:100%" placeholder="תוכן…"></textarea><input type="hidden" name="type"><div style="margin-top:6px"><button class="btn btn-sm">שמור</button> <button type="button" class="btn btn-ghost btn-sm" id="lpActCancel">ביטול</button></div></form>' +
-            '<div class="tl" id="lpTimeline">' + timeline(acts) + '</div></div>' +
-        '</div>'
-      );
-      bindLead(lead, prev, next);
+      // signed URLs → inline preview of uploaded documents/images inside the timeline
+      var paths = docs.map(function (d) { return d.storage_path; });
+      var st = db.storage.from('lead-docs');
+      var signer = (paths.length && st.createSignedUrls) ? st.createSignedUrls(paths, 3600) : Promise.resolve({ data: [] });
+      signer.then(function (sres) {
+        var urls = {};
+        ((sres && sres.data) || []).forEach(function (s) { if (s && s.signedUrl) urls[s.path] = s.signedUrl; });
+        renderLeadCard(lead, acts, tasks, docs, deals, pays, urls);
+      });
     });
   };
+  function renderLeadCard(lead, acts, tasks, docs, deals, pays, urls) {
+    var role = C.role || 'admin';
+    var wa = waLink(lead.phone);
+    var idx = orderIds.indexOf(lead.id);
+    var prev = idx > 0 ? orderIds[idx - 1] : null, next = idx >= 0 && idx < orderIds.length - 1 ? orderIds[idx + 1] : null;
+    var feed = buildFeed(acts, tasks, docs, deals, pays, urls);
+    var actBtns = LEAD_ACTIONS.filter(function (a) { return a.roles.indexOf(role) >= 0; }).map(function (a) {
+      if (a.k === 'call') return lead.phone ? '<a class="btn btn-ghost btn-sm" href="tel:' + esc(lead.phone) + '">' + a.icon + ' ' + a.label + '</a>' : '';
+      if (a.k === 'wa') return wa ? '<a class="btn btn-ghost btn-sm" href="' + wa + '" target="_blank" rel="noopener">' + a.icon + ' ' + a.label + '</a>' : '';
+      if (a.k === 'mail') return lead.email ? '<a class="btn btn-ghost btn-sm" href="mailto:' + esc(lead.email) + '">' + a.icon + ' ' + a.label + '</a>' : '';
+      return '<button class="btn btn-ghost btn-sm" data-act2="' + a.k + '">' + a.icon + ' ' + a.label + '</button>';
+    }).join('');
+    view(
+      '<div class="lead-top">' +
+        '<div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="lpBack">→ לרשימה</button>' +
+        '<div class="lead-nav"><button class="btn btn-ghost btn-sm" id="lpPrev"' + (prev ? '' : ' disabled') + '>‹ הקודם</button><button class="btn btn-ghost btn-sm" id="lpNext"' + (next ? '' : ' disabled') + '>הבא ›</button></div>' +
+        (idx >= 0 ? '<span class="muted" style="font-size:13px">' + (idx + 1) + ' / ' + orderIds.length + '</span>' : '') + '</div>' +
+        '<div style="display:flex;align-items:center;gap:12px"><span class="avatar" style="width:44px;height:44px;font-size:17px">' + esc(initials(lead.name)) + '</span><div><h3 style="margin:0">' + esc(lead.name || 'ליד') + '</h3><div class="muted" style="font-size:13px">' + esc(lead.phone) + (lead.car ? ' · ' + esc(lead.car) : '') + '</div></div><span id="lpStatus">' + badge(lead.status || 'new', true, lead.id) + '</span></div>' +
+      '</div>' +
+      '<div class="card" style="padding:14px"><div class="flow">' + flowBar(lead.status || 'new') + '</div></div>' +
+      '<div class="lead-grid">' +
+        '<div><div class="card"><h3>פרטי לקוח' + (role !== 'admin' && roleShort(role) ? ' · ' + roleShort(role) : '') + '</h3>' + leadDetails(lead, deals, pays) +
+          (lead.status === 'lost' ? '<div style="margin-top:10px"><label class="muted" style="font-size:12px">סיבת סגירה</label><select class="inp" id="lpReason" style="width:100%;margin-top:4px"><option value="">בחר…</option>' + CLOSE_REASONS.map(function (x) { return '<option' + (lead.close_reason === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
+          (lead.message ? '<div style="margin-top:10px;font-size:14px">🗒️ ' + esc(lead.message) + '</div>' : '') + '</div>' +
+          '<div class="card"><div class="row-between"><h3 style="margin:0">עסקאות</h3>' + (role !== 'accounting' ? '<button class="btn btn-sm" id="lpNewDeal">+ עסקה</button>' : '') + '</div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
+        '</div>' +
+        '<div>' +
+          '<div class="card"><h3>ציר זמן — הכל במקום אחד</h3><p class="muted" style="font-size:12px;margin:-4px 0 10px">הערות · שיחות · WhatsApp · מיילים · משימות · מסמכים · עסקאות · תשלומים</p><div class="tl" id="lpTimeline">' + feedHtml(feed) + '</div></div>' +
+          '<div class="card" id="lpActions"><h3>פעולות</h3><div class="qa2" style="display:flex;gap:8px;flex-wrap:wrap">' + actBtns + '</div><div id="lpForm" style="margin-top:12px"></div></div>' +
+        '</div>' +
+      '</div>'
+    );
+    bindLead(lead, prev, next);
+  }
+  // ---- role-tailored details (each role sees its own fields) ----
+  function leadDetails(lead, deals, pays) {
+    var role = C.role || 'admin', deal = deals[0], html = '';
+    html += row('טלפון', lead.phone ? '<a href="tel:' + esc(lead.phone) + '">' + esc(lead.phone) + '</a>' : '—');
+    html += row('אימייל', esc(lead.email) || '—');
+    if (role === 'accounting') {
+      var total = deals.reduce(function (s, d) { return s + (Number(d.total) || 0); }, 0);
+      var paid = pays.reduce(function (s, p) { return s + (Number(p.amount) || 0); }, 0);
+      html += row('רכב', esc(lead.car) || '—');
+      html += row('שווי עסקאות', nis(total));
+      html += row('נגבה', nis(paid));
+      html += row('יתרה פתוחה', nis(total - paid));
+    } else if (role === 'files') {
+      html += row('רכב', deal && deal.car_make ? esc(deal.car_make + ' ' + (deal.car_model || '')) : (esc(lead.car) || '—'));
+      html += row('שלב תיק', deal ? stageBadge(deal.stage || 'initial') : '—');
+      if (deal) { var cl = deal.checklist || {}; var done = CHECKLIST_ITEMS.filter(function (i) { return cl[i]; }).length; html += row('צ׳קליסט', done + '/' + CHECKLIST_ITEMS.length); }
+      html += row('מקור', esc(lead.source) || '—');
+    } else {
+      html += row('רכב', esc(lead.car) || '—');
+      html += row('מקור', esc(lead.source) || '—');
+      html += row('איש מכירות', esc(profiles[lead.assigned_to]) || '—');
+      html += row('נוצר', fmt(lead.created_at));
+    }
+    return html;
+  }
+  // ---- unified timeline feed (everything, newest first) ----
+  var FEED_TAG = { note: 'הערה', call: 'שיחה', whatsapp: 'WhatsApp', email: 'מייל', status: 'סטטוס', task: 'משימה', document: 'מסמך', meeting: 'פגישה', deal: 'עסקה', contract: 'הסכם' };
+  function buildFeed(acts, tasks, docs, deals, pays, urls) {
+    var items = [];
+    acts.forEach(function (a) { items.push({ ts: a.created_at, icon: ACT_ICON[a.type] || '•', who: profiles[a.created_by], html: a.body ? esc(a.body) : '', tag: FEED_TAG[a.type] || a.type }); });
+    docs.forEach(function (d) {
+      var u = urls[d.storage_path], body;
+      if (u && docIsImage(d.name)) body = '<div style="margin:2px 0 4px">' + esc(d.name) + '</div><a href="' + u + '" target="_blank" rel="noopener"><img src="' + u + '" alt="' + esc(d.name) + '" style="max-width:100%;max-height:280px;border-radius:10px;border:1px solid var(--line);display:block"></a>';
+      else if (u) body = '<a href="' + u + '" target="_blank" rel="noopener">📎 ' + esc(d.name) + '</a>';
+      else body = '<a href="#" data-doc="' + esc(d.storage_path) + '">📎 ' + esc(d.name) + '</a>';
+      items.push({ ts: d.created_at, icon: '📎', who: profiles[d.created_by], html: body, tag: 'מסמך' });
+    });
+    tasks.forEach(function (t) {
+      var over = !t.done && t.due_at && new Date(t.due_at) < new Date();
+      var due = t.due_at ? '<span style="font-size:12px;color:' + (over ? 'var(--danger)' : 'var(--muted)') + '"> · יעד ' + fmt(t.due_at) + '</span>' : '';
+      items.push({ ts: t.created_at || t.due_at, icon: '✅', who: profiles[t.created_by], html: '<label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '><span' + (t.done ? ' style="text-decoration:line-through;color:var(--muted)"' : '') + '>' + esc(t.title) + '</span>' + due + '</label>', tag: 'משימה' });
+    });
+    deals.forEach(function (d) { items.push({ ts: d.created_at, icon: '💰', who: profiles[d.created_by], html: 'עסקה #' + esc(d.order_no || String(d.id).slice(0, 6)) + (d.car_make ? ' · ' + esc(d.car_make + ' ' + (d.car_model || '')) : '') + (d.total ? ' · ' + nis(d.total) : '') + ' — <a href="#" data-open-deal="' + d.id + '">פתח</a>', tag: 'עסקה' }); });
+    pays.forEach(function (p) { items.push({ ts: p.created_at, icon: '🧾', who: profiles[p.created_by], html: ({ invoice: 'חשבונית', receipt: 'קבלה', payment: 'תשלום' }[p.kind] || 'תשלום') + ' · ' + nis(p.amount) + (p.method ? ' · ' + esc(p.method) : '') + (p.ref_no ? ' · ' + esc(p.ref_no) : ''), tag: 'כספים' }); });
+    items.sort(function (a, b) { return new Date(b.ts || 0) - new Date(a.ts || 0); });
+    return items;
+  }
+  function feedHtml(items) {
+    return items.length ? items.map(function (a) {
+      return '<div class="ev"><div class="dot">' + a.icon + '</div><div style="flex:1"><div class="tm">' + fmt(a.ts) + (a.tag ? ' · ' + esc(a.tag) : '') + (a.who ? ' · ' + esc(a.who) : '') + '</div>' + (a.html ? '<div>' + a.html + '</div>' : '') + '</div></div>';
+    }).join('') : '<p class="empty">אין עדיין פעילות</p>';
+  }
   function row(k, v) { return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span class="muted" style="font-size:13px">' + k + '</span><span>' + v + '</span></div>'; }
   function flowBar(cur) {
     var idx = FLOW.map(function (s) { return s.k; }).indexOf(cur), lost = cur === 'lost' || cur === 'no_answer';
@@ -185,7 +263,6 @@
       return '<div class="st" style="background:' + bg + ';color:' + (state === 'gray' ? 'var(--muted)' : '#fff') + '">' + s.icon + '<br>' + esc(s.label) + '</div>';
     }).join('');
   }
-  function timeline(acts) { return acts.length ? acts.map(function (a) { var who = profiles[a.created_by]; return '<div class="ev"><div class="dot">' + (ACT_ICON[a.type] || '•') + '</div><div style="flex:1"><div class="tm">' + fmt(a.created_at) + (who ? ' · ' + esc(who) : '') + '</div>' + (a.body ? '<div>' + esc(a.body) + '</div>' : '') + '</div></div>'; }).join('') : '<p class="empty">אין עדיין פעולות</p>'; }
   // ---------- ACTIVITY (global feed: who did what) ----------
   window.C2B_renderActivity = function () {
     loading();
@@ -207,9 +284,6 @@
       C.$('view').querySelectorAll('a[data-lead]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); window.C2B_openLeadCard(a.dataset.lead); }); });
     });
   };
-  function taskList(tasks) { return tasks.length ? tasks.map(function (t) { var over = !t.done && t.due_at && new Date(t.due_at) < new Date(); return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0"><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '><span style="flex:1' + (t.done ? ';text-decoration:line-through;color:var(--muted)' : '') + '">' + esc(t.title) + '</span>' + (t.due_at ? '<span style="font-size:12px;color:' + (over ? 'var(--danger)' : 'var(--muted)') + '">' + fmt(t.due_at) + '</span>' : '') + '</div>'; }).join('') : '<p class="muted" style="margin:6px 0">אין משימות</p>'; }
-  function docList(docs) { return docs.length ? docs.map(function (d) { return '<div style="padding:4px 0"><a href="#" data-doc="' + esc(d.storage_path) + '">📎 ' + esc(d.name) + '</a></div>'; }).join('') : '<p class="muted" style="margin:6px 0">אין מסמכים</p>'; }
-
   function bindLead(lead, prev, next) {
     var $ = C.$;
     $('lpBack').addEventListener('click', function () { window.C2B_renderLeads(curFilter); });
@@ -219,36 +293,49 @@
     var stEl = $('lpStatus').querySelector('.tag.click');
     if (stEl) stEl.addEventListener('click', function (e) { e.stopPropagation(); openStatusMenu(stEl, lead.status || 'new', function (to) { changeStatus(lead.id, to, lead, function () { window.C2B_openLeadCard(lead.id); }); }); });
     var rs = $('lpReason'); if (rs) rs.addEventListener('change', function () { db.from('leads').update({ close_reason: rs.value }).eq('id', lead.id); });
-
-    // quick actions
-    $('view').querySelectorAll('button[data-qa]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var qa = b.dataset.qa;
-        if (qa === 'deal') return dealForm(lead, null);
-        if (qa === 'contract') { logActivity(lead.id, 'contract', 'סומן: נשלח הסכם'); alert('מודול ההסכמים (מילוי + חתימה) מגיע בהמשך. הפעולה תועדה.'); return; }
-        if (qa === 'meeting') return meetingForm(lead);
-        if (qa === 'car') return carPicker(lead);
-      });
-    });
+    // deals list
     if ($('lpNewDeal')) $('lpNewDeal').addEventListener('click', function () { dealForm(lead, null); });
     $('lpDeals').querySelectorAll('[data-deal-id]').forEach(function (el) { el.addEventListener('click', function () { var dd = curDeals.filter(function (x) { return x.id === el.dataset.dealId; })[0]; dealForm(lead, dd); }); });
-    // activity feed
-    $('view').querySelectorAll('button[data-act]').forEach(function (b) { b.addEventListener('click', function () { var f = $('lpActForm'); f.style.display = 'block'; f.querySelector('[name=type]').value = b.dataset.act; f.querySelector('[name=body]').focus(); }); });
-    $('lpActCancel').addEventListener('click', function () { $('lpActForm').style.display = 'none'; });
-    $('lpActForm').addEventListener('submit', function (e) { e.preventDefault(); var body = this.body.value.trim(); if (!body) return; logActivity(lead.id, this.type.value, body).then(function () { window.C2B_openLeadCard(lead.id); }); });
-    // tasks
-    $('lpTaskForm').addEventListener('submit', function (e) {
-      e.preventDefault(); var title = this.title.value.trim(); if (!title) return;
-      var due = this.due.value ? new Date(this.due.value).toISOString() : null;
-      db.from('tasks').insert({ lead_id: lead.id, title: title, due_at: due }).then(function () { logActivity(lead.id, 'task', 'נפתחה משימה: ' + title); C.refreshBadges && C.refreshBadges(); window.C2B_openLeadCard(lead.id); });
-    });
-    $('lpTasks').querySelectorAll('input[data-task]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('tasks').update({ done: cb.checked }).eq('id', cb.dataset.task).then(function () { C.refreshBadges && C.refreshBadges(); }); }); });
-    // docs
-    $('lpUp').addEventListener('change', function () {
-      var file = this.files[0]; if (!file) return; var path = lead.id + '/' + Date.now() + '_' + file.name;
-      db.storage.from('lead-docs').upload(path, file).then(function (u) { if (u.error) return alert('העלאה נכשלה: ' + u.error.message); db.from('lead_documents').insert({ lead_id: lead.id, name: file.name, storage_path: path }).then(function () { logActivity(lead.id, 'document', 'הועלה מסמך: ' + file.name); window.C2B_openLeadCard(lead.id); }); });
-    });
-    $('lpDocs').querySelectorAll('a[data-doc]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); db.storage.from('lead-docs').createSignedUrl(a.dataset.doc, 300).then(function (r) { if (r.data && r.data.signedUrl) window.open(r.data.signedUrl, '_blank'); }); }); });
+    // timeline interactions: task toggle, open deal, fallback doc link
+    var tl = $('lpTimeline');
+    tl.querySelectorAll('input[data-task]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('tasks').update({ done: cb.checked }).eq('id', cb.dataset.task).then(function () { C.refreshBadges && C.refreshBadges(); }); }); });
+    tl.querySelectorAll('a[data-open-deal]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); var dd = curDeals.filter(function (x) { return x.id === a.dataset.openDeal; })[0]; if (dd) dealForm(lead, dd); }); });
+    tl.querySelectorAll('a[data-doc]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); db.storage.from('lead-docs').createSignedUrl(a.dataset.doc, 300).then(function (r) { if (r.data && r.data.signedUrl) window.open(r.data.signedUrl, '_blank'); }); }); });
+    // consolidated action bar (role-tailored)
+    $('view').querySelectorAll('button[data-act2]').forEach(function (b) { b.addEventListener('click', function () { leadAction(lead, b.dataset.act2); }); });
+  }
+  function leadAction(lead, k) {
+    var $ = C.$;
+    if (k === 'deal') return dealForm(lead, null);
+    if (k === 'meeting') return meetingForm(lead);
+    if (k === 'car') return carPicker(lead);
+    if (k === 'contract') { logActivity(lead.id, 'contract', 'סומן: נשלח הסכם').then(function () { window.C2B_openLeadCard(lead.id); }); alert('מילוי + חתימה על ההסכם זמינים דרך כרטיס העסקה. הפעולה תועדה בציר הזמן.'); return; }
+    var box = $('lpForm');
+    if (k === 'doc') {
+      box.innerHTML = '<label class="muted" style="font-size:12px">העלה מסמך / תמונה — תוצג מיד פתוחה בציר הזמן</label><input type="file" id="lpUp" style="margin-top:6px;display:block">';
+      $('lpUp').addEventListener('change', function () {
+        var file = this.files[0]; if (!file) return; var path = lead.id + '/' + Date.now() + '_' + file.name;
+        box.innerHTML = '<p class="muted">מעלה…</p>';
+        db.storage.from('lead-docs').upload(path, file).then(function (u) { if (u.error) { box.innerHTML = ''; return alert('העלאה נכשלה: ' + u.error.message); } db.from('lead_documents').insert({ lead_id: lead.id, name: file.name, storage_path: path }).then(function () { logActivity(lead.id, 'document', 'הועלה מסמך: ' + file.name); window.C2B_openLeadCard(lead.id); }); });
+      });
+      return;
+    }
+    if (k === 'task') {
+      box.innerHTML = '<form id="lpTaskForm"><input class="inp" name="title" placeholder="משימה חדשה…" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:6px"><input class="inp" name="due" type="datetime-local" style="flex:1"><button class="btn btn-sm">הוסף</button></div></form>';
+      $('lpTaskForm').addEventListener('submit', function (e) {
+        e.preventDefault(); var title = this.title.value.trim(); if (!title) return;
+        var due = this.due.value ? new Date(this.due.value).toISOString() : null;
+        db.from('tasks').insert({ lead_id: lead.id, title: title, due_at: due }).then(function () { logActivity(lead.id, 'task', 'נפתחה משימה: ' + title); C.refreshBadges && C.refreshBadges(); window.C2B_openLeadCard(lead.id); });
+      });
+      $('lpTaskForm').querySelector('[name=title]').focus();
+      return;
+    }
+    // note / call_log → activity entry in the timeline
+    var type = k === 'call_log' ? 'call' : 'note';
+    var ph = k === 'call_log' ? 'סיכום השיחה…' : 'הערה…';
+    box.innerHTML = '<form id="lpActForm"><textarea class="inp" name="body" rows="2" style="width:100%" placeholder="' + ph + '"></textarea><div style="margin-top:6px"><button class="btn btn-sm">שמור</button></div></form>';
+    $('lpActForm').addEventListener('submit', function (e) { e.preventDefault(); var body = this.body.value.trim(); if (!body) return; logActivity(lead.id, type, body).then(function () { window.C2B_openLeadCard(lead.id); }); });
+    $('lpActForm').querySelector('[name=body]').focus();
   }
 
   // ---- appointment: date + time only ----
