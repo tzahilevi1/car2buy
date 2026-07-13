@@ -89,6 +89,7 @@
     if (nav === 'dashboard') return window.C2B_renderDashboard && window.C2B_renderDashboard();
     if (nav === 'leads') return window.C2B_renderLeads && window.C2B_renderLeads(opts.status);
     if (nav === 'files') return window.C2B_renderFiles && window.C2B_renderFiles();
+    if (nav === 'accounting') return window.C2B_renderAccounting && window.C2B_renderAccounting();
     if (nav === 'cars') return renderCars();
     if (nav === 'appointments') return renderAppointments();
     if (nav === 'tasks') return renderTasks();

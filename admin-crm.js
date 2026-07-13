@@ -308,7 +308,9 @@
           '<label style="display:flex;gap:8px;align-items:center;padding:8px 0"><input type="checkbox" id="dl_vat"' + (deal.vat_included !== false ? ' checked' : '') + '> כולל מע"מ</label>' +
           '<div id="dlSummary" style="margin-top:8px"></div></div>' +
         '<div class="card"><h3>מפרט רכב</h3><textarea class="inp" id="dl_spec" rows="6" style="width:100%" placeholder="מפרט / הערות לחוזה…">' + esc(deal.spec || '') + '</textarea></div>' +
-      '</div>'
+      '</div>' +
+      '<div class="card"><h3>תשלומים / קבלות / חשבוניות</h3><div id="dlPayList">' + (deal.id ? 'טוען…' : '<p class="muted">שמרו את העסקה כדי לנהל תשלומים</p>') + '</div>' +
+        (deal.id ? '<form id="dlPayForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><select class="inp" name="kind"><option value="payment">תשלום</option><option value="receipt">קבלה</option><option value="invoice">חשבונית</option></select><input class="inp" name="amount" type="number" placeholder="סכום ₪" style="width:120px"><input class="inp" name="method" placeholder="אמצעי (מזומן/אשראי)" style="width:150px"><input class="inp" name="ref" placeholder="אסמכתא" style="width:130px"><button class="btn btn-sm">+ הוסף</button></form>' : '') + '</div>'
     );
     var $ = C.$;
     $('dlBack').addEventListener('click', function () { window.C2B_openLeadCard(lead.id); });
@@ -379,7 +381,47 @@
       });
     });
     $('dlContract').addEventListener('click', function () { contractView(lead, Object.assign({ id: deal.id, order_no: deal.order_no }, readForm())); });
+    // payments ledger
+    if (deal.id) {
+      var KIND = { payment: 'תשלום', receipt: 'קבלה', invoice: 'חשבונית' };
+      var loadPayments = function () {
+        db.from('payments').select('*').eq('deal_id', deal.id).order('created_at', { ascending: false }).then(function (r) {
+          var ps = r.data || [];
+          var paid = ps.filter(function (p) { return p.kind !== 'invoice'; }).reduce(function (a, p) { return a + (+p.amount || 0); }, 0);
+          $('dlPayList').innerHTML = (ps.length ? ps.map(function (p) { return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>' + (KIND[p.kind] || p.kind) + (p.method ? ' · ' + esc(p.method) : '') + (p.ref_no ? ' · ' + esc(p.ref_no) : '') + '</span><b>' + nis(p.amount) + '</b></div>'; }).join('') : '<p class="muted">אין תשלומים</p>') +
+            '<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:800"><span>סה"כ שולם</span><span style="color:var(--ok)">' + nis(paid) + '</span></div>';
+        });
+      };
+      loadPayments();
+      $('dlPayForm').addEventListener('submit', function (e) {
+        e.preventDefault(); var amt = parseFloat(this.amount.value) || 0; if (!amt) return; var kind = this.kind.value;
+        db.from('payments').insert({ deal_id: deal.id, lead_id: lead.id, kind: kind, amount: amt, method: this.method.value, ref_no: this.ref.value, paid_at: new Date().toISOString().slice(0, 10) }).then(function (r) {
+          if (r.error) return alert('שגיאה: ' + r.error.message);
+          logActivity(lead.id, 'system', 'נרשם ' + (KIND[kind] || 'תשלום') + ': ' + nis(amt)); loadPayments();
+        });
+        this.reset();
+      });
+    }
   }
+
+  // ---------- ACCOUNTING (payments ledger + balances) ----------
+  window.C2B_renderAccounting = function () {
+    loading();
+    Promise.all([db.from('deals').select('*'), db.from('payments').select('*')]).then(function (res) {
+      if (res[0].error) return errBox(res[0].error.message);
+      var deals = res[0].data || [], pays = (res[1] && res[1].data) || [];
+      var paidByDeal = {}; pays.forEach(function (p) { if (p.kind !== 'invoice') paidByDeal[p.deal_id] = (paidByDeal[p.deal_id] || 0) + (+p.amount || 0); });
+      var revenue = 0, collected = 0, open = 0;
+      var rows = deals.map(function (d) {
+        var tot = +d.total || 0, paid = paidByDeal[d.id] || 0, bal = tot - paid;
+        revenue += tot; collected += paid; open += Math.max(0, bal);
+        return '<tr' + (d.lead_id ? ' data-lead="' + d.lead_id + '" style="cursor:pointer"' : '') + '><td><b>#' + esc(d.order_no) + '</b></td><td>' + esc(d.client_name) + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(tot) + '</td><td>' + nis(paid) + '</td><td style="color:' + (bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(bal) + '</td></tr>';
+      }).join('');
+      view('<div class="cards">' + C.stat('שווי עסקאות', nis(revenue), true) + C.stat('נגבה בפועל', nis(collected)) + C.stat('יתרה פתוחה', nis(open)) + C.stat('מספר עסקאות', deals.length) + '</div>' +
+        '<div class="card"><h3>מצב כספי לפי עסקה</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>שולם</th><th>יתרה</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div></div>');
+      C.$('view').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openLeadCard(tr.dataset.lead); }); });
+    });
+  };
 
   // ---------- CONTRACT (auto-filled + browser signature) ----------
   function contractHTML(d, sig) {
