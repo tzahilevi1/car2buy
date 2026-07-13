@@ -161,7 +161,41 @@
   // so reject javascript:/data:/vbscript: before it reaches an href sink.
   function safeHttpUrl(u) { try { var p = new URL(u); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : ''; } catch (e) { return ''; } }
 
+  // מנהלת תיקי לקוחות נכנסת ישר לתצוגת התיק (הלשוניות), לא לכרטיס הסוכן
+  function openFileView(id) {
+    loading();
+    Promise.all([
+      db.from('leads').select('*').eq('id', id).single(),
+      db.from('deals').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
+      db.from('profiles').select('user_id,full_name')
+    ]).then(function (r) {
+      if (r[0].error) return errBox(r[0].error.message);
+      var lead = r[0].data, deals = (r[1] && r[1].data) || [];
+      if (r[2] && r[2].data) { profiles = {}; r[2].data.forEach(function (p) { profiles[p.user_id] = p.full_name; }); }
+      curDeals = deals;
+      dealForm(lead, deals[0] || null);   // אם אין עסקה — טופס תיק חדש למילוי
+    });
+  }
+  // open a specific deal's file view (used from the file-manager list)
+  window.C2B_openDeal = function (dealId) {
+    loading();
+    db.from('deals').select('*').eq('id', dealId).single().then(function (r) {
+      if (r.error || !r.data) return errBox((r.error && r.error.message) || 'עסקה לא נמצאה');
+      var deal = r.data;
+      Promise.all([
+        db.from('leads').select('*').eq('id', deal.lead_id).single(),
+        db.from('deals').select('*').eq('lead_id', deal.lead_id).order('created_at', { ascending: false }),
+        db.from('profiles').select('user_id,full_name')
+      ]).then(function (rr) {
+        if (rr[2] && rr[2].data) { profiles = {}; rr[2].data.forEach(function (p) { profiles[p.user_id] = p.full_name; }); }
+        curDeals = (rr[1] && rr[1].data) || [deal];
+        dealForm((rr[0] && rr[0].data) || { id: deal.lead_id }, deal);
+      });
+    });
+  };
+
   window.C2B_openLeadCard = function (id) {
+    if ((C.role || '') === 'files') return openFileView(id);   // file manager → file view
     loading();
     Promise.all([
       db.from('leads').select('*').eq('id', id).single(),
@@ -503,7 +537,7 @@
     function dTab(k, label, active) { return '<button data-dtab="' + k + '"' + (active ? ' class="active"' : '') + '>' + label + '</button>'; }
     function dPanel(k, active, inner) { return '<div class="dl-panel' + (active ? '' : ' hidden') + '" data-dpanel="' + k + '">' + inner + '</div>'; }
     view(
-      '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">→ לכרטיס</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
+      '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">' + ((C.role || '') === 'files' ? '→ לרשימת התיקים' : '→ לכרטיס') + '</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
         '<div><button class="btn btn-ghost btn-sm" id="dlContract">✍ הסכם לחתימה</button> <button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
       '<div class="card" style="padding:12px"><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' +
       '<nav class="tabs" id="dlTabs" style="margin-bottom:14px;flex-wrap:wrap">' +
@@ -517,7 +551,7 @@
       dPanel('record', false, '<div class="grid2">' + checklistCard + recordCard + '</div>' + paymentsCard)
     );
     var $ = C.$;
-    $('dlBack').addEventListener('click', function () { window.C2B_openLeadCard(lead.id); });
+    $('dlBack').addEventListener('click', function () { if ((C.role || '') === 'files') return window.C2B_renderFiles(); window.C2B_openLeadCard(lead.id); });
     $('dlTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-dtab]'); if (!b) return; $('dlTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); C.$('view').querySelectorAll('[data-dpanel]').forEach(function (p) { p.classList.toggle('hidden', p.dataset.dpanel !== b.dataset.dtab); }); });
     // stage bar
     $('dlStageBar').addEventListener('click', function (e) { var st = e.target.closest('[data-stage]'); if (!st) return; curStage = st.dataset.stage; $('dlStageBar').innerHTML = stageBar(curStage); if (deal.id) { db.from('deals').update({ stage: curStage }).eq('id', deal.id); logActivity(lead.id, 'system', 'שלב עסקה: ' + stageDef(curStage).label); } });
@@ -702,12 +736,12 @@
         var lst = (f === 'all' ? deals : deals.filter(function (d) { return (d.stage || 'initial') === f; })).filter(function (d) { return fileFilter.match(d); });
         var rows = lst.map(function (d) {
           var chk = d.checklist || {}, done = CHECKLIST_ITEMS.filter(function (k) { return chk[k]; }).length, tot = CHECKLIST_ITEMS.length;
-          return '<tr' + (d.lead_id ? ' data-lead="' + d.lead_id + '" style="cursor:pointer"' : '') + '><td><b>#' + esc(d.order_no) + '</b></td><td>' + esc(d.client_name) + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(d.total) + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td><td>' + stageBadge(d.stage || 'initial') + '</td><td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td></tr>';
+          return '<tr data-deal="' + d.id + '" style="cursor:pointer"><td><b>#' + esc(d.order_no) + '</b></td><td>' + esc(d.client_name) + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(d.total) + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td><td>' + stageBadge(d.stage || 'initial') + '</td><td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td></tr>';
         }).join('');
         C.$('filesBody').innerHTML = fileFilter.render() +
           '<div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>עמלת סוכן</th><th>שלב</th><th>צ\'קליסט</th></tr></thead><tbody>' + (rows || '<tr><td colspan="7" class="empty">אין תיקים</td></tr>') + '</tbody></table></div>';
         fileFilter.bind();
-        C.$('filesBody').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openLeadCard(tr.dataset.lead); }); });
+        C.$('filesBody').querySelectorAll('tr[data-deal]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openDeal(tr.dataset.deal); }); });
       }
       C.$('fTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-fstage]'); if (b) window.C2B_renderFiles(b.dataset.fstage === 'all' ? null : b.dataset.fstage); });
       drawF();
