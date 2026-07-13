@@ -852,6 +852,37 @@
   var dashPeriod = 'all';
   var PERIODS = [['today', 'היום'], ['7', '7 ימים'], ['30', '30 יום'], ['month', 'החודש'], ['all', 'הכל']];
   function periodStart(p) { var d = new Date(); d.setHours(0, 0, 0, 0); if (p === 'today') return d.getTime(); if (p === '7') return Date.now() - 7 * 864e5; if (p === '30') return Date.now() - 30 * 864e5; if (p === 'month') { var m = new Date(); m.setDate(1); m.setHours(0, 0, 0, 0); return m.getTime(); } return 0; }
+  // ---- per-block date filters (each dashboard card filters independently) ----
+  var blockR = {}, dashAll = null;
+  function inRange(ts, r) {
+    if (!r || r.preset === 'all' || (!r.preset && !r.from && !r.to)) return true;
+    var t = new Date(ts || 0).getTime();
+    if (r.preset) return t >= periodStart(r.preset);
+    if (r.from && t < new Date(r.from + 'T00:00:00').getTime()) return false;
+    if (r.to && t > new Date(r.to + 'T23:59:59').getTime()) return false;
+    return true;
+  }
+  function fltLabel(r) {
+    if (!r || r.preset === 'all' || (!r.preset && !r.from && !r.to)) return '📅 הכל';
+    if (r.preset) { var p = PERIODS.filter(function (x) { return x[0] === r.preset; })[0]; return '📅 ' + (p ? p[1] : r.preset); }
+    return '📅 ' + (r.from || '…') + ' – ' + (r.to || '…');
+  }
+  function closeDatePopup() { var m = document.getElementById('datepop'); if (m) m.remove(); }
+  function dateFilterPopup(anchor, cur, onApply) {
+    closeDatePopup();
+    var m = document.createElement('div'); m.className = 'stmenu'; m.id = 'datepop'; m.style.minWidth = '250px'; m.style.padding = '12px';
+    m.innerHTML = '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">' + PERIODS.map(function (p) { return '<button class="btn btn-ghost btn-sm" data-dp="' + p[0] + '">' + p[1] + '</button>'; }).join('') + '</div>' +
+      '<label class="muted" style="font-size:12px">טווח תאריכים מותאם</label>' +
+      '<div style="display:flex;gap:6px;align-items:center;margin:5px 0 10px"><input type="date" class="inp" id="dpFrom" value="' + ((cur && cur.from) || '') + '"><span class="muted">–</span><input type="date" class="inp" id="dpTo" value="' + ((cur && cur.to) || '') + '"></div>' +
+      '<div style="display:flex;gap:6px"><button class="btn btn-sm" id="dpApply">החל טווח</button><button class="btn btn-ghost btn-sm" id="dpClear">נקה</button></div>';
+    document.body.appendChild(m);
+    var rc = anchor.getBoundingClientRect();
+    m.style.top = (rc.bottom + window.scrollY + 4) + 'px'; m.style.left = Math.max(8, rc.left + window.scrollX - 140) + 'px';
+    m.querySelectorAll('[data-dp]').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); onApply({ preset: b.dataset.dp }); closeDatePopup(); }); });
+    m.querySelector('#dpApply').addEventListener('click', function (e) { e.stopPropagation(); onApply({ from: m.querySelector('#dpFrom').value, to: m.querySelector('#dpTo').value }); closeDatePopup(); });
+    m.querySelector('#dpClear').addEventListener('click', function (e) { e.stopPropagation(); onApply({ preset: 'all' }); closeDatePopup(); });
+    setTimeout(function () { document.addEventListener('click', closeDatePopup, { once: true }); }, 0);
+  }
   // drawer popup listing leads → click opens the lead card
   function leadsPopup(title, list) {
     C.openDrawer('<div class="dw-head"><h3 style="margin:0">' + esc(title) + ' <span class="muted" style="font-size:13px">(' + list.length + ')</span></h3></div>' +
@@ -871,82 +902,92 @@
       db.from('deals').select('id,lead_id,client_name,car_make,car_model,total,stage,created_at'),
       db.from('profiles').select('user_id,full_name')
     ]).then(function (res) {
-      var allLeads = res[0].data || [], tasks = res[1].data || [], allDeals = (res[3] && res[3].data) || [];
       var prof = {}; ((res[4] && res[4].data) || []).forEach(function (p) { prof[p.user_id] = p.full_name; });
-      var start = periodStart(dashPeriod);
-      var leads = allLeads.filter(function (l) { return new Date(l.created_at || 0).getTime() >= start; });
-      var deals = allDeals.filter(function (d) { return new Date(d.created_at || 0).getTime() >= start; });
-      var todayS = periodStart('today');
-      var todayN = allLeads.filter(function (l) { return new Date(l.created_at || 0).getTime() >= todayS; }).length;
-      var dealsTodayN = allDeals.filter(function (d) { return new Date(d.created_at || 0).getTime() >= todayS; }).length;
-
-      var by = {}; STATUSES.forEach(function (s) { by[s.k] = 0; });
-      leads.forEach(function (l) { by[l.status || 'new'] = (by[l.status || 'new'] || 0) + 1; });
-      var won = by.won || 0, lost = by.lost || 0, conv = (won + lost) ? Math.round(won / (won + lost) * 100) : 0;
-      var rts = leads.filter(function (l) { return l.first_response_at; }).map(function (l) { return (new Date(l.first_response_at) - new Date(l.created_at)) / 60000; });
-      var avgRt = rts.length ? Math.round(rts.reduce(function (a, b) { return a + b; }, 0) / rts.length) : 0;
-      var openTasks = tasks.filter(function (t) { return !t.done; }).length;
-      var byDay = {}; leads.forEach(function (l) { var d = (l.created_at || '').slice(0, 10); if (d) byDay[d] = (byDay[d] || 0) + 1; });
-      var days = []; for (var i = 13; i >= 0; i--) { var d = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10); days.push({ d: d, v: byDay[d] || 0 }); }
-      var bySource = {}; leads.forEach(function (l) { var s = l.source || 'לא ידוע'; bySource[s] = (bySource[s] || 0) + 1; });
-      var topSrc = Object.keys(bySource).sort(function (a, b) { return bySource[b] - bySource[a]; }).slice(0, 6);
-      var maxSrc = topSrc.length ? bySource[topSrc[0]] : 1;
-      // by brand
-      var byBrand = {}; leads.forEach(function (l) { var b = l.brand || 'לא ידוע'; byBrand[b] = (byBrand[b] || 0) + 1; });
-      var brands = Object.keys(byBrand).sort(function (a, b) { return byBrand[b] - byBrand[a]; }).slice(0, 8);
-      var maxBrand = brands.length ? byBrand[brands[0]] : 1;
-      // by salesperson
-      var byAgent = {}; leads.forEach(function (l) { var n = prof[l.assigned_to] || 'לא שויך'; byAgent[n] = byAgent[n] || { t: 0, w: 0 }; byAgent[n].t++; if (l.status === 'won') byAgent[n].w++; });
-      var agents = Object.keys(byAgent).sort(function (a, b) { return byAgent[b].t - byAgent[a].t; });
-      // deals per file-manager stage
-      var byStage = {}; DEAL_STAGES.forEach(function (s) { byStage[s.k] = 0; }); deals.forEach(function (d) { byStage[d.stage || 'initial'] = (byStage[d.stage || 'initial'] || 0) + 1; });
-      var maxStage = Math.max(1, Math.max.apply(null, DEAL_STAGES.map(function (s) { return byStage[s.k] || 0; })));
-
-      var pTabs = '<div class="tabs" id="dashPeriod" style="margin-bottom:16px">' + PERIODS.map(function (p) { return '<button data-p="' + p[0] + '"' + (dashPeriod === p[0] ? ' class="active"' : '') + '>' + p[1] + '</button>'; }).join('') + '</div>';
-      view(
-        pTabs +
-        '<div class="cards">' +
-          C.stat('לידים חדשים היום', todayN, true) + C.stat('עסקאות היום', dealsTodayN, true) +
-          C.stat('סה"כ לידים', leads.length) + C.stat('סה"כ עסקאות', deals.length) +
-          C.stat('בטיפול', by.in_progress || 0) + C.stat('פגישות נקבעו', by.meeting_set || 0) +
-          C.stat('עסקאות שנסגרו', won) + C.stat('אחוז סגירה', conv + '%') +
-          C.stat('זמן תגובה', avgRt ? avgRt + ' דק\'' : '—') + C.stat('משימות פתוחות', openTasks) +
-        '</div>' +
-        '<div class="grid2">' +
-          '<div class="card"><h3>לידים ב-14 הימים האחרונים</h3>' + svgBars(days) + '</div>' +
-          '<div class="card"><h3>פילוח לפי סטטוס <span class="muted" style="font-size:12px">(לחצו לפתיחת הלידים)</span></h3><div class="table-scroll"><table><tbody id="dashStatus">' +
-            STATUSES.filter(function (s) { return by[s.k]; }).map(function (s) { var pct = leads.length ? Math.round(by[s.k] / leads.length * 100) : 0; return '<tr data-status="' + s.k + '" style="cursor:pointer"><td>' + badge(s.k) + '</td><td>' + by[s.k] + '</td><td style="width:45%"><div class="bar"><span style="width:' + pct + '%;background:' + s.color + '"></span></div></td></tr>'; }).join('') +
-          '</tbody></table></div></div>' +
-        '</div>' +
-        '<div class="card"><h3>🗂️ משפך תיקי לקוחות <span class="muted" style="font-size:12px">(לחצו על שלב לצפייה בלקוחות שבו)</span></h3><div class="table-scroll"><table><tbody id="dashStage">' +
-          DEAL_STAGES.map(function (s) { var n = byStage[s.k] || 0; return '<tr data-stage="' + s.k + '" style="cursor:pointer"><td>' + stageBadge(s.k) + '</td><td>' + n + '</td><td style="width:55%"><div class="bar"><span style="width:' + Math.round(n / maxStage * 100) + '%;background:' + s.color + '"></span></div></td></tr>'; }).join('') +
-        '</tbody></table></div></div>' +
-        '<div class="grid2">' +
-          '<div class="card"><h3>לידים לפי מותג <span class="muted" style="font-size:12px">(לחצו לפתיחה)</span></h3><div class="table-scroll"><table><tbody id="dashBrand">' +
-            (brands.map(function (b) { return '<tr data-brand="' + esc(b) + '" style="cursor:pointer"><td>' + esc(b) + '</td><td>' + byBrand[b] + '</td><td style="width:50%"><div class="bar"><span style="width:' + Math.round(byBrand[b] / maxBrand * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') +
-          '</tbody></table></div></div>' +
-          '<div class="card"><h3>לידים לפי סוכן מכירות <span class="muted" style="font-size:12px">(לחצו לפתיחה)</span></h3><div class="table-scroll"><table><thead><tr><th>סוכן</th><th>לידים</th><th>עסקאות</th></tr></thead><tbody id="dashAgent">' +
-            (agents.map(function (n) { return '<tr data-agent="' + esc(n) + '" style="cursor:pointer"><td>' + esc(n) + '</td><td>' + byAgent[n].t + '</td><td>' + byAgent[n].w + '</td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') +
-          '</tbody></table></div></div>' +
-        '</div>' +
-        '<div class="card"><h3>מקורות מובילים</h3><div class="table-scroll"><table><tbody>' +
-          (topSrc.map(function (s) { return '<tr><td>' + esc(s) + '</td><td>' + bySource[s] + '</td><td style="width:55%"><div class="bar"><span style="width:' + Math.round(bySource[s] / maxSrc * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') +
-        '</tbody></table></div></div>'
-      );
-      // period switch
-      C.$('dashPeriod').addEventListener('click', function (e) { var b = e.target.closest('[data-p]'); if (!b) return; dashPeriod = b.dataset.p; window.C2B_renderDashboard(); });
-      // clickable breakdowns → popups of leads
-      var leadById = {}; allLeads.forEach(function (l) { leadById[l.id] = l; });
-      C.$('dashStatus').querySelectorAll('[data-status]').forEach(function (tr) { tr.addEventListener('click', function () { var k = tr.dataset.status; leadsPopup(stDef(k).label, leads.filter(function (l) { return (l.status || 'new') === k; })); }); });
-      C.$('dashBrand').querySelectorAll('[data-brand]').forEach(function (tr) { tr.addEventListener('click', function () { var b = tr.dataset.brand; leadsPopup('מותג: ' + b, leads.filter(function (l) { return (l.brand || 'לא ידוע') === b; })); }); });
-      C.$('dashAgent').querySelectorAll('[data-agent]').forEach(function (tr) { tr.addEventListener('click', function () { var n = tr.dataset.agent; leadsPopup('סוכן: ' + n, leads.filter(function (l) { return (prof[l.assigned_to] || 'לא שויך') === n; })); }); });
-      C.$('dashStage').querySelectorAll('[data-stage]').forEach(function (tr) { tr.addEventListener('click', function () {
-        var k = tr.dataset.stage;
-        var list = deals.filter(function (d) { return (d.stage || 'initial') === k; }).map(function (d) { var l = leadById[d.lead_id] || {}; return { id: d.lead_id, name: d.client_name || l.name, phone: l.phone, car: ((d.car_make || '') + ' ' + (d.car_model || '')).trim() || l.car, brand: l.brand, status: l.status, _extra: d.total ? nis(d.total) : '' }; });
-        leadsPopup('שלב תיק: ' + stageDef(k).label, list);
-      }); });
+      dashAll = { leads: res[0].data || [], tasks: res[1].data || [], deals: (res[3] && res[3].data) || [], prof: prof };
+      drawDashboard();
     }).catch(function (e) { errBox(e.message || e); });
   };
+  function fbtn(k) { return '<button class="btn btn-ghost btn-sm" id="flt_' + k + '">' + fltLabel(blockR[k]) + '</button>'; }
+  function drawDashboard() {
+    var allLeads = dashAll.leads, allDeals = dashAll.deals, tasks = dashAll.tasks;
+    var gStart = periodStart(dashPeriod);
+    var leads = allLeads.filter(function (l) { return new Date(l.created_at || 0).getTime() >= gStart; });
+    var deals = allDeals.filter(function (d) { return new Date(d.created_at || 0).getTime() >= gStart; });
+    var todayS = periodStart('today');
+    var todayN = allLeads.filter(function (l) { return new Date(l.created_at || 0).getTime() >= todayS; }).length;
+    var dealsTodayN = allDeals.filter(function (d) { return new Date(d.created_at || 0).getTime() >= todayS; }).length;
+    var by = {}; STATUSES.forEach(function (s) { by[s.k] = 0; }); leads.forEach(function (l) { by[l.status || 'new'] = (by[l.status || 'new'] || 0) + 1; });
+    var won = by.won || 0, lost = by.lost || 0, conv = (won + lost) ? Math.round(won / (won + lost) * 100) : 0;
+    var rts = leads.filter(function (l) { return l.first_response_at; }).map(function (l) { return (new Date(l.first_response_at) - new Date(l.created_at)) / 60000; });
+    var avgRt = rts.length ? Math.round(rts.reduce(function (a, b) { return a + b; }, 0) / rts.length) : 0;
+    var openTasks = tasks.filter(function (t) { return !t.done; }).length;
+
+    var pTabs = '<div class="row-between" style="margin-bottom:2px"><div class="tabs" id="dashPeriod">' + PERIODS.map(function (p) { return '<button data-p="' + p[0] + '"' + (dashPeriod === p[0] ? ' class="active"' : '') + '>' + p[1] + '</button>'; }).join('') + '</div><span class="muted" style="font-size:12px">מסנן ראשי (KPI)</span></div>';
+    function hdr(title, k, hint) { return '<div class="row-between"><h3 style="margin:0">' + title + (hint ? ' <span class="muted" style="font-size:12px">' + hint + '</span>' : '') + '</h3>' + fbtn(k) + '</div>'; }
+    view(
+      pTabs +
+      '<div class="cards" style="margin-top:14px">' +
+        C.stat('לידים חדשים היום', todayN, true) + C.stat('עסקאות היום', dealsTodayN, true) +
+        C.stat('סה"כ לידים', leads.length) + C.stat('סה"כ עסקאות', deals.length) +
+        C.stat('בטיפול', by.in_progress || 0) + C.stat('פגישות נקבעו', by.meeting_set || 0) +
+        C.stat('עסקאות שנסגרו', won) + C.stat('אחוז סגירה', conv + '%') +
+        C.stat('זמן תגובה', avgRt ? avgRt + ' דק\'' : '—') + C.stat('משימות פתוחות', openTasks) +
+      '</div>' +
+      '<div class="grid2">' +
+        '<div class="card">' + hdr('לידים לאורך זמן', 'chart') + '<div id="dashChart"></div></div>' +
+        '<div class="card">' + hdr('פילוח לפי סטטוס', 'status', '(לחצו לפתיחת הלידים)') + '<div class="table-scroll"><table><tbody id="dashStatus"></tbody></table></div></div>' +
+      '</div>' +
+      '<div class="card">' + hdr('🗂️ משפך תיקי לקוחות', 'stage', '(לחצו על שלב לצפייה בלקוחות)') + '<div class="table-scroll"><table><tbody id="dashStage"></tbody></table></div></div>' +
+      '<div class="grid2">' +
+        '<div class="card">' + hdr('לידים לפי מותג', 'brand', '(לחצו לפתיחה)') + '<div class="table-scroll"><table><tbody id="dashBrand"></tbody></table></div></div>' +
+        '<div class="card">' + hdr('לידים לפי סוכן מכירות', 'agent', '(לחצו לפתיחה)') + '<div class="table-scroll"><table><thead><tr><th>סוכן</th><th>לידים</th><th>עסקאות</th></tr></thead><tbody id="dashAgent"></tbody></table></div></div>' +
+      '</div>' +
+      '<div class="card">' + hdr('מקורות מובילים', 'source') + '<div class="table-scroll"><table><tbody id="dashSource"></tbody></table></div></div>'
+    );
+    C.$('dashPeriod').addEventListener('click', function (e) { var b = e.target.closest('[data-p]'); if (!b) return; dashPeriod = b.dataset.p; drawDashboard(); });
+    ['chart', 'status', 'stage', 'brand', 'agent', 'source'].forEach(function (k) {
+      drawBlock(k);
+      var btn = C.$('flt_' + k);
+      if (btn) btn.addEventListener('click', function (e) { e.stopPropagation(); dateFilterPopup(btn, blockR[k], function (r) { blockR[k] = r; btn.innerHTML = fltLabel(r); drawBlock(k); }); });
+    });
+  }
+  function drawBlock(k) {
+    var prof = dashAll.prof, allLeads = dashAll.leads, allDeals = dashAll.deals, r = blockR[k];
+    var leads = allLeads.filter(function (l) { return inRange(l.created_at, r); });
+    var deals = allDeals.filter(function (d) { return inRange(d.created_at, r); });
+    var leadById = {}; allLeads.forEach(function (l) { leadById[l.id] = l; });
+    if (k === 'chart') {
+      var byDay = {}; leads.forEach(function (l) { var dd = (l.created_at || '').slice(0, 10); if (dd) byDay[dd] = (byDay[dd] || 0) + 1; });
+      var days = []; for (var i = 13; i >= 0; i--) { var dz = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10); days.push({ d: dz, v: byDay[dz] || 0 }); }
+      C.$('dashChart').innerHTML = svgBars(days);
+    } else if (k === 'status') {
+      var by = {}; leads.forEach(function (l) { by[l.status || 'new'] = (by[l.status || 'new'] || 0) + 1; });
+      C.$('dashStatus').innerHTML = STATUSES.filter(function (s) { return by[s.k]; }).map(function (s) { var pct = leads.length ? Math.round(by[s.k] / leads.length * 100) : 0; return '<tr data-status="' + s.k + '" style="cursor:pointer"><td>' + badge(s.k) + '</td><td>' + by[s.k] + '</td><td style="width:45%"><div class="bar"><span style="width:' + pct + '%;background:' + s.color + '"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>';
+      C.$('dashStatus').querySelectorAll('[data-status]').forEach(function (tr) { tr.addEventListener('click', function () { var kk = tr.dataset.status; leadsPopup(stDef(kk).label, leads.filter(function (l) { return (l.status || 'new') === kk; })); }); });
+    } else if (k === 'stage') {
+      var byStage = {}; DEAL_STAGES.forEach(function (s) { byStage[s.k] = 0; }); deals.forEach(function (d) { byStage[d.stage || 'initial'] = (byStage[d.stage || 'initial'] || 0) + 1; });
+      var maxStage = Math.max(1, Math.max.apply(null, DEAL_STAGES.map(function (s) { return byStage[s.k] || 0; })));
+      C.$('dashStage').innerHTML = DEAL_STAGES.map(function (s) { var n = byStage[s.k] || 0; return '<tr data-stage="' + s.k + '" style="cursor:pointer"><td>' + stageBadge(s.k) + '</td><td>' + n + '</td><td style="width:55%"><div class="bar"><span style="width:' + Math.round(n / maxStage * 100) + '%;background:' + s.color + '"></span></div></td></tr>'; }).join('');
+      C.$('dashStage').querySelectorAll('[data-stage]').forEach(function (tr) { tr.addEventListener('click', function () { var kk = tr.dataset.stage; var list = deals.filter(function (d) { return (d.stage || 'initial') === kk; }).map(function (d) { var l = leadById[d.lead_id] || {}; return { id: d.lead_id, name: d.client_name || l.name, phone: l.phone, car: ((d.car_make || '') + ' ' + (d.car_model || '')).trim() || l.car, brand: l.brand, status: l.status, _extra: d.total ? nis(d.total) : '' }; }); leadsPopup('שלב תיק: ' + stageDef(kk).label, list); }); });
+    } else if (k === 'brand') {
+      var byBrand = {}; leads.forEach(function (l) { var b = l.brand || 'לא ידוע'; byBrand[b] = (byBrand[b] || 0) + 1; });
+      var brands = Object.keys(byBrand).sort(function (a, b) { return byBrand[b] - byBrand[a]; }).slice(0, 10);
+      var maxBrand = brands.length ? byBrand[brands[0]] : 1;
+      C.$('dashBrand').innerHTML = brands.map(function (b) { return '<tr data-brand="' + esc(b) + '" style="cursor:pointer"><td>' + esc(b) + '</td><td>' + byBrand[b] + '</td><td style="width:50%"><div class="bar"><span style="width:' + Math.round(byBrand[b] / maxBrand * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>';
+      C.$('dashBrand').querySelectorAll('[data-brand]').forEach(function (tr) { tr.addEventListener('click', function () { var b = tr.dataset.brand; leadsPopup('מותג: ' + b, leads.filter(function (l) { return (l.brand || 'לא ידוע') === b; })); }); });
+    } else if (k === 'agent') {
+      var byAgent = {}; leads.forEach(function (l) { var n = prof[l.assigned_to] || 'לא שויך'; byAgent[n] = byAgent[n] || { t: 0, w: 0 }; byAgent[n].t++; if (l.status === 'won') byAgent[n].w++; });
+      var agents = Object.keys(byAgent).sort(function (a, b) { return byAgent[b].t - byAgent[a].t; });
+      C.$('dashAgent').innerHTML = agents.map(function (n) { return '<tr data-agent="' + esc(n) + '" style="cursor:pointer"><td>' + esc(n) + '</td><td>' + byAgent[n].t + '</td><td>' + byAgent[n].w + '</td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>';
+      C.$('dashAgent').querySelectorAll('[data-agent]').forEach(function (tr) { tr.addEventListener('click', function () { var n = tr.dataset.agent; leadsPopup('סוכן: ' + n, leads.filter(function (l) { return (prof[l.assigned_to] || 'לא שויך') === n; })); }); });
+    } else if (k === 'source') {
+      var bySource = {}; leads.forEach(function (l) { var s = l.source || 'לא ידוע'; bySource[s] = (bySource[s] || 0) + 1; });
+      var topSrc = Object.keys(bySource).sort(function (a, b) { return bySource[b] - bySource[a]; }).slice(0, 8);
+      var maxSrc = topSrc.length ? bySource[topSrc[0]] : 1;
+      C.$('dashSource').innerHTML = topSrc.map(function (s) { return '<tr data-source="' + esc(s) + '" style="cursor:pointer"><td>' + esc(s) + '</td><td>' + bySource[s] + '</td><td style="width:55%"><div class="bar"><span style="width:' + Math.round(bySource[s] / maxSrc * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>';
+      C.$('dashSource').querySelectorAll('[data-source]').forEach(function (tr) { tr.addEventListener('click', function () { var s = tr.dataset.source; leadsPopup('מקור: ' + s, leads.filter(function (l) { return (l.source || 'לא ידוע') === s; })); }); });
+    }
+  }
   function svgBars(days) {
     var max = Math.max(1, Math.max.apply(null, days.map(function (d) { return d.v; }))), W = 100 / days.length;
     var bars = days.map(function (d, i) { var h = d.v / max * 90; return '<rect x="' + (i * W + W * 0.15) + '" y="' + (100 - h) + '" width="' + (W * 0.7) + '" height="' + h + '" rx="1.5" fill="var(--brand)"><title>' + d.d + ': ' + d.v + '</title></rect>'; }).join('');
