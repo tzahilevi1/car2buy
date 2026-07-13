@@ -285,6 +285,7 @@
       if (r[2] && r[2].data) { profiles = {}; r[2].data.forEach(function (p) { profiles[p.user_id] = p.full_name; }); }
       curDeals = deals;
       dealForm(lead, deals[0] || null, true);   // אם אין עסקה — טופס תיק חדש למילוי
+      deals.forEach(function (dd) { if (dd.signature) ensureSignedPdf(lead, dd, function () { openFileView(id); }); });
     });
   }
   // open a specific deal's file view (used from the file-manager list)
@@ -370,6 +371,8 @@
       '</div>'
     );
     bindLead(lead, prev, next);
+    // ensure signed contracts have a saved PDF (shows in timeline + documents); reload once when created
+    deals.forEach(function (dd) { if (dd.signature) ensureSignedPdf(lead, dd, function () { window.C2B_openLeadCard(lead.id); }); });
   }
   // ---- lead details in two tabs: business info + marketing/attribution ----
   function lf(k, v) { return '<div class="lf"><span class="k">' + k + '</span><span class="v">' + (v == null || v === '' ? '—' : v) + '</span></div>'; }
@@ -887,7 +890,7 @@
     $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
     if (signed) {
       if ($('cPdf')) $('cPdf').addEventListener('click', function () { if (!window.html2pdf) return alert('הורדת PDF אינה זמינה'); window.html2pdf().set({ margin: 8, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' }, filename: 'הסכם_' + (deal.order_no || deal.id) + '.pdf' }).from($('cDoc')).save(); });
-      autoSaveSignedPdf(lead, deal, $('cDoc'));   // persist the signed PDF once → visible in both views
+      ensureSignedPdf(lead, deal);   // persist the signed PDF once → visible in both views
       return;   // signed → view/print/download only
     }
     // ---- remote signing: build link + send via email / WhatsApp / SMS ----
@@ -930,19 +933,29 @@
     }
     $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', false); });
   }
-  // save the signed contract as a PDF to the lead file ONCE (so both views see it)
-  function autoSaveSignedPdf(lead, deal, docEl) {
-    if (!window.html2pdf || !deal.id) return;
+  // generate + save the signed contract PDF ONCE (renders off-screen), so it shows
+  // in the client documents + the timeline for both the agent and the file manager.
+  var pdfGenerating = {};
+  function ensureSignedPdf(lead, deal, onSaved) {
+    if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
     var path = lead.id + '/signed_' + deal.id + '.pdf';
+    pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
-      if (chk.error || (chk.data && chk.data.length)) return;   // already saved
-      window.html2pdf().set({ margin: 8, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(docEl).outputPdf('blob').then(function (blob) {
+      if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved
+      var holder = document.createElement('div');
+      holder.style.cssText = 'position:absolute;left:-9999px;top:0;width:760px;background:#fff;color:#111';
+      holder.innerHTML = contractHTML(deal, deal.signature);
+      document.body.appendChild(holder);
+      window.html2pdf().set({ margin: 8, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(holder).outputPdf('blob').then(function (blob) {
+        if (holder.parentNode) document.body.removeChild(holder);
         db.storage.from('lead-docs').upload(path, blob, { contentType: 'application/pdf', upsert: true }).then(function (u) {
+          pdfGenerating[deal.id] = false;
           if (u.error) return;
-          db.from('lead_documents').insert({ lead_id: lead.id, name: 'הסכם חתום' + (deal.order_no ? ' #' + deal.order_no : ''), storage_path: path });
-          logActivity(lead.id, 'contract', 'נשמר הסכם חתום (PDF) בתיק');
+          db.from('lead_documents').insert({ lead_id: lead.id, name: 'הסכם חתום' + (deal.order_no ? ' #' + deal.order_no : ''), storage_path: path }).then(function () {
+            logActivity(lead.id, 'contract', 'נשמר הסכם חתום (PDF) בתיק').then(function () { if (onSaved) onSaved(); });
+          });
         });
-      }).catch(function () {});
+      }).catch(function () { if (holder.parentNode) document.body.removeChild(holder); pdfGenerating[deal.id] = false; });
     });
   }
   // render a contract element to a PDF (fallback: HTML), save it to the lead file + timeline
