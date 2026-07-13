@@ -22,3 +22,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Local one-off setup files with secrets (never commit)
+*.local.sql

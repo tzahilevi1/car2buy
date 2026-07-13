@@ -205,9 +205,12 @@
       '</div>' +
       '<div class="card" style="padding:14px"><div class="flow" id="leadFlow">' + flowBar(lead.status || 'new') + '</div></div>' +
       '<div class="lead-grid">' +
-        '<div><div class="card"><h3>פרטי לקוח' + (role !== 'admin' && roleShort(role) ? ' · ' + roleShort(role) : '') + '</h3>' + leadDetails(lead, deals, pays, feed.length ? feed[0].ts : null) +
-          (lead.status === 'lost' ? '<div style="margin-top:10px"><label class="muted" style="font-size:12px">סיבת סגירה</label><select class="inp" id="lpReason" style="width:100%;margin-top:4px"><option value="">בחר…</option>' + CLOSE_REASONS.map(function (x) { return '<option' + (lead.close_reason === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
-          (lead.message ? '<div style="margin-top:10px;font-size:14px">🗒️ ' + esc(lead.message) + '</div>' : '') + '</div>' +
+        '<div><div class="card"><h3 style="margin-bottom:12px">פרטי לקוח' + (role !== 'admin' && roleShort(role) ? ' · ' + roleShort(role) : '') + '</h3>' +
+          '<div class="tabs2" id="ldTabs"><button class="active" data-ld="info">📋 פרטים</button><button data-ld="mkt">📣 שיווק ומקורות</button></div>' +
+          '<div id="ldInfo">' + leadInfo(lead, deals, pays, feed.length ? feed[0].ts : null) +
+            (lead.status === 'lost' ? '<div style="margin-top:10px"><label class="muted" style="font-size:12px">סיבת סגירה</label><select class="inp" id="lpReason" style="width:100%;margin-top:4px"><option value="">בחר…</option>' + CLOSE_REASONS.map(function (x) { return '<option' + (lead.close_reason === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
+            (lead.message ? '<div style="margin-top:10px;font-size:14px">🗒️ ' + esc(lead.message) + '</div>' : '') + '</div>' +
+          '<div id="ldMkt" class="hidden">' + leadMkt(lead) + '</div>' + '</div>' +
           '<div class="card"><div class="row-between"><h3 style="margin:0">עסקאות</h3>' + (role !== 'accounting' ? '<button class="btn btn-sm" id="lpNewDeal">+ עסקה</button>' : '') + '</div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
         '</div>' +
         '<div>' +
@@ -221,9 +224,10 @@
     );
     bindLead(lead, prev, next);
   }
-  // ---- role-tailored details (status on top, last-action date, all fields) ----
+  // ---- lead details in two tabs: business info + marketing/attribution ----
   function lf(k, v) { return '<div class="lf"><span class="k">' + k + '</span><span class="v">' + (v == null || v === '' ? '—' : v) + '</span></div>'; }
-  function leadDetails(lead, deals, pays, lastTs) {
+  // TAB 1 — customer + car + owner (the "business" view)
+  function leadInfo(lead, deals, pays, lastTs) {
     var role = C.role || 'admin', deal = deals[0];
     var html = '<div class="lead-fields">';
     html += '<div class="lf"><span class="k">סטטוס לקוח</span><span class="v" id="lpStatusInline">' + badge(lead.status || 'new', true, lead.id) + '</span></div>';
@@ -232,31 +236,37 @@
     html += lf('טלפון ראשי', lead.phone ? '<a href="tel:' + esc(lead.phone) + '">' + esc(lead.phone) + '</a>' : '');
     html += lf('דואר אלקטרוני', lead.email ? '<a href="mailto:' + esc(lead.email) + '">' + esc(lead.email) + '</a>' : '');
     html += lf('באיזה רכב מתעניין', esc(lead.car));
+    html += lf('מותג', esc(lead.brand));
+    html += lf('כתובת - עיר', esc(lead.city));
+    html += lf('איש מכירות', esc(profiles[lead.assigned_to]));
     if (role === 'accounting') {
       var total = deals.reduce(function (s, d) { return s + (Number(d.total) || 0); }, 0);
       var paid = pays.reduce(function (s, p) { return s + (Number(p.amount) || 0); }, 0);
       html += lf('שווי עסקאות', nis(total)) + lf('נגבה בפועל', nis(paid)) + lf('יתרה פתוחה', nis(total - paid));
-      html += lf('חברת שיווק', esc(lead.marketing_company)) + lf('מקור הגעה', esc(lead.source));
     } else if (role === 'files') {
       html += lf('שלב תיק', deal ? stageBadge(deal.stage || 'initial') : '—');
       if (deal) { var cl = deal.checklist || {}; var done = CHECKLIST_ITEMS.filter(function (i) { return cl[i]; }).length; html += lf('צ׳קליסט תיק', done + '/' + CHECKLIST_ITEMS.length); }
       if (deal && deal.commission) html += lf('עמלת סוכן', nis(deal.commission));
-      html += lf('מותג', esc(lead.brand)) + lf('מקור הגעה', esc(lead.source)) + lf('חברת שיווק', esc(lead.marketing_company)) + lf('כתובת - עיר', esc(lead.city));
-    } else {
-      html += lf('מותג', esc(lead.brand));
-      html += lf('מקור הגעה', esc(lead.source));
-      html += lf('חברת שיווק', esc(lead.marketing_company));
-      html += lf('utm_source', esc(lead.utm_source)) + lf('utm_campaign', esc(lead.utm_campaign)) + lf('utm_medium', esc(lead.utm_medium));
-      html += lf('utm_content', esc(lead.utm_content)) + lf('utm_term', esc(lead.utm_term)) + lf('ad_group', esc(lead.ad_group));
-      html += lf('IP', esc(lead.ip));
-      var pageUrl = safeHttpUrl(lead.page_url);
-      html += lf('קישור לעמוד', pageUrl ? '<a href="' + esc(pageUrl) + '" target="_blank" rel="noopener noreferrer" title="' + esc(pageUrl) + '">פתח »</a>' : '');
-      html += lf('כתובת - עיר', esc(lead.city));
-      html += lf('איש מכירות', esc(profiles[lead.assigned_to]));
-      html += lf('lead_id', '<span class="muted" style="font-size:10.5px">' + esc(lead.id) + '</span>');
-      html += lf('נוצר', fmt(lead.created_at));
     }
+    html += lf('נוצר', fmt(lead.created_at));
     return html + '</div>';
+  }
+  // TAB 2 — marketing / source attribution (opens on the "שיווק" tab)
+  function leadMkt(lead) {
+    var pageUrl = safeHttpUrl(lead.page_url);
+    return '<div class="lead-fields">' +
+      lf('מקור הגעה', esc(lead.source)) +
+      lf('חברת שיווק', esc(lead.marketing_company)) +
+      lf('utm_source', esc(lead.utm_source)) +
+      lf('utm_campaign', esc(lead.utm_campaign)) +
+      lf('utm_medium', esc(lead.utm_medium)) +
+      lf('utm_content', esc(lead.utm_content)) +
+      lf('utm_term', esc(lead.utm_term)) +
+      lf('ad_group', esc(lead.ad_group)) +
+      lf('IP', esc(lead.ip)) +
+      lf('קישור לעמוד', pageUrl ? '<a href="' + esc(pageUrl) + '" target="_blank" rel="noopener noreferrer" title="' + esc(pageUrl) + '">פתח »</a>' : '') +
+      lf('lead_id', '<span class="muted" style="font-size:10.5px">' + esc(lead.id) + '</span>') +
+      '</div>';
   }
   // ---- unified timeline feed (everything, newest first) ----
   var FEED_TAG = { note: 'הערה', call: 'שיחה', whatsapp: 'WhatsApp', email: 'מייל', status: 'סטטוס', task: 'משימה', document: 'מסמך', meeting: 'פגישה', deal: 'עסקה', contract: 'הסכם' };
@@ -332,6 +342,9 @@
     var lfb = $('leadFlow');
     if (lfb) lfb.addEventListener('click', function (e) { var st = e.target.closest('[data-status]'); if (!st) return; changeStatus(lead.id, st.dataset.status, lead, function () { window.C2B_openLeadCard(lead.id); }); });
     var rs = $('lpReason'); if (rs) rs.addEventListener('change', function () { db.from('leads').update({ close_reason: rs.value }).eq('id', lead.id); });
+    // details tabs: פרטים ⇄ שיווק ומקורות
+    var ldt = $('ldTabs');
+    if (ldt) ldt.addEventListener('click', function (e) { var b = e.target.closest('[data-ld]'); if (!b) return; ldt.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); $('ldInfo').classList.toggle('hidden', b.dataset.ld !== 'info'); $('ldMkt').classList.toggle('hidden', b.dataset.ld !== 'mkt'); });
     // deals list
     if ($('lpNewDeal')) $('lpNewDeal').addEventListener('click', function () { dealForm(lead, null); });
     $('lpDeals').querySelectorAll('[data-deal-id]').forEach(function (el) { el.addEventListener('click', function () { var dd = curDeals.filter(function (x) { return x.id === el.dataset.dealId; })[0]; dealForm(lead, dd); }); });

@@ -302,14 +302,29 @@
   // ---------- TASKS (all open) ----------
   function renderTasks() {
     loading();
-    db.from('tasks').select('*').order('due_at', { ascending: true }).then(function (r) {
-      if (r.error) return errBox(r.error.message);
-      var tasks = r.data || [];
+    Promise.all([
+      db.from('tasks').select('*').order('due_at', { ascending: true }),
+      db.from('leads').select('id,name,phone,car')
+    ]).then(function (res) {
+      if (res[0].error) return errBox(res[0].error.message);
+      var tasks = res[0].data || [], lmap = {}, now = Date.now();
+      (res[1].data || []).forEach(function (l) { lmap[l.id] = l; });
+      var open = tasks.filter(function (t) { return !t.done; }).length, doneN = tasks.length - open;
       var rows = tasks.map(function (t) {
-        return '<tr><td><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '></td><td' + (t.done ? ' class="muted" style="text-decoration:line-through"' : '') + '>' + esc(t.title) + '</td><td class="muted">' + (t.due_at ? fmtDateTime(t.due_at) : '—') + '</td><td>' + (t.lead_id ? '<a href="#" data-lead="' + t.lead_id + '">פתח ליד →</a>' : '') + '</td></tr>';
+        var over = !t.done && t.due_at && new Date(t.due_at).getTime() < now;
+        var flag = t.done ? '<span class="done-badge">✓ בוצע</span>' : '<span class="task-open">● פתוחה</span>';
+        var l = lmap[t.lead_id];
+        var client = l ? '<b>' + esc(l.name || '—') + '</b>' + (l.phone ? '<div class="muted" style="font-size:11px">' + esc(l.phone) + (l.car ? ' · ' + esc(l.car) : '') + '</div>' : '') : '<span class="muted">—</span>';
+        return '<tr' + (t.done ? ' style="background:rgba(22,163,74,.05)"' : '') + '><td><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '></td>' +
+          '<td>' + flag + '</td>' +
+          '<td' + (t.done ? ' class="muted" style="text-decoration:line-through"' : '') + '>' + esc(t.title) + '</td>' +
+          '<td>' + client + '</td>' +
+          '<td class="muted">' + (t.created_at ? fmtDateTime(t.created_at) : '—') + '</td>' +
+          '<td' + (over ? ' style="color:var(--danger);font-weight:600"' : ' class="muted"') + '>' + (t.due_at ? fmtDateTime(t.due_at) : '—') + '</td>' +
+          '<td>' + (t.lead_id ? '<a href="#" data-lead="' + t.lead_id + '">פתח ליד →</a>' : '') + '</td></tr>';
       }).join('');
-      view('<div class="card"><h3>משימות (' + tasks.filter(function (t) { return !t.done; }).length + ' פתוחות)</h3><div class="table-scroll"><table><thead><tr><th></th><th>משימה</th><th>מועד</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="4" class="empty">אין משימות</td></tr>') + '</tbody></table></div></div>');
-      $('view').querySelectorAll('input[data-task]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('tasks').update({ done: cb.checked }).eq('id', cb.dataset.task).then(refreshBadges); }); });
+      view('<div class="card"><h3>משימות <span class="muted" style="font-size:13px">(' + open + ' פתוחות · ' + doneN + ' בוצעו)</span></h3><div class="table-scroll"><table><thead><tr><th></th><th>סטטוס</th><th>משימה</th><th>לקוח</th><th>נוצרה</th><th>מועד</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="7" class="empty">אין משימות</td></tr>') + '</tbody></table></div></div>');
+      $('view').querySelectorAll('input[data-task]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('tasks').update({ done: cb.checked }).eq('id', cb.dataset.task).then(function () { refreshBadges(); renderTasks(); }); }); });
       $('view').querySelectorAll('a[data-lead]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); window.C2B_openLeadCard(a.dataset.lead); }); });
     });
   }

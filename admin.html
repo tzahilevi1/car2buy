@@ -157,6 +157,14 @@
   .flow .st.clk{cursor:pointer;transition:transform .1s,box-shadow .15s}
   .flow .st.clk:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 
+  /* tabs (reports/files) + segmented tabs (lead card) */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tabs button{background:var(--surface-2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:7px 13px;font-size:13px;font-weight:600}
+  .tabs button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .tabs2{display:inline-flex;gap:4px;background:var(--surface-2);border-radius:12px;padding:4px;margin-bottom:12px}
+  .tabs2 button{background:transparent;border:none;border-radius:9px;padding:7px 15px;font-size:13px;font-weight:700;color:var(--muted)}
+  .tabs2 button.active{background:var(--surface);color:var(--brand);box-shadow:var(--shadow)}
+
   /* filter bar */
   .filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px;padding:10px;background:var(--surface-2);border-radius:12px}
   .filterbar select,.filterbar input{padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-size:13px;font-family:inherit}
