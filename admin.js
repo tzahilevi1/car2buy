@@ -63,7 +63,32 @@
 
   // ---------- auth ----------
   function showLogin() { $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
-  function showApp(session) { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('whoami').textContent = session.user.email; refreshBadges(); go('dashboard'); }
+  function showApp(session) {
+    $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('whoami').textContent = session.user.email;
+    db.from('profiles').select('role,full_name').eq('user_id', session.user.id).single().then(function (r) {
+      window.C2B.role = (r.data && r.data.role) || 'sales';
+      if (r.data && r.data.full_name) $('whoami').textContent = r.data.full_name + ' · ' + roleLabel(window.C2B.role);
+      applyRole(window.C2B.role); refreshBadges(); go('dashboard');
+    });
+  }
+  var ROLE_LABELS = { admin: 'מנהל מערכת', sales: 'סוכן מכירות', files: 'מנהלת תיקים', accounting: 'מנהלת חשבונות' };
+  function roleLabel(r) { return ROLE_LABELS[r] || r; }
+  var ROLE_VIEWS = {
+    sales: ['dashboard', 'leads', 'files', 'cars', 'appointments', 'tasks'],
+    files: ['dashboard', 'files', 'leads', 'appointments', 'tasks'],
+    accounting: ['dashboard', 'accounting', 'reports']
+  };
+  function navAllowed(nav, role) {
+    if (role === 'admin' || !role) return true;
+    if (!nav || nav.indexOf('soon:') === 0 || nav === 'users') return role === 'admin';
+    return (ROLE_VIEWS[role] || ['dashboard']).indexOf(nav) >= 0;
+  }
+  function applyRole(role) {
+    $('nav').querySelectorAll('.nav-item, .nav-group-label').forEach(function (it) {
+      if (it.classList.contains('nav-group-label')) { it.style.display = role === 'admin' ? '' : 'none'; return; }
+      it.style.display = navAllowed(it.dataset.nav, role) ? '' : 'none';
+    });
+  }
   $('loginForm').addEventListener('submit', function (e) {
     e.preventDefault(); $('loginErr').textContent = '';
     db.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value }).then(function (r) {
@@ -84,6 +109,8 @@
   }
   function go(nav, opts) {
     opts = opts || {};
+    if (window.C2B && window.C2B.role && !navAllowed(nav, window.C2B.role)) { nav = 'dashboard'; opts = {}; }
+    if (nav === 'users') { setActive(nav); if (window.innerWidth <= 820) $('side').classList.remove('open'); return renderUsers(); }
     setActive(nav, opts.status);
     if (window.innerWidth <= 820) $('side').classList.remove('open');
     if (nav === 'dashboard') return window.C2B_renderDashboard && window.C2B_renderDashboard();
@@ -234,6 +261,26 @@
     }).catch(function (e) { errBox(e.message || e); });
   }
   var repTab = 'marketing';
+
+  // ---------- USERS & ROLES (admin only) ----------
+  function renderUsers() {
+    loading();
+    db.from('profiles').select('*').order('created_at', { ascending: true }).then(function (r) {
+      if (r.error) return errBox(r.error.message);
+      var ps = r.data || [];
+      var ROLES = [['admin', 'מנהל מערכת'], ['sales', 'סוכן מכירות'], ['files', 'מנהלת תיקי לקוחות'], ['accounting', 'מנהלת חשבונות']];
+      var rows = ps.map(function (p) {
+        return '<tr><td><span class="avatar" style="margin-inline-end:8px">' + esc((p.full_name || '?').charAt(0)) + '</span>' + esc(p.full_name) + '</td>' +
+          '<td><select class="inp" data-role="' + p.user_id + '">' + ROLES.map(function (x) { return '<option value="' + x[0] + '"' + (p.role === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></td>' +
+          '<td><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-active="' + p.user_id + '"' + (p.active ? ' checked' : '') + '> פעיל</label></td></tr>';
+      }).join('');
+      view('<div class="card"><h3>משתמשים והרשאות</h3><p class="muted" style="font-size:13px">צור משתמשים ב-Supabase → Authentication → Users → Add user. הם יופיעו כאן אוטומטית (ברירת מחדל: סוכן מכירות), וכאן קובעים את התפקיד.</p>' +
+        '<div class="table-scroll"><table><thead><tr><th>שם</th><th>תפקיד</th><th>סטטוס</th></tr></thead><tbody>' + (rows || '<tr><td colspan="3" class="empty">אין משתמשים</td></tr>') + '</tbody></table></div>' +
+        '<div class="muted" style="font-size:12.5px;margin-top:10px">תפקידים: <b>מנהל מערכת</b> — הכל · <b>סוכן מכירות</b> — לידים/עסקאות/תיקים/רכבים/יומן/משימות · <b>מנהלת תיקים</b> — תיקים/לידים/מסמכים · <b>מנהלת חשבונות</b> — הנהלת חשבונות/דוחות.</div></div>');
+      $('view').querySelectorAll('select[data-role]').forEach(function (s) { s.addEventListener('change', function () { db.from('profiles').update({ role: s.value }).eq('user_id', s.dataset.role).then(function (u) { if (u.error) alert('שגיאה: ' + u.error.message); }); }); });
+      $('view').querySelectorAll('input[data-active]').forEach(function (c) { c.addEventListener('change', function () { db.from('profiles').update({ active: c.checked }).eq('user_id', c.dataset.active); }); });
+    });
+  }
 
   // ---------- SOON placeholders ----------
   var SOON = {
