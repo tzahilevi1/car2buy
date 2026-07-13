@@ -955,17 +955,19 @@
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
       if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved
-      // render ON-SCREEN behind a white "generating" overlay — html2canvas reliably
-      // captures only painted, on-screen elements (off-screen targets render blank).
+      // render at the TOP of the document (scroll reset) behind a white overlay —
+      // a scrolled position:fixed target makes html2canvas capture the wrong region → blank.
+      var sx = window.scrollX, sy = window.scrollY;
       var ov = document.createElement('div');
       ov.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:99998;display:flex;align-items:center;justify-content:center;color:#F5691E;font-weight:800;font-size:18px';
       ov.textContent = 'מכין מסמך חתום…';
       var holder = document.createElement('div');
-      holder.style.cssText = 'position:fixed;top:0;left:0;width:760px;background:#fff;color:#111;padding:16px;z-index:99997';
+      holder.style.cssText = 'position:absolute;top:0;left:0;width:760px;background:#fff;color:#111;padding:16px;z-index:99997';
       holder.innerHTML = contractHTML(deal, deal.signature);
       document.body.appendChild(holder); document.body.appendChild(ov);
-      function cleanup() { [holder, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); }
-      window.html2pdf().set({ margin: 8, html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true }, jsPDF: { unit: 'mm', format: 'a4' } }).from(holder).outputPdf('blob').then(function (blob) {
+      window.scrollTo(0, 0);
+      function cleanup() { [holder, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); window.scrollTo(sx, sy); }
+      window.html2pdf().set({ margin: 8, image: { type: 'jpeg', quality: 0.96 }, html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, scrollX: 0, scrollY: 0, windowWidth: 820, windowHeight: Math.max(holder.scrollHeight + 60, 1400) }, jsPDF: { unit: 'mm', format: 'a4' } }).from(holder).outputPdf('blob').then(function (blob) {
         cleanup();
         db.storage.from('lead-docs').upload(path, blob, { contentType: 'application/pdf', upsert: true }).then(function (u) {
           pdfGenerating[deal.id] = false;
