@@ -275,6 +275,22 @@
     { k: 'contract', icon: '✍', label: 'הסכם', roles: ['admin', 'sales', 'files'] }
   ];
   function roleShort(role) { return { sales: 'מכירות', files: 'תיקי לקוחות', accounting: 'הנה״ח' }[role] || ''; }
+  // customizable action bar (order / labels / visibility) — stored per browser
+  function getActionCfg() {
+    var def = LEAD_ACTIONS.map(function (a) { return { k: a.k, label: a.label, on: true }; });
+    try {
+      var saved = JSON.parse(localStorage.getItem('c2b_lead_actions') || 'null');
+      if (!saved || !saved.length) return def;
+      var byK = {}; saved.forEach(function (s) { byK[s.k] = s; });
+      var merged = saved.filter(function (s) { return LEAD_ACTIONS.some(function (a) { return a.k === s.k; }); });
+      def.forEach(function (d) { if (!byK[d.k]) merged.push(d); });   // append newly-added actions
+      return merged;
+    } catch (e) { return def; }
+  }
+  C.leadActionsMeta = LEAD_ACTIONS.map(function (a) { return { k: a.k, icon: a.icon, label: a.label }; });
+  C.getActionCfg = getActionCfg;
+  C.saveActionCfg = function (cfg) { try { localStorage.setItem('c2b_lead_actions', JSON.stringify(cfg)); } catch (e) {} };
+  C.resetActionCfg = function () { try { localStorage.removeItem('c2b_lead_actions'); } catch (e) {} };
   function docIsImage(name) { return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name || ''); }
   // Supabase storage keys must be ASCII-safe — sanitize the filename (Hebrew/spaces → _)
   function safeStoragePath(leadId, name) {
@@ -352,11 +368,13 @@
     var idx = orderIds.indexOf(lead.id);
     var prev = idx > 0 ? orderIds[idx - 1] : null, next = idx >= 0 && idx < orderIds.length - 1 ? orderIds[idx + 1] : null;
     var feed = buildFeed(acts, tasks, docs, deals, pays, urls);
-    var actBtns = LEAD_ACTIONS.filter(function (a) { return a.roles.indexOf(role) >= 0; }).map(function (a) {
-      if (a.k === 'call') return lead.phone ? '<a class="btn btn-ghost btn-sm" href="tel:' + esc(lead.phone) + '">' + a.icon + ' ' + a.label + '</a>' : '';
-      if (a.k === 'wa') return wa ? '<a class="btn btn-ghost btn-sm" href="' + wa + '" target="_blank" rel="noopener">' + a.icon + ' ' + a.label + '</a>' : '';
-      if (a.k === 'mail') return lead.email ? '<a class="btn btn-ghost btn-sm" href="mailto:' + esc(lead.email) + '">' + a.icon + ' ' + a.label + '</a>' : '';
-      return '<button class="btn btn-ghost btn-sm" data-act2="' + a.k + '">' + a.icon + ' ' + a.label + '</button>';
+    var metaByK = {}; LEAD_ACTIONS.forEach(function (a) { metaByK[a.k] = a; });
+    var actBtns = getActionCfg().filter(function (c) { var a = metaByK[c.k]; return c.on !== false && a && a.roles.indexOf(role) >= 0; }).map(function (c) {
+      var a = metaByK[c.k], lbl = esc(c.label || a.label);
+      if (a.k === 'call') return lead.phone ? '<a class="btn btn-ghost btn-sm" href="tel:' + esc(lead.phone) + '">' + a.icon + ' ' + lbl + '</a>' : '';
+      if (a.k === 'wa') return wa ? '<a class="btn btn-ghost btn-sm" href="' + wa + '" target="_blank" rel="noopener">' + a.icon + ' ' + lbl + '</a>' : '';
+      if (a.k === 'mail') return lead.email ? '<a class="btn btn-ghost btn-sm" href="mailto:' + esc(lead.email) + '">' + a.icon + ' ' + lbl + '</a>' : '';
+      return '<button class="btn btn-ghost btn-sm" data-act2="' + a.k + '">' + a.icon + ' ' + lbl + '</button>';
     }).join('');
     view(
       '<div class="lead-top">' +

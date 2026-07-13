@@ -594,7 +594,8 @@
           '<div style="margin:10px 0;line-height:2.2">' + chips + '</div>' +
           '<div style="display:flex;gap:8px"><input class="inp" data-add="' + key + '" placeholder="ערך חדש…" style="flex:1"><button class="btn btn-sm" data-addbtn="' + key + '">+ הוסף</button></div></div>';
       }).join('');
-      view('<h2 style="margin:0 0 6px">הגדרות ורשימות</h2><p class="muted" style="font-size:13px;margin-bottom:16px">ערכי הרשימות שמופיעים כאפשרויות בחירה בשדות (מותג, מקור הגעה, חברת שיווק, utm_source) — בטופס עריכת ליד ובסינון.</p>' + cards);
+      view('<h2 style="margin:0 0 6px">הגדרות ורשימות</h2><p class="muted" style="font-size:13px;margin-bottom:16px">ערכי הרשימות שמופיעים כאפשרויות בחירה בשדות (מותג, מקור הגעה, חברת שיווק, utm_source) — בטופס עריכת ליד ובסינון.</p>' + cards + actionEditorCard());
+      bindActionEditor();
       $('view').querySelectorAll('[data-addbtn]').forEach(function (b) {
         b.addEventListener('click', function () {
           var key = b.dataset.addbtn, inp = $('view').querySelector('[data-add="' + key + '"]'), val = (inp.value || '').trim();
@@ -613,6 +614,31 @@
         });
       });
     });
+  }
+  // ---- visual editor for the lead-card action bar (order / rename / show-hide) ----
+  function actionEditorCard() {
+    var cfg = (window.C2B.getActionCfg && window.C2B.getActionCfg()) || [], meta = {};
+    (window.C2B.leadActionsMeta || []).forEach(function (m) { meta[m.k] = m; });
+    var rows = cfg.map(function (c, i) {
+      var m = meta[c.k] || { icon: '', label: c.k };
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)">' +
+        '<span style="font-size:18px;width:24px;text-align:center">' + m.icon + '</span>' +
+        '<input class="inp ae-label" data-i="' + i + '" value="' + esc(c.label || m.label) + '" style="flex:1">' +
+        '<label style="display:flex;gap:5px;align-items:center;font-size:12.5px;white-space:nowrap"><input type="checkbox" class="ae-on" data-i="' + i + '"' + (c.on !== false ? ' checked' : '') + '> מוצג</label>' +
+        '<button class="btn btn-ghost btn-sm ae-up" data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+        '<button class="btn btn-ghost btn-sm ae-down" data-i="' + i + '"' + (i === cfg.length - 1 ? ' disabled' : '') + '>↓</button></div>';
+    }).join('');
+    return '<div class="card"><div class="row-between"><h3 style="margin:0">🎛️ עריכת סרגל הפעולות בכרטיס ליד</h3><button class="btn btn-ghost btn-sm" id="aeReset">↺ שחזר ברירת מחדל</button></div>' +
+      '<p class="muted" style="font-size:12.5px;margin:4px 0 10px">סדר מחדש (↑↓), שנה שמות, והצג/הסתר את הכפתורים. השינוי נשמר לדפדפן זה ומשפיע על כרטיס הליד.</p>' + rows + '</div>';
+  }
+  function bindActionEditor() {
+    var cfg = (window.C2B.getActionCfg && window.C2B.getActionCfg()) || [];
+    function save() { window.C2B.saveActionCfg && window.C2B.saveActionCfg(cfg); }
+    $('view').querySelectorAll('.ae-label').forEach(function (inp) { inp.addEventListener('change', function () { cfg[+inp.dataset.i].label = inp.value.trim(); save(); }); });
+    $('view').querySelectorAll('.ae-on').forEach(function (cb) { cb.addEventListener('change', function () { cfg[+cb.dataset.i].on = cb.checked; save(); }); });
+    $('view').querySelectorAll('.ae-up').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.i; if (i <= 0) return; var t = cfg[i - 1]; cfg[i - 1] = cfg[i]; cfg[i] = t; save(); renderSettings(); }); });
+    $('view').querySelectorAll('.ae-down').forEach(function (b) { b.addEventListener('click', function () { var i = +b.dataset.i; if (i >= cfg.length - 1) return; var t = cfg[i + 1]; cfg[i + 1] = cfg[i]; cfg[i] = t; save(); renderSettings(); }); });
+    if ($('aeReset')) $('aeReset').addEventListener('click', function () { if (!confirm('לשחזר את סדר ושמות הכפתורים לברירת מחדל?')) return; window.C2B.resetActionCfg && window.C2B.resetActionCfg(); renderSettings(); });
   }
 
   // ---------- SOON placeholders ----------
