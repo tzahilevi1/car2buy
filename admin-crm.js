@@ -988,10 +988,14 @@
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
-    var path = lead.id + '/signed_' + deal.id + '.pdf';
+    var path = lead.id + '/signed_' + deal.id + '_v2.pdf';       // v2 = the fixed generator
+    var oldPath = lead.id + '/signed_' + deal.id + '.pdf';       // v1 could be a blank PDF from old code
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
-      if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved
+      if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v2)
+      // clean up a possible blank v1 once, then generate the correct v2
+      db.from('lead_documents').delete().eq('storage_path', oldPath);
+      db.storage.from('lead-docs').remove([oldPath]);
       genContractPdf(deal, function (blob) {
         if (!blob) { pdfGenerating[deal.id] = false; return; }
         db.storage.from('lead-docs').upload(path, blob, { contentType: 'application/pdf', upsert: true }).then(function (u) {

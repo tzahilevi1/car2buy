@@ -583,10 +583,10 @@
   function renderSettings() {
     loading();
     db.from('field_options').select('*').order('field', { ascending: true }).order('value', { ascending: true }).then(function (r) {
-      if (r.error) return errBox(r.error.message + ' — ודא שהרצת את field-lists.sql');
-      var opts = r.data || [], byField = {};
+      var opts = (r && r.data) || [], byField = {}, fieldErr = r && r.error;
       LIST_FIELDS.forEach(function (f) { byField[f[0]] = []; });
       opts.forEach(function (o) { (byField[o.field] = byField[o.field] || []).push(o); });
+      var warn = fieldErr ? '<div class="card" style="border:1px solid var(--warn);background:rgba(245,158,11,.08)"><b style="color:var(--warn)">⚠️ רשימות השדות לא זמינות</b> — הריצו את <b>field-lists.sql</b> (הרשימות למטה יהיו ריקות עד אז). עורך סרגל הפעולות עובד בכל מקרה.</div>' : '';
       var cards = LIST_FIELDS.map(function (f) {
         var key = f[0], label = f[1];
         var chips = (byField[key] || []).map(function (o) { return '<span class="tag" style="margin:3px">' + esc(o.value) + ' <b data-del="' + o.id + '" style="cursor:pointer;color:var(--danger)">✕</b></span>'; }).join('') || '<span class="muted" style="font-size:13px">אין ערכים עדיין</span>';
@@ -594,7 +594,7 @@
           '<div style="margin:10px 0;line-height:2.2">' + chips + '</div>' +
           '<div style="display:flex;gap:8px"><input class="inp" data-add="' + key + '" placeholder="ערך חדש…" style="flex:1"><button class="btn btn-sm" data-addbtn="' + key + '">+ הוסף</button></div></div>';
       }).join('');
-      view('<h2 style="margin:0 0 6px">הגדרות ורשימות</h2><p class="muted" style="font-size:13px;margin-bottom:16px">ערכי הרשימות שמופיעים כאפשרויות בחירה בשדות (מותג, מקור הגעה, חברת שיווק, utm_source) — בטופס עריכת ליד ובסינון.</p>' + cards + actionEditorCard());
+      view('<h2 style="margin:0 0 6px">הגדרות ורשימות</h2><p class="muted" style="font-size:13px;margin-bottom:16px">ערכי הרשימות שמופיעים כאפשרויות בחירה בשדות (מותג, מקור הגעה, חברת שיווק, utm_source) — בטופס עריכת ליד ובסינון.</p>' + warn + actionEditorCard() + cards);
       bindActionEditor();
       $('view').querySelectorAll('[data-addbtn]').forEach(function (b) {
         b.addEventListener('click', function () {
