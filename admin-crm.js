@@ -639,7 +639,7 @@
   function dealStatusLabel(s) { return { quote: 'הצעת מחיר', ordered: 'הזמנה', cancelled: 'בוטל' }[s] || s; }
   function dealList(deals) {
     if (!deals.length) return '<p class="muted" style="margin:6px 0">אין עסקאות</p>';
-    return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b> · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + (d.signature ? ' · <span style="color:var(--ok);font-weight:700">✅ נחתם</span>' : '') + '</div>'; }).join('');
+    return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b> · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + (d.signature ? '<div style="margin-top:6px;display:flex;align-items:center;gap:8px"><span style="color:var(--ok);font-weight:700">✅ נחתם</span><img src="' + d.signature + '" alt="חתימה" style="height:40px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px"></div>' : '') + '</div>'; }).join('');
   }
   function dealForm(lead, deal, fileMode) {
     deal = deal || {}; var ad = deal.addons || {};
@@ -872,7 +872,7 @@
     var signed = !!deal.signature;
     view(
       '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם — ' + esc(deal.client_name || '') + (signed ? ' <span class="tag" style="border-color:var(--ok);color:var(--ok);background:rgba(22,163,74,.1)">✅ נחתם</span>' : '') + '</h3>' +
-        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס / PDF</button>' + (signed ? '' : ' <button class="btn btn-sm" id="cSend">📤 שלח ושמור PDF</button>') + '</div></div>' +
+        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button>' + (signed ? ' <button class="btn btn-sm" id="cPdf">📄 הורד PDF חתום</button>' : ' <button class="btn btn-sm" id="cSend">📤 שלח ושמור PDF</button>') + '</div></div>' +
       (signed ? '<div class="card" style="border:1px solid var(--ok);background:rgba(22,163,74,.06)"><b style="color:var(--ok)">✅ ההסכם נחתם על ידי הלקוח' + (deal.signed_at ? ' בתאריך ' + fmt(deal.signed_at) : '') + '</b><span class="muted"> — למטה ההסכם המלא עם חתימת הלקוח.</span></div>' : '') +
       '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal, deal.signature || null) + '</div>' +
       (signed ? '' :
@@ -885,7 +885,11 @@
     var $ = C.$;
     $('cBack').addEventListener('click', function () { dealForm(lead, deal); });
     $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
-    if (signed) return;   // signed → view/print only; the client signs via the link (no local signing → no forgery)
+    if (signed) {
+      if ($('cPdf')) $('cPdf').addEventListener('click', function () { if (!window.html2pdf) return alert('הורדת PDF אינה זמינה'); window.html2pdf().set({ margin: 8, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' }, filename: 'הסכם_' + (deal.order_no || deal.id) + '.pdf' }).from($('cDoc')).save(); });
+      autoSaveSignedPdf(lead, deal, $('cDoc'));   // persist the signed PDF once → visible in both views
+      return;   // signed → view/print/download only
+    }
     // ---- remote signing: build link + send via email / WhatsApp / SMS ----
     if (deal.id) {
       var signBase = location.href.split('#')[0].replace(/[^/]*$/, 'sign.html');
@@ -925,6 +929,21 @@
       $('cCopy').addEventListener('click', function () { withUrl(function (u) { (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { linkMsg.style.color = 'var(--ok)'; linkMsg.textContent = '🔗 הקישור הועתק'; }).catch(function () { linkMsg.style.color = 'var(--txt)'; linkMsg.textContent = u; }); }); });
     }
     $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', false); });
+  }
+  // save the signed contract as a PDF to the lead file ONCE (so both views see it)
+  function autoSaveSignedPdf(lead, deal, docEl) {
+    if (!window.html2pdf || !deal.id) return;
+    var path = lead.id + '/signed_' + deal.id + '.pdf';
+    db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
+      if (chk.error || (chk.data && chk.data.length)) return;   // already saved
+      window.html2pdf().set({ margin: 8, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(docEl).outputPdf('blob').then(function (blob) {
+        db.storage.from('lead-docs').upload(path, blob, { contentType: 'application/pdf', upsert: true }).then(function (u) {
+          if (u.error) return;
+          db.from('lead_documents').insert({ lead_id: lead.id, name: 'הסכם חתום' + (deal.order_no ? ' #' + deal.order_no : ''), storage_path: path });
+          logActivity(lead.id, 'contract', 'נשמר הסכם חתום (PDF) בתיק');
+        });
+      }).catch(function () {});
+    });
   }
   // render a contract element to a PDF (fallback: HTML), save it to the lead file + timeline
   function finishContract(lead, deal, docEl, activityText, docTitle, signedContract) {
