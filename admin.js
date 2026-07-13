@@ -428,7 +428,7 @@
         '<div class="field" style="margin:0"><label>אימייל</label><input class="inp" id="nuEmail" type="email" placeholder="name@email.com"></div></div>' +
         '<div class="field" style="margin-top:12px"><label>תפקיד</label><select class="inp" id="nuRole">' + ROLES.map(function (x) { return '<option value="' + x[0] + '">' + x[1] + '</option>'; }).join('') + '</select></div>' +
         '<label style="font-size:13px;color:var(--muted);margin-top:12px;display:block">תצוגות שהמשתמש יראה (מוגדר לפי התפקיד — אפשר להוסיף/להוריד):</label><div id="nuViews">' + viewChecks('nv', DEFAULT_VIEWS.sales) + '</div>' +
-        '<div style="margin-top:14px"><button class="btn" id="nuCreate">צור משתמש ושלח הזמנה</button> <span id="nuMsg" style="font-size:13px;margin-inline-start:10px"></span></div></div>';
+        '<div style="margin-top:14px"><button class="btn" id="nuCreate">צור משתמש ושלח הזמנה</button> <span id="nuMsg" style="font-size:13px;margin-inline-start:10px"></span></div><div id="nuResult" style="margin-top:12px"></div></div>';
       view('<h2 style="margin:0 0 14px">משתמשים והרשאות</h2>' + addForm +
         '<div class="card"><h3>משתמשים קיימים (' + ps.length + ')</h3>' +
         '<div class="table-scroll"><table><thead><tr><th>שם</th><th>תפקיד</th><th>תצוגות מותרות</th><th>פעיל</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="5" class="empty">אין משתמשים</td></tr>') + '</tbody></table></div>' +
@@ -446,9 +446,15 @@
         db.rpc('admin_create_user', { p_email: email, p_name: name || email, p_role: role, p_views: views }).then(function (res) {
           btn.disabled = false;
           if (res.error) { msg.style.color = 'var(--danger)'; msg.textContent = 'שגיאה: ' + res.error.message; return; }
-          msg.style.color = 'var(--ok)'; msg.textContent = '✅ נשלחה הזמנה ל-' + email;
+          var d = res.data || {};
+          msg.textContent = '';
+          // always show the credentials (works even if email is blocked)
+          $('nuResult').innerHTML = '<div class="card" style="box-shadow:none;border:1px solid var(--ok);background:rgba(22,163,74,.06);margin:0">' +
+            '<b style="color:var(--ok)">✅ המשתמש נוצר.</b> נשלח מייל עם הפרטים. אם לא הגיע — מסרו ידנית:' +
+            '<div style="margin-top:8px;font-family:monospace;font-size:13px;background:var(--surface);padding:10px;border-radius:8px">אימייל: ' + esc(d.email || email) + '<br>סיסמה זמנית: <b>' + esc(d.password || '') + '</b></div>' +
+            '<div id="nuDiag" class="muted" style="font-size:12.5px;margin-top:8px">בודק סטטוס יצירה ושליחה…</div></div>';
           $('nuName').value = ''; $('nuEmail').value = '';
-          setTimeout(renderUsers, 2500);
+          diagnoseInvite(d);
         });
       });
 
@@ -547,6 +553,30 @@
         });
       }, 1500);
     });
+  }
+
+  // after creating a user, poll the real async results so failures aren't silent
+  function netParse(c) { try { return typeof c === 'string' ? JSON.parse(c) : c; } catch (e) { return null; } }
+  function diagnoseInvite(d) {
+    if (!$('nuDiag')) return;
+    var createDone = (d.create_req == null), emailDone = (d.email_req == null);
+    var createTxt = 'ממתין…', emailTxt = d.emailed ? 'ממתין…' : 'לא נשלח (אין resend_key ב-Vault)';
+    var tries = 0;
+    function paint() { if ($('nuDiag')) $('nuDiag').innerHTML = 'יצירת משתמש: ' + createTxt + '<br>שליחת מייל: ' + emailTxt; }
+    function addRefresh() { var el = $('nuDiag'); if (!el) return; var b = document.createElement('button'); b.className = 'btn btn-ghost btn-sm'; b.style.marginTop = '8px'; b.textContent = 'רענן רשימת משתמשים'; b.addEventListener('click', renderUsers); el.appendChild(document.createElement('br')); el.appendChild(b); }
+    paint();
+    var poll = setInterval(function () {
+      tries++;
+      if (tries > 10 || (createDone && emailDone)) { clearInterval(poll); paint(); addRefresh(); return; }
+      if (!createDone) db.rpc('admin_net_result', { p_id: d.create_req }).then(function (r) {
+        if (r.error || !r.data) return; createDone = true; var b = netParse(r.data.content) || {};
+        createTxt = (r.data.status >= 200 && r.data.status < 300) ? '<span style="color:var(--ok)">✔ הצליחה</span>' : '<span style="color:var(--danger)">✖ נכשלה (' + r.data.status + '): ' + esc(b.msg || b.error_description || b.message || b.error || '') + '</span>'; paint();
+      });
+      if (!emailDone) db.rpc('admin_net_result', { p_id: d.email_req }).then(function (r) {
+        if (r.error || !r.data) return; emailDone = true; var b = netParse(r.data.content) || {};
+        emailTxt = (r.data.status >= 200 && r.data.status < 300) ? '<span style="color:var(--ok)">✔ נשלח בהצלחה</span>' : '<span style="color:var(--danger)">✖ נכשל (' + r.data.status + '): ' + esc(b.message || b.error || '') + '</span> — כנראה הדומיין ב-Resend לא מאומת'; paint();
+      });
+    }, 1500);
   }
 
   // ---------- SETTINGS: managed field lists (admin) ----------
