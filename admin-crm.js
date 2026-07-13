@@ -283,7 +283,7 @@
     var statusSel = '<div class="field" style="margin:0"><label>סטטוס הזמנה</label><select class="inp" id="dl_status" style="width:100%">' + [['quote', 'הצעת מחיר'], ['ordered', 'הזמנה'], ['cancelled', 'בוטל']].map(function (s) { return '<option value="' + s[0] + '"' + ((deal.status || 'quote') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></div>';
     view(
       '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">→ לכרטיס</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
-        '<div><button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
+        '<div><button class="btn btn-ghost btn-sm" id="dlContract">✍ הסכם לחתימה</button> <button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
       '<div class="card" style="padding:12px"><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' +
       '<div class="grid2">' +
         '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', deal.form_type || 'חוזה קאר פלוס') + statusSel + G('מנהל מכירות', 'salesperson', deal.salesperson || '')) + '</div>' +
@@ -355,10 +355,10 @@
         res.querySelectorAll('.ai[data-i]').forEach(function (el) { el.addEventListener('click', function () { var c = cars[+el.dataset.i]; $('dl_car_make').value = c.brand || ''; $('dl_car_model').value = c.name || ''; $('dl_car_trim').value = c.trim || ''; $('dl_car_price').value = c.p || ''; $('dl_monthly').value = c.m || ''; res.classList.add('hidden'); inp.value = ''; compute(); }); });
       });
     });
-    // save
-    $('dlSave').addEventListener('click', function () {
+    // read the current form into a deal object (reused by save + contract)
+    function readForm() {
       var c = compute();
-      var payload = {
+      return {
         lead_id: lead.id, form_type: $('dl_form_type').value, status: $('dl_status').value, salesperson: $('dl_salesperson').value,
         client_name: $('dl_client_name').value, client_phone: $('dl_client_phone').value, client_email: $('dl_client_email').value, client_address: $('dl_client_address').value, client_id: $('dl_client_id').value, invoice_name: $('dl_invoice_name').value,
         car_make: $('dl_car_make').value, car_model: $('dl_car_model').value, car_year: num('dl_car_year') || null, car_trim: $('dl_car_trim').value, car_engine: $('dl_car_engine').value, car_gearbox: $('dl_car_gearbox').value, car_color: $('dl_car_color').value,
@@ -367,12 +367,66 @@
         vat_included: $('dl_vat').checked, discount_pct: num('dl_discount_pct') || null, discount_amt: c.disc, total: c.total, paid: num('dl_paid') || null, spec: $('dl_spec').value,
         stage: curStage, checklist: checklist, financing: { amount: num('dl_fin_amount') || null, payments: num('dl_fin_payments') || null, track: $('dl_fin_track').value, status: $('dl_fin_status').value }
       };
+    }
+    $('dlSave').addEventListener('click', function () {
+      var payload = readForm();
       var q = deal.id ? db.from('deals').update(payload).eq('id', deal.id) : db.from('deals').insert(payload);
       q.then(function (r) {
         if (r.error) return alert('שגיאה: ' + r.error.message);
         var newStatus = payload.status === 'ordered' ? 'won' : (payload.status === 'cancelled' ? 'lost' : 'quote_sent');
         logActivity(lead.id, 'quote', (deal.id ? 'עודכנה' : 'נוצרה') + ' עסקה: ' + (payload.car_make + ' ' + payload.car_model) + ' · ' + nis(payload.total));
         changeStatus(lead.id, newStatus, lead, function () { window.C2B_openLeadCard(lead.id); });
+      });
+    });
+    $('dlContract').addEventListener('click', function () { contractView(lead, Object.assign({ id: deal.id, order_no: deal.order_no }, readForm())); });
+  }
+
+  // ---------- CONTRACT (auto-filled + browser signature) ----------
+  function contractHTML(d, sig) {
+    var today = new Date().toLocaleDateString('he-IL');
+    function tr(k, v) { return '<tr><td style="padding:6px;border-bottom:1px solid #eee">' + k + '</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:left"><b>' + v + '</b></td></tr>'; }
+    return '<div style="font-family:Arial,sans-serif;line-height:1.7;max-width:720px;margin:auto;color:#111">' +
+      '<h2 style="text-align:center;color:#F5691E;margin:0">הסכם הזמנת רכב — Car2Buy</h2>' +
+      '<p style="text-align:center;color:#555">מספר הזמנה: ' + esc(d.order_no || '—') + ' · תאריך: ' + today + '</p><hr>' +
+      '<h3 style="color:#F5691E">פרטי הלקוח</h3><p>שם: <b>' + esc(d.client_name) + '</b> · ת.ז: ' + esc(d.client_id) + '<br>טלפון: ' + esc(d.client_phone) + ' · דוא"ל: ' + esc(d.client_email) + '<br>כתובת: ' + esc(d.client_address) + '</p>' +
+      '<h3 style="color:#F5691E">פרטי הרכב</h3><p>יצרן/דגם: <b>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</b> ' + esc(d.car_trim || '') + '<br>שנה: ' + esc(d.car_year || '') + ' · צבע: ' + esc(d.car_color || '') + ' · מנוע: ' + esc(d.car_engine || '') + ' · גיר: ' + esc(d.car_gearbox || '') + '</p>' +
+      '<h3 style="color:#F5691E">תנאי העסקה</h3><table style="width:100%;border-collapse:collapse">' +
+        tr('מחיר הרכב', nis(d.car_price)) + tr('מקדמה כוללת', nis(d.down_total)) + tr('החזר חודשי משוער', nis(d.monthly)) + tr('זמן אספקה משוער', (d.delivery_days || '—') + ' ימים') + tr('סכום כולל', nis(d.total)) + tr('יתרה לתשלום', nis(d.balance_to_pay)) +
+      '</table>' + (d.spec ? '<h3 style="color:#F5691E">מפרט והערות</h3><p>' + esc(d.spec) + '</p>' : '') +
+      '<p style="font-size:12px;color:#777;margin-top:16px">ההחזר החודשי משוער בלבד וכפוף לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. חתימת הלקוח מהווה אישור להזמנה בכפוף לתנאים.</p>' +
+      '<div style="margin-top:34px;display:flex;justify-content:space-between;align-items:flex-end"><div>חתימת הלקוח:<br>' + (sig ? '<img src="' + sig + '" style="height:72px">' : '________________________') + '</div><div>תאריך: ' + today + '</div></div></div>';
+  }
+  function contractView(lead, deal) {
+    view(
+      '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם — ' + esc(deal.client_name || '') + '</h3>' +
+        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס / PDF</button> <button class="btn btn-sm" id="cSign">✍ חתום ושמור</button></div></div>' +
+      '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal) + '</div>' +
+      '<div class="card"><h3>חתימת לקוח (צייר עם העכבר / אצבע)</h3><canvas id="sig" width="480" height="150" style="border:1px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;max-width:100%"></canvas><div style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="cClear">נקה חתימה</button></div></div>'
+    );
+    var $ = C.$;
+    $('cBack').addEventListener('click', function () { dealForm(lead, deal); });
+    var cv = $('sig'), ctx = cv.getContext('2d'), drawing = false, hasSig = false;
+    ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#111';
+    function pos(e) { var r = cv.getBoundingClientRect(); var t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top }; }
+    function start(e) { drawing = true; hasSig = true; var p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); if (e.cancelable) e.preventDefault(); }
+    function move(e) { if (!drawing) return; var p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); if (e.cancelable) e.preventDefault(); }
+    function end() { drawing = false; }
+    cv.addEventListener('mousedown', start); cv.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+    cv.addEventListener('touchstart', start); cv.addEventListener('touchmove', move); cv.addEventListener('touchend', end);
+    $('cClear').addEventListener('click', function () { ctx.clearRect(0, 0, cv.width, cv.height); hasSig = false; });
+    $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
+    $('cSign').addEventListener('click', function () {
+      if (!hasSig) { alert('נא לחתום באזור החתימה קודם.'); return; }
+      var sig = cv.toDataURL('image/png');
+      var full = '<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם חתום ' + esc(deal.order_no || '') + '</title></head><body>' + contractHTML(deal, sig) + '</body></html>';
+      var path = lead.id + '/contract_' + Date.now() + '.html';
+      db.storage.from('lead-docs').upload(path, new Blob([full], { type: 'text/html' })).then(function (u) {
+        if (u.error) { alert('שמירה נכשלה: ' + u.error.message); return; }
+        db.from('lead_documents').insert({ lead_id: lead.id, name: 'הסכם חתום #' + (deal.order_no || ''), storage_path: path });
+        if (deal.id) { var chk = deal.checklist || {}; chk['התקבל הסכם'] = true; db.from('deals').update({ checklist: chk, stage: 'signed' }).eq('id', deal.id); }
+        logActivity(lead.id, 'contract', 'נחתם הסכם' + (deal.order_no ? ' #' + deal.order_no : ''));
+        alert('ההסכם נחתם ונשמר בתיק הלקוח! ✅');
+        window.C2B_openLeadCard(lead.id);
       });
     });
   }
