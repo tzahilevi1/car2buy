@@ -33,8 +33,9 @@
     { k: 'delivered', label: 'רכב נמסר', color: '#16a34a' }
   ];
   function stageDef(k) { for (var i = 0; i < DEAL_STAGES.length; i++) if (DEAL_STAGES[i].k === k) return DEAL_STAGES[i]; return DEAL_STAGES[0]; }
-  // sync file-manager pipeline stage → the sales lead status (both views stay aligned)
-  var STAGE_TO_STATUS = { initial: 'quote_sent', screening: 'in_progress', submitted: 'underwriting', approved: 'underwriting', signed: 'underwriting', collection: 'won', ordered: 'won', delivered: 'won' };
+  // sync ONLY the closing of the deal to the sales lead status — intermediate
+  // file-manager stages do NOT auto-change the sales agent's status.
+  var STAGE_TO_STATUS = { delivered: 'won' };
   function syncLeadFromStage(lead, stage) {
     var target = STAGE_TO_STATUS[stage];
     if (!target || lead.status === target) return;
