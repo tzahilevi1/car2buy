@@ -388,7 +388,7 @@
     html += ei('שם לקוח', 'name', lead.name);
     html += ei('טלפון ראשי', 'phone', lead.phone, 'tel');
     html += ei('דואר אלקטרוני', 'email', lead.email, 'email');
-    html += ei('באיזה רכב מתעניין', 'car', lead.car);
+    html += '<div class="lf"><span class="k">באיזה רכב מתעניין</span><div id="carPick" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-start;max-width:64%"><span class="muted" style="font-size:12px">טוען מלאי…</span></div></div>';
     html += '<div class="lf"><span class="k">מותג</span><input class="lf-edit" data-field="brand" data-label="מותג" list="ld_brandOpts" value="' + esc(lead.brand || '') + '"><datalist id="ld_brandOpts">' + brandOpts + '</datalist></div>';
     html += ei('כתובת - עיר', 'city', lead.city);
     html += '<div class="lf"><span class="k">איש מכירות</span><select class="lf-edit" data-field="assigned_to" data-label="איש מכירות">' + staff + '</select></div>';
@@ -420,6 +420,35 @@
       lf('קישור לעמוד', pageUrl ? '<a href="' + esc(pageUrl) + '" target="_blank" rel="noopener noreferrer" title="' + esc(pageUrl) + '">פתח »</a>' : '') +
       lf('lead_id', '<span class="muted" style="font-size:10.5px">' + esc(lead.id) + '</span>') +
       '</div>';
+  }
+  function uniqSort(a) { var s = {}; a.forEach(function (x) { if (x) s[x] = 1; }); return Object.keys(s).sort(); }
+  // cascading car picker from inventory: מותג → דגם → גרסה
+  function setupCarPicker(lead) {
+    var box = C.$('carPick'); if (!box) return;
+    loadCars(function (cars) {
+      if (!C.$('carPick')) return;
+      var brands = uniqSort(cars.map(function (c) { return c.brand; }));
+      function opts(arr, sel, ph) { return '<option value="">' + ph + '</option>' + arr.map(function (v) { return '<option' + (v === sel ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join(''); }
+      box.innerHTML =
+        '<select class="lf-edit" id="cpBrand" style="max-width:none;min-width:90px">' + opts(brands, lead.brand || '', 'מותג…') + '</select>' +
+        '<select class="lf-edit" id="cpModel" style="max-width:none;min-width:90px"><option value="">דגם…</option></select>' +
+        '<select class="lf-edit" id="cpTrim" style="max-width:none;min-width:80px"><option value="">גרסה…</option></select>' +
+        '<div class="muted" id="cpShow" style="font-size:11px;width:100%;text-align:right">' + (lead.car ? 'נבחר: ' + esc(lead.car) : '') + '</div>';
+      function models(b) { return uniqSort(cars.filter(function (c) { return c.brand === b; }).map(function (c) { return c.name; })); }
+      function trims(b, m) { return uniqSort(cars.filter(function (c) { return c.brand === b && c.name === m; }).map(function (c) { return c.trim; })); }
+      function fillModels() { C.$('cpModel').innerHTML = opts(models(C.$('cpBrand').value), '', 'דגם…'); C.$('cpTrim').innerHTML = '<option value="">גרסה…</option>'; }
+      function fillTrims() { C.$('cpTrim').innerHTML = opts(trims(C.$('cpBrand').value, C.$('cpModel').value), '', 'גרסה…'); }
+      function save() {
+        var b = C.$('cpBrand').value, m = C.$('cpModel').value, t = C.$('cpTrim').value;
+        var car = (b + ' ' + m + (t ? ' ' + t : '')).trim();
+        C.$('cpShow').textContent = car ? 'נבחר: ' + car : '';
+        db.from('leads').update({ car: car || null, brand: b || null }).eq('id', lead.id).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } lead.car = car; lead.brand = b; logActivity(lead.id, 'system', 'רכב מבוקש: ' + (car || '—')); });
+      }
+      if (lead.brand) fillModels();
+      C.$('cpBrand').addEventListener('change', function () { fillModels(); save(); });
+      C.$('cpModel').addEventListener('change', function () { fillTrims(); save(); });
+      C.$('cpTrim').addEventListener('change', save);
+    });
   }
   // ---- unified timeline feed (everything, newest first) ----
   var FEED_TAG = { note: 'הערה', call: 'שיחה', whatsapp: 'WhatsApp', email: 'מייל', status: 'סטטוס', task: 'משימה', document: 'מסמך', meeting: 'פגישה', deal: 'עסקה', contract: 'הסכם' };
@@ -521,6 +550,7 @@
         el.style.borderColor = 'var(--ok)'; setTimeout(function () { el.style.borderColor = ''; }, 900);
       });
     });
+    setupCarPicker(lead);   // cascading brand→model→trim from inventory
     // details tabs: פרטים ⇄ שיווק ומקורות
     var ldt = $('ldTabs');
     if (ldt) ldt.addEventListener('click', function (e) { var b = e.target.closest('[data-ld]'); if (!b) return; ldt.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); $('ldInfo').classList.toggle('hidden', b.dataset.ld !== 'info'); $('ldMkt').classList.toggle('hidden', b.dataset.ld !== 'mkt'); });
