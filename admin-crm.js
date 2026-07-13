@@ -121,9 +121,9 @@
   function loadCars(cb) { if (carsCache) return cb(carsCache); fetch('cars.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (c) { carsCache = c || []; cb(carsCache); }).catch(function () { cb([]); }); }
 
   // ---------- LEADS TABLE ----------
-  var cache = [], profiles = {}, orderIds = [], curFilter = null, curDeals = [], leadFilter = null;
+  var cache = [], profiles = {}, orderIds = [], curFilter = null, curDeals = [], leadFilter = null, selectedLeads = {};
   window.C2B_renderLeads = function (statusFilter) {
-    curFilter = statusFilter || null;
+    curFilter = statusFilter || null; selectedLeads = {};
     loading();
     Promise.all([
       db.from('leads').select('*').order('created_at', { ascending: false }),
@@ -166,21 +166,65 @@
     if (C.$('lcount')) C.$('lcount').textContent = '(' + rows.length + ')';
     var body = rows.map(function (l) {
       var wa = waLink(l.phone);
-      return '<tr data-lead="' + l.id + '"><td style="cursor:pointer"><span class="avatar" style="margin-inline-end:8px">' + esc(initials(l.name)) + '</span><b>' + esc(l.name) + '</b></td>' +
+      return '<tr data-lead="' + l.id + '"><td style="width:30px;text-align:center"><input type="checkbox" data-sel="' + l.id + '"' + (selectedLeads[l.id] ? ' checked' : '') + '></td>' +
+        '<td style="cursor:pointer" data-open="1"><span class="avatar" style="margin-inline-end:8px">' + esc(initials(l.name)) + '</span><b>' + esc(l.name) + '</b></td>' +
         '<td>' + esc(l.phone) + '</td><td>' + (wa ? '<a class="wa-ic" href="' + wa + '" target="_blank" rel="noopener" title="פתח וואטסאפ" onclick="event.stopPropagation()">💬</a>' : '—') + '</td>' +
         '<td><span class="tag">' + esc(l.source) + '</span></td><td>' + esc(l.car) + '</td>' +
         '<td>' + assignChip(l) + '</td><td>' + badge(l.status || 'new', true, l.id) + '</td><td class="muted">' + fmt(l.updated_at || l.status_changed_at || l.created_at) + '</td></tr>';
-    }).join('') || '<tr><td colspan="8" class="empty">אין לידים</td></tr>';
-    C.$('leadsBody').innerHTML = (leadFilter ? leadFilter.render() : '') +
-      '<div class="table-scroll"><table><thead><tr><th>שם</th><th>טלפון</th><th>וואטסאפ</th><th>מקור</th><th>רכב</th><th>איש מכירות</th><th>סטטוס</th><th>עדכון</th></tr></thead><tbody id="ltbl">' + body + '</tbody></table></div>';
+    }).join('') || '<tr><td colspan="9" class="empty">אין לידים</td></tr>';
+    var agentOpts = Object.keys(profiles).map(function (uid) { return '<option value="' + uid + '">' + esc(profiles[uid]) + '</option>'; }).join('');
+    var srcList = ((C.lists && C.lists.source) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+    var brandList = ((C.lists && C.lists.brand) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+    var bulkBar = '<div id="bulkBar" class="filterbar" style="display:none;background:var(--brand-soft);align-items:center">' +
+      '<b id="bulkCount" style="color:var(--brand)">נבחרו 0</b>' +
+      '<select id="bulkAgent"><option value="">👤 שייך לסוכן…</option>' + agentOpts + '</select>' +
+      '<select id="bulkStatus"><option value="">🏷️ שנה סטטוס…</option>' + STATUSES.map(function (s) { return '<option value="' + s.k + '">' + esc(s.label) + '</option>'; }).join('') + '</select>' +
+      '<input id="bulkSource" list="bulkSrcL" placeholder="📍 מקור הגעה" style="width:130px"><datalist id="bulkSrcL">' + srcList + '</datalist>' +
+      '<input id="bulkBrand" list="bulkBrandL" placeholder="🚗 מותג" style="width:120px"><datalist id="bulkBrandL">' + brandList + '</datalist>' +
+      '<button class="btn btn-sm" id="bulkApply">החל על הנבחרים</button><button class="btn btn-ghost btn-sm" id="bulkClear">בטל בחירה</button></div>';
+    C.$('leadsBody').innerHTML = (leadFilter ? leadFilter.render() : '') + bulkBar +
+      '<div class="table-scroll"><table><thead><tr><th style="width:30px;text-align:center"><input type="checkbox" id="selAll" title="בחר הכל"></th><th>שם</th><th>טלפון</th><th>וואטסאפ</th><th>מקור</th><th>רכב</th><th>איש מכירות</th><th>סטטוס</th><th>עדכון</th></tr></thead><tbody id="ltbl">' + body + '</tbody></table></div>';
     if (leadFilter) leadFilter.bind();
-    C.$('ltbl').querySelectorAll('td[style]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openLeadCard(td.parentNode.dataset.lead); }); });
+    bindBulk();
+    C.$('ltbl').querySelectorAll('td[data-open]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openLeadCard(td.parentNode.dataset.lead); }); });
     C.$('ltbl').querySelectorAll('.tag.click').forEach(function (el) {
       el.addEventListener('click', function (e) { e.stopPropagation(); openStatusMenu(el, el.dataset.cur, function (to) { changeStatus(el.dataset.stLead, to, { status: el.dataset.cur }, function () { window.C2B_renderLeads(curFilter); }); }); });
     });
     C.$('ltbl').querySelectorAll('.assign-chip').forEach(function (el) {
       el.addEventListener('click', function (e) { e.stopPropagation(); openAssignMenu(el, el.dataset.assign, el.dataset.cur, function (uid) { assignLead(el.dataset.assign, uid); }); });
     });
+  }
+  // ---- bulk selection + actions (assign / status / source / brand) ----
+  function bindBulk() {
+    var $ = C.$;
+    function ids() { return Object.keys(selectedLeads).filter(function (k) { return selectedLeads[k]; }); }
+    function update() {
+      var n = ids().length, bar = $('bulkBar'); if (!bar) return;
+      bar.style.display = n ? 'flex' : 'none';
+      if ($('bulkCount')) $('bulkCount').textContent = 'נבחרו ' + n;
+      var sa = $('selAll'); if (sa) { var boxes = $('ltbl').querySelectorAll('input[data-sel]'), checked = $('ltbl').querySelectorAll('input[data-sel]:checked'); sa.checked = boxes.length && checked.length === boxes.length; sa.indeterminate = checked.length > 0 && checked.length < boxes.length; }
+    }
+    $('ltbl').querySelectorAll('input[data-sel]').forEach(function (cb) { cb.addEventListener('change', function () { if (cb.checked) selectedLeads[cb.dataset.sel] = true; else delete selectedLeads[cb.dataset.sel]; update(); }); });
+    if ($('selAll')) $('selAll').addEventListener('change', function () { var on = this.checked; $('ltbl').querySelectorAll('input[data-sel]').forEach(function (cb) { cb.checked = on; if (on) selectedLeads[cb.dataset.sel] = true; else delete selectedLeads[cb.dataset.sel]; }); update(); });
+    if ($('bulkClear')) $('bulkClear').addEventListener('click', function () { selectedLeads = {}; $('ltbl').querySelectorAll('input[data-sel]').forEach(function (cb) { cb.checked = false; }); update(); });
+    if ($('bulkApply')) $('bulkApply').addEventListener('click', function () {
+      var list = ids(); if (!list.length) return;
+      var patch = {};
+      if ($('bulkAgent').value) patch.assigned_to = $('bulkAgent').value;
+      if ($('bulkStatus').value) { patch.status = $('bulkStatus').value; patch.status_changed_at = new Date().toISOString(); }
+      if ($('bulkSource').value.trim()) patch.source = $('bulkSource').value.trim();
+      if ($('bulkBrand').value.trim()) patch.brand = $('bulkBrand').value.trim();
+      if (!Object.keys(patch).length) { alert('בחרו פעולה: סוכן / סטטוס / מקור / מותג'); return; }
+      if (!confirm('להחיל את השינוי על ' + list.length + ' לידים?')) return;
+      $('bulkApply').disabled = true;
+      db.from('leads').update(patch).in('id', list).then(function (r) {
+        if (r.error) { $('bulkApply').disabled = false; alert('שגיאה: ' + r.error.message); return; }
+        var summ = []; if (patch.assigned_to) summ.push('שויך ל-' + (profiles[patch.assigned_to] || '')); if (patch.status) summ.push('סטטוס: ' + stDef(patch.status).label); if (patch.source) summ.push('מקור: ' + patch.source); if (patch.brand) summ.push('מותג: ' + patch.brand);
+        db.from('activities').insert(list.map(function (id) { return { lead_id: id, type: 'system', body: 'עדכון קבוצתי — ' + summ.join(', '), created_by: C.userId || null }; }));
+        selectedLeads = {}; window.C2B_renderLeads(curFilter);
+      });
+    });
+    update();
   }
 
   // ---------- NEW LEAD (create from scratch) ----------
