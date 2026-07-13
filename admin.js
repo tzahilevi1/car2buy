@@ -150,6 +150,7 @@
     if (nav === 'tasks') return renderTasks();
     if (nav === 'analytics') return renderAnalytics();
     if (nav === 'reports') return renderReports();
+    if (nav === 'ai') return renderAI();
     if (nav.indexOf('soon:') === 0) return renderSoon(nav.slice(5));
     return window.C2B_renderDashboard && window.C2B_renderDashboard();
   }
@@ -448,6 +449,77 @@
           db.auth.resetPasswordForEmail(email, { redirectTo: redirect }).then(function (r) { alert(r.error ? ('שגיאה: ' + r.error.message) : ('נשלח מייל לאיפוס סיסמה אל ' + email)); });
         });
       });
+    });
+  }
+
+  // ---------- AI ASSISTANT (managers) ----------
+  var SUGGESTIONS = [
+    'אילו לידים כדאי לתעדף השבוע ולמה?',
+    'נתח את אחוז ההמרה ומה חוסם אותנו',
+    'מהם המקורות הכי משתלמים ואיפה לבזבז פחות?',
+    'סכם את מצב הכספים והגבייה הפתוחה',
+    'תן לי סיכום מנהלים של השבוע ו-3 פעולות'
+  ];
+  function renderAI() {
+    loading();
+    Promise.all([
+      db.from('leads').select('status,source,created_at,first_response_at,city,brand'),
+      db.from('deals').select('total,commission,stage,status'),
+      db.from('payments').select('amount,kind'),
+      db.from('tasks').select('done,due_at'),
+      db.from('appointments').select('status')
+    ]).then(function (res) {
+      var leads = res[0].data || [], deals = res[1].data || [], pays = res[2].data || [], tasks = res[3].data || [], appts = res[4].data || [];
+      var ST = window.C2B_STATUSES || [];
+      var by = {}; leads.forEach(function (l) { by[l.status || 'new'] = (by[l.status || 'new'] || 0) + 1; });
+      var won = by.won || 0, lost = by.lost || 0, conv = (won + lost) ? Math.round(won / (won + lost) * 100) : 0;
+      var src = {}; leads.forEach(function (l) { var s = l.source || 'לא ידוע'; src[s] = src[s] || { t: 0, w: 0 }; src[s].t++; if (l.status === 'won') src[s].w++; });
+      var rts = leads.filter(function (l) { return l.first_response_at; }).map(function (l) { return (new Date(l.first_response_at) - new Date(l.created_at)) / 60000; });
+      var avgRt = rts.length ? Math.round(rts.reduce(function (a, b) { return a + b; }, 0) / rts.length) : 0;
+      var revenue = deals.reduce(function (a, d) { return a + (+d.total || 0); }, 0);
+      var commission = deals.reduce(function (a, d) { return a + (+d.commission || 0); }, 0);
+      var collected = pays.filter(function (p) { return p.kind !== 'invoice'; }).reduce(function (a, p) { return a + (+p.amount || 0); }, 0);
+      var stageC = {}; deals.forEach(function (d) { stageC[d.stage || 'initial'] = (stageC[d.stage || 'initial'] || 0) + 1; });
+      // compact Hebrew data summary the model reasons over
+      var ctx = 'נתוני Car2Buy (' + new Date().toLocaleDateString('he-IL') + '):\n' +
+        '- לידים: ' + leads.length + ' סה"כ. פילוח סטטוס: ' + ST.map(function (s) { return s.label + '=' + (by[s.k] || 0); }).join(', ') + '.\n' +
+        '- אחוז סגירה: ' + conv + '% (נסגרו ' + won + ', אבודים ' + lost + '). זמן תגובה ממוצע: ' + (avgRt ? avgRt + ' דק\'' : 'לא ידוע') + '.\n' +
+        '- לידים לפי מקור: ' + Object.keys(src).map(function (s) { return s + ' (' + src[s].t + ' לידים, ' + src[s].w + ' עסקאות)'; }).join('; ') + '.\n' +
+        '- עסקאות: ' + deals.length + ', שווי כולל ' + nis(revenue) + ', עמלות סוכן ' + nis(commission) + ', נגבה ' + nis(collected) + ', יתרה פתוחה ' + nis(revenue - collected) + '.\n' +
+        '- שלבי תיקים: ' + Object.keys(stageC).map(function (k) { return k + '=' + stageC[k]; }).join(', ') + '.\n' +
+        '- משימות פתוחות: ' + tasks.filter(function (t) { return !t.done; }).length + '. פגישות: ' + appts.length + '.';
+      view('<div class="card"><h3>🤖 עוזר AI למנהלים</h3><p class="muted" style="font-size:13px">שאל שאלה על העסק — המערכת מנתחת את נתוני ה-CRM (לידים, המרה, מקורות, כספים) ומחזירה תובנות והמלצות. הנתונים נשלחים ל-Claude; מפתח ה-API שמור במסד ואינו נחשף.</p>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">' + SUGGESTIONS.map(function (s) { return '<button class="btn btn-ghost btn-sm" data-sug="' + esc(s) + '">' + esc(s) + '</button>'; }).join('') + '</div>' +
+        '<textarea class="inp" id="aiQ" rows="3" style="width:100%" placeholder="כתוב כאן שאלה…"></textarea>' +
+        '<div style="margin-top:10px"><button class="btn" id="aiAsk">שאל את ה-AI</button> <span class="muted" id="aiState" style="font-size:13px;margin-inline-start:10px"></span></div>' +
+        '<div id="aiAns" style="margin-top:16px"></div>' +
+        '<details style="margin-top:16px"><summary class="muted" style="font-size:12px;cursor:pointer">הנתונים שנשלחים למודל</summary><pre style="white-space:pre-wrap;font-size:12px;color:var(--muted);margin-top:8px">' + esc(ctx) + '</pre></details></div>');
+      $('view').querySelectorAll('[data-sug]').forEach(function (b) { b.addEventListener('click', function () { $('aiQ').value = b.dataset.sug; $('aiAsk').click(); }); });
+      $('aiAsk').addEventListener('click', function () { askAI(ctx); });
+    }).catch(function (e) { errBox(e.message || e); });
+  }
+  function askAI(ctx) {
+    var q = ($('aiQ').value || '').trim(); if (!q) return;
+    var state = $('aiState'), ans = $('aiAns'), btn = $('aiAsk');
+    state.style.color = 'var(--muted)'; state.textContent = 'חושב… (עד ~30 שניות)'; ans.innerHTML = ''; btn.disabled = true;
+    db.rpc('ai_ask', { p_prompt: ctx + '\n\nשאלת המנהל: ' + q }).then(function (r) {
+      if (r.error) { btn.disabled = false; state.style.color = 'var(--danger)'; state.textContent = 'שגיאה: ' + r.error.message; return; }
+      var rid = r.data, tries = 0;
+      var poll = setInterval(function () {
+        tries++;
+        if (tries > 22) { clearInterval(poll); btn.disabled = false; state.style.color = 'var(--danger)'; state.textContent = 'לקח יותר מדי זמן — נסה שוב.'; return; }
+        db.rpc('ai_get', { p_id: rid }).then(function (g) {
+          if (g.error || !g.data) return; // still pending
+          clearInterval(poll); btn.disabled = false; state.textContent = '';
+          var d = g.data;
+          if (d.error) { state.style.color = 'var(--danger)'; state.textContent = 'שגיאת רשת: ' + d.error; return; }
+          var text;
+          try { var body = typeof d.content === 'string' ? JSON.parse(d.content) : d.content; text = body && body.content && body.content[0] && body.content[0].text; if (!text && body && body.error) text = 'שגיאת API: ' + (body.error.message || JSON.stringify(body.error)); }
+          catch (e) { text = null; }
+          if (d.status !== 200 && !text) { state.style.color = 'var(--danger)'; state.textContent = 'שגיאה (' + d.status + ')'; ans.innerHTML = '<pre style="white-space:pre-wrap;font-size:12px">' + esc(String(d.content).slice(0, 800)) + '</pre>'; return; }
+          ans.innerHTML = '<div class="card" style="box-shadow:none;border:1px solid var(--line);background:var(--surface-2)"><div style="white-space:pre-wrap;line-height:1.7">' + esc(text || 'לא התקבלה תשובה.') + '</div></div>';
+        });
+      }, 1500);
     });
   }
 
