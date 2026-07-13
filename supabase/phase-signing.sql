@@ -87,7 +87,7 @@ grant execute on function public.submit_signature(uuid, uuid, text) to anon, aut
 -- ---------- 6) send the signing link to the client by email (Resend) ----------
 create or replace function public.send_contract_email(p_deal uuid, p_to text)
 returns jsonb language plpgsql security definer set search_path = public as $$
-declare d record; t uuid; rk text; url text;
+declare d record; t uuid; rk text; url text; req bigint;
 begin
   if not (public.is_admin() or public.is_staff()) then raise exception 'לא מורשה'; end if;
   if p_to is null or position('@' in p_to) = 0 then raise exception 'אימייל לא תקין'; end if;
@@ -99,7 +99,7 @@ begin
 
   select decrypted_secret into rk from vault.decrypted_secrets where name = 'resend_key';
   if rk is null then raise exception 'חסר resend_key ב-Vault'; end if;
-  perform net.http_post(
+  select net.http_post(
     url := 'https://api.resend.com/emails',
     headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer ' || rk),
     body := jsonb_build_object('from', 'Car2Buy <noreply@electric-group.co.il>',
@@ -108,8 +108,30 @@ begin
       'html', '<div dir="rtl" style="font-family:Arial;line-height:1.7">שלום ' || coalesce(d.client_name, '') ||
               ',<br>מצורף הסכם ההזמנה לחתימה דיגיטלית:<br><br><a href="' || url ||
               '" style="background:#F5691E;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:700">לצפייה וחתימה על ההסכם »</a><br><br>' ||
-              '<span style="color:#777;font-size:13px">אם הכפתור לא עובד, העתיקו את הקישור: ' || url || '</span></div>'));
+              '<span style="color:#777;font-size:13px">אם הכפתור לא עובד, העתיקו את הקישור: ' || url || '</span></div>')
+  ) into req;
   insert into public.activities (lead_id, type, body) values (d.lead_id, 'contract', 'נשלח הסכם לחתימה במייל: ' || p_to);
-  return jsonb_build_object('ok', true, 'url', url);
+  return jsonb_build_object('ok', true, 'url', url, 'email_req', req);
 end $$;
+
+-- ---------- file manager (role 'files') manages ALL files across the business ----------
+do $$
+declare t text;
+begin
+  foreach t in array array['activities','tasks','lead_documents','deals'] loop
+    execute format('drop policy if exists "files all %1$s" on public.%1$s', t);
+    execute format($f$create policy "files all %1$s" on public.%1$s for all to authenticated
+      using (public.my_role() = 'files') with check (public.my_role() = 'files')$f$, t);
+  end loop;
+end $$;
+drop policy if exists "files read leads" on public.leads;
+create policy "files read leads" on public.leads for select to authenticated using (public.my_role() = 'files');
+drop policy if exists "files update leads" on public.leads;
+create policy "files update leads" on public.leads for update to authenticated using (public.my_role() = 'files') with check (public.my_role() = 'files');
+
+-- storage: any active staff (agent / file manager / accounting) can upload/view/delete lead docs
+drop policy if exists "staff manage lead-docs" on storage.objects;
+create policy "staff manage lead-docs" on storage.objects for all to authenticated
+  using (bucket_id = 'lead-docs' and (public.is_admin() or public.is_staff()))
+  with check (bucket_id = 'lead-docs' and (public.is_admin() or public.is_staff()));
 grant execute on function public.send_contract_email(uuid, text) to authenticated;
