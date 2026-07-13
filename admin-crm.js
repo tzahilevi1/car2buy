@@ -902,7 +902,7 @@
     $('cBack').addEventListener('click', function () { dealForm(lead, deal); });
     $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
     if (signed) {
-      if ($('cPdf')) $('cPdf').addEventListener('click', function () { if (!window.html2pdf) return alert('הורדת PDF אינה זמינה'); window.html2pdf().set({ margin: 8, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' }, filename: 'הסכם_' + (deal.order_no || deal.id) + '.pdf' }).from($('cDoc')).save(); });
+      if ($('cPdf')) $('cPdf').addEventListener('click', function () { if (!window.html2pdf) return alert('הורדת PDF אינה זמינה'); genContractPdf(deal, function (blob) { if (!blob) return alert('יצירת PDF נכשלה'); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'הסכם_' + (deal.order_no || deal.id) + '.pdf'; a.click(); }); });
       ensureSignedPdf(lead, deal);   // persist the signed PDF once → visible in both views
       return;   // signed → view/print/download only
     }
@@ -946,8 +946,27 @@
     }
     $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', false); });
   }
-  // generate + save the signed contract PDF ONCE (renders off-screen), so it shows
-  // in the client documents + the timeline for both the agent and the file manager.
+  // Reliable contract → PDF (verified in a real browser): the capture element MUST be
+  // in normal document flow (position:static — absolute/fixed → 0-height blank), and the
+  // page MUST be scrolled to 0 (a scrolled page → white blank). A height:0/overflow:hidden
+  // wrapper hides it, and a white overlay masks the brief scroll reset.
+  function genContractPdf(deal, onBlob) {
+    if (!window.html2pdf) { onBlob(null); return; }
+    var sx = window.scrollX, sy = window.scrollY;
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:99999;display:flex;align-items:center;justify-content:center;color:#F5691E;font-weight:800;font-size:18px';
+    ov.textContent = 'מכין מסמך…';
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'height:0;overflow:hidden';   // static (in-flow), hidden — do NOT use absolute/fixed
+    var holder = document.createElement('div');
+    holder.style.cssText = 'width:760px;background:#fff;color:#111;padding:16px';
+    holder.innerHTML = contractHTML(deal, deal.signature || null);
+    wrap.appendChild(holder); document.body.appendChild(wrap); document.body.appendChild(ov);
+    window.scrollTo(0, 0);
+    function done(blob) { window.scrollTo(sx, sy); [wrap, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); onBlob(blob); }
+    window.html2pdf().set({ margin: 8, image: { type: 'jpeg', quality: 0.96 }, html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true }, jsPDF: { unit: 'mm', format: 'a4' } }).from(holder).outputPdf('blob').then(done).catch(function () { done(null); });
+  }
+  // generate + save the signed contract PDF ONCE → shows in documents + timeline (both views)
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
@@ -955,20 +974,8 @@
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
       if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved
-      // render at the TOP of the document (scroll reset) behind a white overlay —
-      // a scrolled position:fixed target makes html2canvas capture the wrong region → blank.
-      var sx = window.scrollX, sy = window.scrollY;
-      var ov = document.createElement('div');
-      ov.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:99998;display:flex;align-items:center;justify-content:center;color:#F5691E;font-weight:800;font-size:18px';
-      ov.textContent = 'מכין מסמך חתום…';
-      var holder = document.createElement('div');
-      holder.style.cssText = 'position:absolute;top:0;left:0;width:760px;background:#fff;color:#111;padding:16px;z-index:99997';
-      holder.innerHTML = contractHTML(deal, deal.signature);
-      document.body.appendChild(holder); document.body.appendChild(ov);
-      window.scrollTo(0, 0);
-      function cleanup() { [holder, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); window.scrollTo(sx, sy); }
-      window.html2pdf().set({ margin: 8, image: { type: 'jpeg', quality: 0.96 }, html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, scrollX: 0, scrollY: 0, windowWidth: 820, windowHeight: Math.max(holder.scrollHeight + 60, 1400) }, jsPDF: { unit: 'mm', format: 'a4' } }).from(holder).outputPdf('blob').then(function (blob) {
-        cleanup();
+      genContractPdf(deal, function (blob) {
+        if (!blob) { pdfGenerating[deal.id] = false; return; }
         db.storage.from('lead-docs').upload(path, blob, { contentType: 'application/pdf', upsert: true }).then(function (u) {
           pdfGenerating[deal.id] = false;
           if (u.error) return;
@@ -976,13 +983,12 @@
             logActivity(lead.id, 'contract', 'נשמר הסכם חתום (PDF) בתיק').then(function () { if (onSaved) onSaved(); });
           });
         });
-      }).catch(function () { cleanup(); pdfGenerating[deal.id] = false; });
+      });
     });
   }
-  // render a contract element to a PDF (fallback: HTML), save it to the lead file + timeline
+  // save the contract as a PDF to the lead file + timeline (used by "שלח ושמור PDF")
   function finishContract(lead, deal, docEl, activityText, docTitle, signedContract) {
     var suffix = deal.order_no ? ' #' + deal.order_no : '';
-    // on signing, hand the file to the file manager (→ שיחת שיקוף), unless it's already further along
     var newStage = signedContract ? ((deal.stage && deal.stage !== 'initial') ? deal.stage : 'screening') : deal.stage;
     function afterSave(path) {
       db.from('lead_documents').insert({ lead_id: lead.id, name: docTitle + suffix, storage_path: path });
@@ -993,16 +999,16 @@
         else window.C2B_openLeadCard(lead.id);
       });
     }
-    if (window.html2pdf) {
-      var path = lead.id + '/contract_' + Date.now() + '.pdf';
-      window.html2pdf().set({ margin: 8, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(docEl).outputPdf('blob').then(function (blob) {
+    genContractPdf(deal, function (blob) {
+      if (blob) {
+        var path = lead.id + '/contract_' + Date.now() + '.pdf';
         db.storage.from('lead-docs').upload(path, blob, { contentType: 'application/pdf' }).then(function (u) { if (u.error) { alert('שמירה נכשלה: ' + u.error.message); return; } afterSave(path); });
-      }).catch(function (e) { alert('יצירת PDF נכשלה: ' + (e.message || e)); });
-    } else {
-      var full = '<!doctype html><html dir="rtl"><head><meta charset="utf-8"></head><body>' + docEl.innerHTML + '</body></html>';
-      var hpath = lead.id + '/contract_' + Date.now() + '.html';
-      db.storage.from('lead-docs').upload(hpath, new Blob([full], { type: 'text/html' })).then(function (u) { if (u.error) { alert('שמירה נכשלה: ' + u.error.message); return; } afterSave(hpath); });
-    }
+      } else {
+        var full = '<!doctype html><html dir="rtl"><head><meta charset="utf-8"></head><body>' + docEl.innerHTML + '</body></html>';
+        var hpath = lead.id + '/contract_' + Date.now() + '.html';
+        db.storage.from('lead-docs').upload(hpath, new Blob([full], { type: 'text/html' })).then(function (u) { if (u.error) { alert('שמירה נכשלה: ' + u.error.message); return; } afterSave(hpath); });
+      }
+    });
   }
 
   // ---------- FILES (client file manager) ----------
