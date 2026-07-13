@@ -336,7 +336,8 @@
   };
 
   window.C2B_openLeadCard = function (id) {
-    if ((C.role || '') === 'files') return openFileView(id);   // file manager → file view
+    if ((C.role || '') === 'files') return openFileView(id);        // file manager → file view
+    if ((C.role || '') === 'accounting') return openAcctLeadView(id); // accountant → accounting file
     loading();
     Promise.all([
       db.from('leads').select('*').eq('id', id).single(),
@@ -903,11 +904,9 @@
         '<td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim() || '—') + '</td>' +
         '<td>' + nis(tot) + '</td><td>' + nis(paid) + '</td><td style="color:' + (bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(bal) + '</td>' +
         '<td>' + esc(d.salesperson || '—') + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td>' +
-        '<td>' + acctStatusSel(d.id, d.acct_status) + '</td>' +
-        '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-receipt="' + d.id + '">📄 קבלה</button> <button class="btn btn-ghost btn-sm" data-invoice="' + d.id + '">🧾 חשבונית</button></td></tr>';
+        '<td>' + acctStatusSel(d.id, d.acct_status) + '</td></tr>';
     }).join('');
-    var dealsPanel = '<div class="card"><h3>עסקאות · קבלות · חשבוניות <span class="muted" style="font-size:12px">(לחצו על שורה לפתיחת הלקוח)</span></h3><div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>קבלה על שם</th><th>מה נקנה</th><th>סכום</th><th>שולם</th><th>יתרה</th><th>סוכן</th><th>עמלה</th><th>סטטוס</th><th>הפקה</th></tr></thead><tbody>' + (dealRows || '<tr><td colspan="11" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div>' +
-      '<p class="muted" style="font-size:12px;margin-top:10px">💡 "הפק קבלה/חשבונית" יחובר ל<b>חשבונית ירוקה</b> להפקה אוטומטית. כרגע מסמן סטטוס.</p></div>';
+    var dealsPanel = '<div class="card"><h3>עסקאות · קבלות · חשבוניות <span class="muted" style="font-size:12px">(לחצו על שורה לפתיחת תיק החשבונות של הלקוח)</span></h3><div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>קבלה על שם</th><th>מה נקנה</th><th>סכום</th><th>שולם</th><th>יתרה</th><th>סוכן</th><th>עמלה</th><th>סטטוס</th></tr></thead><tbody>' + (dealRows || '<tr><td colspan="10" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div></div>';
 
     // TAB 2 — commission per agent (frozen values)
     var byAgent = {}; deals.forEach(function (d) { var a = d.salesperson || 'לא שויך'; byAgent[a] = byAgent[a] || { n: 0, comm: 0, total: 0 }; byAgent[a].n++; byAgent[a].comm += (+d.commission || 0); byAgent[a].total += (+d.total || 0); });
@@ -937,6 +936,48 @@
     }
     C.$('acctTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-atab]'); if (!b) return; acctTab = b.dataset.atab; C.$('acctTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x.dataset.atab === acctTab); }); C.$('acctPanel').innerHTML = panels[acctTab]; bindPanel(); });
     bindPanel();
+  }
+
+  // accounting manager's dedicated per-lead view (only what's critical for her)
+  function acctPayList(ps) { var KIND = { payment: 'תשלום', receipt: 'קבלה', invoice: 'חשבונית' }; return ps.length ? ps.map(function (p) { return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>' + (KIND[p.kind] || p.kind) + (p.method ? ' · ' + esc(p.method) : '') + (p.ref_no ? ' · ' + esc(p.ref_no) : '') + ' <span class="muted" style="font-size:11px">' + fmt(p.created_at) + '</span></span><b>' + nis(p.amount) + '</b></div>'; }).join('') : '<p class="muted" style="margin:4px 0">אין תשלומים</p>'; }
+  function openAcctLeadView(id) {
+    loading();
+    Promise.all([
+      db.from('leads').select('*').eq('id', id).single(),
+      db.from('deals').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
+      db.from('payments').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
+      db.from('lead_documents').select('*').eq('lead_id', id).order('created_at', { ascending: false })
+    ]).then(function (r) {
+      if (r[0].error) return errBox(r[0].error.message);
+      var lead = r[0].data, deals = (r[1] && r[1].data) || [], pays = (r[2] && r[2].data) || [], docs = (r[3] && r[3].data) || [];
+      var paths = docs.map(function (d) { return d.storage_path; }), sf = db.storage.from('lead-docs');
+      (paths.length && sf.createSignedUrls ? sf.createSignedUrls(paths, 3600) : Promise.resolve({ data: [] })).then(function (sr) {
+        var urls = {}; ((sr && sr.data) || []).forEach(function (s) { if (s && s.signedUrl) urls[s.path] = s.signedUrl; });
+        var paidByDeal = {}; pays.forEach(function (p) { if (p.kind !== 'invoice') paidByDeal[p.deal_id] = (paidByDeal[p.deal_id] || 0) + (+p.amount || 0); });
+        function lf2(k, v) { return '<div class="lf"><span class="k">' + k + '</span><span class="v">' + (v == null || v === '' ? '—' : v) + '</span></div>'; }
+        var dealCards = deals.length ? deals.map(function (d) {
+          var tot = +d.total || 0, paid = paidByDeal[d.id] || 0, bal = tot - paid;
+          return '<div class="card"><div class="row-between"><h3 style="margin:0">עסקה #' + esc(d.order_no) + (d.signature ? ' <span class="tag" style="border-color:var(--ok);color:var(--ok)">✅ נחתם</span>' : '') + '</h3>' + acctStatusSel(d.id, d.acct_status) + '</div>' +
+            '<div class="grid2"><div class="lead-fields">' +
+              lf2('קבלה על שם', esc(d.invoice_name || d.client_name)) + lf2('ת.ז / ח.פ', esc(d.client_id)) + lf2('טלפון', esc(d.client_phone)) + lf2('דוא"ל', esc(d.client_email)) + lf2('מה נקנה', esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim())) +
+            '</div><div class="lead-fields">' +
+              lf2('סכום כולל', '<b>' + nis(tot) + '</b>') + lf2('שולם', nis(paid)) + lf2('יתרה לתשלום', '<b style="color:' + (bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(bal) + '</b>') + lf2('עמלת סוכן (מוקפאת)', '<b style="color:var(--ok)">' + nis(d.commission) + '</b>') + lf2('סוכן', esc(d.salesperson)) +
+            '</div></div>' +
+            '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-receipt="' + d.id + '">📄 הפק קבלה</button><button class="btn btn-ghost" data-invoice="' + d.id + '">🧾 הפק חשבונית</button></div>' +
+            '<h3 style="margin:18px 0 8px">תשלומים / קבלות / חשבוניות</h3><div>' + acctPayList(pays.filter(function (p) { return p.deal_id === d.id; })) + '</div>' +
+            '<form class="apf" data-deal="' + d.id + '" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><select class="inp" name="kind"><option value="payment">תשלום</option><option value="receipt">קבלה</option><option value="invoice">חשבונית</option></select><input class="inp" name="amount" type="number" placeholder="סכום ₪" style="width:120px"><input class="inp" name="method" placeholder="אמצעי (מזומן/אשראי)" style="width:150px"><input class="inp" name="ref" placeholder="אסמכתא" style="width:120px"><button class="btn btn-sm">+ רשום תשלום</button></form>' +
+          '</div>';
+        }).join('') : '<div class="card"><p class="muted">אין עסקה/הצעה לליד זה עדיין.</p></div>';
+        var docRows = docs.map(function (x) { var u = urls[x.storage_path], ic = /\.pdf$/i.test(x.name || '') ? '📄' : (/\.(png|jpe?g|gif|webp)$/i.test(x.name || '') ? '🖼️' : '📎'); return '<div style="padding:7px 0;border-bottom:1px solid var(--line)">' + (u ? '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + ic + ' ' + esc(x.name) + '</a>' : ic + ' ' + esc(x.name)) + ' <span class="muted" style="font-size:11px">· ' + fmt(x.created_at) + '</span></div>'; }).join('') || '<p class="muted">אין מסמכים</p>';
+        view('<div class="lead-top"><button class="btn btn-ghost btn-sm" id="alBack">→ להנהלת חשבונות</button><h3 style="margin:0">🧮 תיק חשבונות — ' + esc(lead.name || 'לקוח') + '</h3></div>' + dealCards + '<div class="card"><h3>📁 מסמכים</h3>' + docRows + '</div>');
+        var $ = C.$;
+        $('alBack').addEventListener('click', function () { window.C2B_renderAccounting(); });
+        $('view').querySelectorAll('.acct-st').forEach(function (s) { s.addEventListener('change', function () { db.from('deals').update({ acct_status: s.value }).eq('id', s.dataset.acct); }); });
+        $('view').querySelectorAll('[data-receipt]').forEach(function (b) { b.addEventListener('click', function () { db.from('deals').update({ acct_status: 'receipt' }).eq('id', b.dataset.receipt).then(function () { alert('סומן "הופקה קבלה". חיבור לחשבונית ירוקה יאפשר הפקה אוטומטית. 🧾'); openAcctLeadView(lead.id); }); }); });
+        $('view').querySelectorAll('[data-invoice]').forEach(function (b) { b.addEventListener('click', function () { db.from('deals').update({ acct_status: 'invoice' }).eq('id', b.dataset.invoice).then(function () { alert('סומן "הופקה חשבונית". חיבור לחשבונית ירוקה יאפשר הפקה אוטומטית. 🧾'); openAcctLeadView(lead.id); }); }); });
+        $('view').querySelectorAll('.apf').forEach(function (f) { f.addEventListener('submit', function (e) { e.preventDefault(); var amt = parseFloat(this.amount.value) || 0; if (!amt) return; db.from('payments').insert({ deal_id: this.dataset.deal, lead_id: lead.id, kind: this.kind.value, amount: amt, method: this.method.value, ref_no: this.ref.value, paid_at: new Date().toISOString().slice(0, 10) }).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } openAcctLeadView(lead.id); }); }); });
+      });
+    });
   }
 
   // ---------- CONTRACT (auto-filled + browser signature) ----------
