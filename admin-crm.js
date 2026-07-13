@@ -33,6 +33,17 @@
     { k: 'delivered', label: 'רכב נמסר', color: '#16a34a' }
   ];
   function stageDef(k) { for (var i = 0; i < DEAL_STAGES.length; i++) if (DEAL_STAGES[i].k === k) return DEAL_STAGES[i]; return DEAL_STAGES[0]; }
+  // sync file-manager pipeline stage → the sales lead status (both views stay aligned)
+  var STAGE_TO_STATUS = { initial: 'quote_sent', screening: 'in_progress', submitted: 'underwriting', approved: 'underwriting', signed: 'underwriting', collection: 'won', ordered: 'won', delivered: 'won' };
+  function syncLeadFromStage(lead, stage) {
+    var target = STAGE_TO_STATUS[stage];
+    if (!target || lead.status === target) return;
+    var from = lead.status;
+    changeStatus(lead.id, target, { status: from }, function () {
+      if (stage === 'delivered') logActivity(lead.id, 'system', '🎉 העסקה נסגרה — הרכב נמסר ללקוח');
+    });
+    lead.status = target;
+  }
   var CHECKLIST_ITEMS = ['התקבל הסכם', 'התקבלה ת"ז', 'התקבל רישיון נהיגה', 'התקבלו תלושי שכר', 'התקבלו דפי בנק', 'נבדקו מסמכים', 'נשלח למימון', 'התקבל אישור מימון', 'נשלחה פוליסה', 'הוזמן רכב', 'תואמה מסירה'];
   function stageBar(cur) {
     var idx = DEAL_STAGES.map(function (s) { return s.k; }).indexOf(cur);
@@ -198,7 +209,7 @@
       var lead = r[0].data, deals = (r[1] && r[1].data) || [];
       if (r[2] && r[2].data) { profiles = {}; r[2].data.forEach(function (p) { profiles[p.user_id] = p.full_name; }); }
       curDeals = deals;
-      dealForm(lead, deals[0] || null);   // אם אין עסקה — טופס תיק חדש למילוי
+      dealForm(lead, deals[0] || null, true);   // אם אין עסקה — טופס תיק חדש למילוי
     });
   }
   // open a specific deal's file view (used from the file-manager list)
@@ -214,7 +225,7 @@
       ]).then(function (rr) {
         if (rr[2] && rr[2].data) { profiles = {}; rr[2].data.forEach(function (p) { profiles[p.user_id] = p.full_name; }); }
         curDeals = (rr[1] && rr[1].data) || [deal];
-        dealForm((rr[0] && rr[0].data) || { id: deal.lead_id }, deal);
+        dealForm((rr[0] && rr[0].data) || { id: deal.lead_id }, deal, true);
       });
     });
   };
@@ -530,7 +541,7 @@
     if (!deals.length) return '<p class="muted" style="margin:6px 0">אין עסקאות</p>';
     return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b> · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + '</div>'; }).join('');
   }
-  function dealForm(lead, deal) {
+  function dealForm(lead, deal, fileMode) {
     deal = deal || {}; var ad = deal.addons || {};
     var curStage = deal.stage || 'initial';
     var checklist = {}; CHECKLIST_ITEMS.forEach(function (it) { checklist[it] = !!(deal.checklist || {})[it]; });
@@ -538,7 +549,6 @@
     var grid = function (inner) { return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' + inner + '</div>'; };
     var statusSel = '<div class="field" style="margin:0"><label>סטטוס הזמנה</label><select class="inp" id="dl_status" style="width:100%">' + [['quote', 'הצעת מחיר'], ['ordered', 'הזמנה'], ['cancelled', 'בוטל']].map(function (s) { return '<option value="' + s[0] + '"' + ((deal.status || 'quote') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></div>';
     var fin = deal.financing || {}, ti = deal.tradein || {};
-    var isFiles = (C.role || '') === 'files';
     function gearboxSel(v) { return '<div class="field" style="margin:0"><label>תיבת הילוכים</label><select class="inp" id="dl_car_gearbox" style="width:100%"><option value="">— בחר —</option>' + ['אוטומט', 'ידני', 'רובוטית', 'טיפטרוניק'].map(function (g) { return '<option' + (v === g ? ' selected' : '') + '>' + g + '</option>'; }).join('') + '</select></div>'; }
     // --- cards (grouped into tabs matching the reference layout) ---
     var clientCard = '<div class="card"><h3>👤 פרטי הלקוח</h3>' + grid(G('שם לקוח', 'client_name', deal.client_name || lead.name) + G('טלפון נייד', 'client_phone', deal.client_phone || lead.phone) + G('דוא"ל', 'client_email', deal.client_email || lead.email) + G('כתובת', 'client_address', deal.client_address || lead.city) + G('ת.ז / ח.פ', 'client_id', deal.client_id) + G('שם לחשבונית', 'invoice_name', deal.invoice_name || lead.name)) + '</div>';
@@ -568,7 +578,7 @@
     view(
       '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">' + ((C.role || '') === 'files' ? '→ לרשימת התיקים' : '→ לכרטיס') + '</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
         '<div><button class="btn btn-ghost btn-sm" id="dlContract">✍ הסכם לחתימה</button> <button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
-      (isFiles || (C.role || '') === 'admin' ? '<div class="card" style="padding:12px"><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' : '') +
+      (fileMode ? '<div class="card" style="padding:12px"><h3 style="margin:0 0 8px;font-size:13px">שלב התיק (מנהלת תיקי לקוחות)</h3><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' : '') +
       '<nav class="tabs" id="dlTabs" style="margin-bottom:14px;flex-wrap:wrap">' +
         dTab('client', '👤 פרטי הלקוח', true) + dTab('deal', '📋 פרטי העסקה') + dTab('car', '🚗 פרטי הרכב המוזמן') + dTab('fin', '🏦 מקטע מימון') + dTab('trade', '🔁 מקטע טרייד-אין') + dTab('record', '🗂️ פרטי רשומה') +
       '</nav>' +
@@ -583,7 +593,7 @@
     $('dlBack').addEventListener('click', function () { if ((C.role || '') === 'files') return window.C2B_renderFiles(); window.C2B_openLeadCard(lead.id); });
     $('dlTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-dtab]'); if (!b) return; $('dlTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); C.$('view').querySelectorAll('[data-dpanel]').forEach(function (p) { p.classList.toggle('hidden', p.dataset.dpanel !== b.dataset.dtab); }); });
     // stage bar (shown to file manager / admin only)
-    if ($('dlStageBar')) $('dlStageBar').addEventListener('click', function (e) { var st = e.target.closest('[data-stage]'); if (!st) return; curStage = st.dataset.stage; $('dlStageBar').innerHTML = stageBar(curStage); if (deal.id) { db.from('deals').update({ stage: curStage }).eq('id', deal.id); logActivity(lead.id, 'system', 'שלב עסקה: ' + stageDef(curStage).label); } });
+    if ($('dlStageBar')) $('dlStageBar').addEventListener('click', function (e) { var st = e.target.closest('[data-stage]'); if (!st) return; curStage = st.dataset.stage; $('dlStageBar').innerHTML = stageBar(curStage); if (deal.id) { db.from('deals').update({ stage: curStage }).eq('id', deal.id); logActivity(lead.id, 'system', 'שלב עסקה: ' + stageDef(curStage).label); syncLeadFromStage(lead, curStage); } });
     // load the client's documents into the record tab (uploaded by the sales agent)
     if (lead.id) {
       db.from('lead_documents').select('*').eq('lead_id', lead.id).order('created_at', { ascending: false }).then(function (dr) {
@@ -839,19 +849,40 @@
   };
 
   // ---------- DASHBOARD ----------
+  var dashPeriod = 'all';
+  var PERIODS = [['today', 'היום'], ['7', '7 ימים'], ['30', '30 יום'], ['month', 'החודש'], ['all', 'הכל']];
+  function periodStart(p) { var d = new Date(); d.setHours(0, 0, 0, 0); if (p === 'today') return d.getTime(); if (p === '7') return Date.now() - 7 * 864e5; if (p === '30') return Date.now() - 30 * 864e5; if (p === 'month') { var m = new Date(); m.setDate(1); m.setHours(0, 0, 0, 0); return m.getTime(); } return 0; }
+  // drawer popup listing leads → click opens the lead card
+  function leadsPopup(title, list) {
+    C.openDrawer('<div class="dw-head"><h3 style="margin:0">' + esc(title) + ' <span class="muted" style="font-size:13px">(' + list.length + ')</span></h3></div>' +
+      '<div class="dw-body">' + (list.length ? list.map(function (l) {
+        return '<div data-lead="' + l.id + '" style="padding:11px 12px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px" onmouseover="this.style.background=\'var(--surface-2)\'" onmouseout="this.style.background=\'\'">' +
+          '<div style="display:flex;justify-content:space-between;gap:8px"><b>' + esc(l.name || 'ליד') + '</b>' + (l.status ? badge(l.status) : '') + '</div>' +
+          '<div class="muted" style="font-size:12.5px;margin-top:3px">' + esc(l.phone || '') + (l.car ? ' · ' + esc(l.car) : '') + (l.brand ? ' · ' + esc(l.brand) : '') + (l._extra ? ' · ' + esc(l._extra) : '') + '</div></div>';
+      }).join('') : '<p class="empty">אין רשומות</p>') + '</div>');
+    document.getElementById('drawer').querySelectorAll('[data-lead]').forEach(function (el) { el.addEventListener('click', function () { C.closeDrawer(); window.C2B_openLeadCard(el.dataset.lead); }); });
+  }
   window.C2B_renderDashboard = function () {
     loading();
     Promise.all([
-      db.from('leads').select('status,source,created_at,first_response_at'),
+      db.from('leads').select('id,name,phone,car,brand,status,source,created_at,first_response_at,assigned_to'),
       db.from('tasks').select('done'),
-      db.from('appointments').select('appt_date,status')
+      db.from('appointments').select('status'),
+      db.from('deals').select('id,lead_id,client_name,car_make,car_model,total,stage,created_at'),
+      db.from('profiles').select('user_id,full_name')
     ]).then(function (res) {
-      var leads = res[0].data || [], tasks = res[1].data || [];
+      var allLeads = res[0].data || [], tasks = res[1].data || [], allDeals = (res[3] && res[3].data) || [];
+      var prof = {}; ((res[4] && res[4].data) || []).forEach(function (p) { prof[p.user_id] = p.full_name; });
+      var start = periodStart(dashPeriod);
+      var leads = allLeads.filter(function (l) { return new Date(l.created_at || 0).getTime() >= start; });
+      var deals = allDeals.filter(function (d) { return new Date(d.created_at || 0).getTime() >= start; });
+      var todayS = periodStart('today');
+      var todayN = allLeads.filter(function (l) { return new Date(l.created_at || 0).getTime() >= todayS; }).length;
+      var dealsTodayN = allDeals.filter(function (d) { return new Date(d.created_at || 0).getTime() >= todayS; }).length;
+
       var by = {}; STATUSES.forEach(function (s) { by[s.k] = 0; });
       leads.forEach(function (l) { by[l.status || 'new'] = (by[l.status || 'new'] || 0) + 1; });
       var won = by.won || 0, lost = by.lost || 0, conv = (won + lost) ? Math.round(won / (won + lost) * 100) : 0;
-      var today = new Date().toISOString().slice(0, 10);
-      var todayN = leads.filter(function (l) { return (l.created_at || '').slice(0, 10) === today; }).length;
       var rts = leads.filter(function (l) { return l.first_response_at; }).map(function (l) { return (new Date(l.first_response_at) - new Date(l.created_at)) / 60000; });
       var avgRt = rts.length ? Math.round(rts.reduce(function (a, b) { return a + b; }, 0) / rts.length) : 0;
       var openTasks = tasks.filter(function (t) { return !t.done; }).length;
@@ -860,24 +891,60 @@
       var bySource = {}; leads.forEach(function (l) { var s = l.source || 'לא ידוע'; bySource[s] = (bySource[s] || 0) + 1; });
       var topSrc = Object.keys(bySource).sort(function (a, b) { return bySource[b] - bySource[a]; }).slice(0, 6);
       var maxSrc = topSrc.length ? bySource[topSrc[0]] : 1;
+      // by brand
+      var byBrand = {}; leads.forEach(function (l) { var b = l.brand || 'לא ידוע'; byBrand[b] = (byBrand[b] || 0) + 1; });
+      var brands = Object.keys(byBrand).sort(function (a, b) { return byBrand[b] - byBrand[a]; }).slice(0, 8);
+      var maxBrand = brands.length ? byBrand[brands[0]] : 1;
+      // by salesperson
+      var byAgent = {}; leads.forEach(function (l) { var n = prof[l.assigned_to] || 'לא שויך'; byAgent[n] = byAgent[n] || { t: 0, w: 0 }; byAgent[n].t++; if (l.status === 'won') byAgent[n].w++; });
+      var agents = Object.keys(byAgent).sort(function (a, b) { return byAgent[b].t - byAgent[a].t; });
+      // deals per file-manager stage
+      var byStage = {}; DEAL_STAGES.forEach(function (s) { byStage[s.k] = 0; }); deals.forEach(function (d) { byStage[d.stage || 'initial'] = (byStage[d.stage || 'initial'] || 0) + 1; });
+      var maxStage = Math.max(1, Math.max.apply(null, DEAL_STAGES.map(function (s) { return byStage[s.k] || 0; })));
+
+      var pTabs = '<div class="tabs" id="dashPeriod" style="margin-bottom:16px">' + PERIODS.map(function (p) { return '<button data-p="' + p[0] + '"' + (dashPeriod === p[0] ? ' class="active"' : '') + '>' + p[1] + '</button>'; }).join('') + '</div>';
       view(
+        pTabs +
         '<div class="cards">' +
-          C.stat('לידים חדשים היום', todayN, true) + C.stat('סה"כ לידים', leads.length) +
-          C.stat('חדשים (סטטוס)', by.new || 0) + C.stat('בטיפול', by.in_progress || 0) +
-          C.stat('פגישות נקבעו', by.meeting_set || 0) + C.stat('עסקאות', won) +
-          C.stat('אחוז סגירה', conv + '%') + C.stat('זמן תגובה', avgRt ? avgRt + ' דק\'' : '—') +
-          C.stat('משימות פתוחות', openTasks) +
+          C.stat('לידים חדשים היום', todayN, true) + C.stat('עסקאות היום', dealsTodayN, true) +
+          C.stat('סה"כ לידים', leads.length) + C.stat('סה"כ עסקאות', deals.length) +
+          C.stat('בטיפול', by.in_progress || 0) + C.stat('פגישות נקבעו', by.meeting_set || 0) +
+          C.stat('עסקאות שנסגרו', won) + C.stat('אחוז סגירה', conv + '%') +
+          C.stat('זמן תגובה', avgRt ? avgRt + ' דק\'' : '—') + C.stat('משימות פתוחות', openTasks) +
         '</div>' +
         '<div class="grid2">' +
           '<div class="card"><h3>לידים ב-14 הימים האחרונים</h3>' + svgBars(days) + '</div>' +
-          '<div class="card"><h3>פילוח לפי סטטוס</h3><div class="table-scroll"><table><tbody>' +
-            STATUSES.filter(function (s) { return by[s.k]; }).map(function (s) { var pct = leads.length ? Math.round(by[s.k] / leads.length * 100) : 0; return '<tr><td>' + badge(s.k) + '</td><td>' + by[s.k] + '</td><td style="width:45%"><div class="bar"><span style="width:' + pct + '%;background:' + s.color + '"></span></div></td></tr>'; }).join('') +
+          '<div class="card"><h3>פילוח לפי סטטוס <span class="muted" style="font-size:12px">(לחצו לפתיחת הלידים)</span></h3><div class="table-scroll"><table><tbody id="dashStatus">' +
+            STATUSES.filter(function (s) { return by[s.k]; }).map(function (s) { var pct = leads.length ? Math.round(by[s.k] / leads.length * 100) : 0; return '<tr data-status="' + s.k + '" style="cursor:pointer"><td>' + badge(s.k) + '</td><td>' + by[s.k] + '</td><td style="width:45%"><div class="bar"><span style="width:' + pct + '%;background:' + s.color + '"></span></div></td></tr>'; }).join('') +
+          '</tbody></table></div></div>' +
+        '</div>' +
+        '<div class="card"><h3>🗂️ משפך תיקי לקוחות <span class="muted" style="font-size:12px">(לחצו על שלב לצפייה בלקוחות שבו)</span></h3><div class="table-scroll"><table><tbody id="dashStage">' +
+          DEAL_STAGES.map(function (s) { var n = byStage[s.k] || 0; return '<tr data-stage="' + s.k + '" style="cursor:pointer"><td>' + stageBadge(s.k) + '</td><td>' + n + '</td><td style="width:55%"><div class="bar"><span style="width:' + Math.round(n / maxStage * 100) + '%;background:' + s.color + '"></span></div></td></tr>'; }).join('') +
+        '</tbody></table></div></div>' +
+        '<div class="grid2">' +
+          '<div class="card"><h3>לידים לפי מותג <span class="muted" style="font-size:12px">(לחצו לפתיחה)</span></h3><div class="table-scroll"><table><tbody id="dashBrand">' +
+            (brands.map(function (b) { return '<tr data-brand="' + esc(b) + '" style="cursor:pointer"><td>' + esc(b) + '</td><td>' + byBrand[b] + '</td><td style="width:50%"><div class="bar"><span style="width:' + Math.round(byBrand[b] / maxBrand * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') +
+          '</tbody></table></div></div>' +
+          '<div class="card"><h3>לידים לפי סוכן מכירות <span class="muted" style="font-size:12px">(לחצו לפתיחה)</span></h3><div class="table-scroll"><table><thead><tr><th>סוכן</th><th>לידים</th><th>עסקאות</th></tr></thead><tbody id="dashAgent">' +
+            (agents.map(function (n) { return '<tr data-agent="' + esc(n) + '" style="cursor:pointer"><td>' + esc(n) + '</td><td>' + byAgent[n].t + '</td><td>' + byAgent[n].w + '</td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') +
           '</tbody></table></div></div>' +
         '</div>' +
         '<div class="card"><h3>מקורות מובילים</h3><div class="table-scroll"><table><tbody>' +
           (topSrc.map(function (s) { return '<tr><td>' + esc(s) + '</td><td>' + bySource[s] + '</td><td style="width:55%"><div class="bar"><span style="width:' + Math.round(bySource[s] / maxSrc * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') +
         '</tbody></table></div></div>'
       );
+      // period switch
+      C.$('dashPeriod').addEventListener('click', function (e) { var b = e.target.closest('[data-p]'); if (!b) return; dashPeriod = b.dataset.p; window.C2B_renderDashboard(); });
+      // clickable breakdowns → popups of leads
+      var leadById = {}; allLeads.forEach(function (l) { leadById[l.id] = l; });
+      C.$('dashStatus').querySelectorAll('[data-status]').forEach(function (tr) { tr.addEventListener('click', function () { var k = tr.dataset.status; leadsPopup(stDef(k).label, leads.filter(function (l) { return (l.status || 'new') === k; })); }); });
+      C.$('dashBrand').querySelectorAll('[data-brand]').forEach(function (tr) { tr.addEventListener('click', function () { var b = tr.dataset.brand; leadsPopup('מותג: ' + b, leads.filter(function (l) { return (l.brand || 'לא ידוע') === b; })); }); });
+      C.$('dashAgent').querySelectorAll('[data-agent]').forEach(function (tr) { tr.addEventListener('click', function () { var n = tr.dataset.agent; leadsPopup('סוכן: ' + n, leads.filter(function (l) { return (prof[l.assigned_to] || 'לא שויך') === n; })); }); });
+      C.$('dashStage').querySelectorAll('[data-stage]').forEach(function (tr) { tr.addEventListener('click', function () {
+        var k = tr.dataset.stage;
+        var list = deals.filter(function (d) { return (d.stage || 'initial') === k; }).map(function (d) { var l = leadById[d.lead_id] || {}; return { id: d.lead_id, name: d.client_name || l.name, phone: l.phone, car: ((d.car_make || '') + ' ' + (d.car_model || '')).trim() || l.car, brand: l.brand, status: l.status, _extra: d.total ? nis(d.total) : '' }; });
+        leadsPopup('שלב תיק: ' + stageDef(k).label, list);
+      }); });
     }).catch(function (e) { errBox(e.message || e); });
   };
   function svgBars(days) {
