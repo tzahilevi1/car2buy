@@ -67,23 +67,33 @@
     $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('whoami').textContent = session.user.email;
     window.C2B.userId = session.user.id;
     window.C2B.userName = session.user.email;
-    db.from('profiles').select('role,full_name').eq('user_id', session.user.id).single().then(function (r) {
+    db.from('profiles').select('role,full_name,views').eq('user_id', session.user.id).single().then(function (r) {
       window.C2B.role = (r.data && r.data.role) || 'sales';
+      window.C2B.views = (r.data && r.data.views && r.data.views.length) ? r.data.views : (DEFAULT_VIEWS[window.C2B.role] || ['dashboard']);
       if (r.data && r.data.full_name) { window.C2B.userName = r.data.full_name; $('whoami').textContent = r.data.full_name + ' · ' + roleLabel(window.C2B.role); }
       applyRole(window.C2B.role); refreshBadges(); go('dashboard');
     });
   }
-  var ROLE_LABELS = { admin: 'מנהל מערכת', sales: 'סוכן מכירות', files: 'מנהלת תיקים', accounting: 'מנהלת חשבונות' };
+  var ROLE_LABELS = { admin: 'מנהל מערכת', sales: 'סוכן מכירות', files: 'מנהלת תיקי לקוחות', accounting: 'מנהלת חשבונות' };
   function roleLabel(r) { return ROLE_LABELS[r] || r; }
-  var ROLE_VIEWS = {
-    sales: ['dashboard', 'leads', 'files', 'cars', 'appointments', 'tasks', 'activity'],
-    files: ['dashboard', 'files', 'leads', 'appointments', 'tasks', 'activity'],
-    accounting: ['dashboard', 'accounting', 'reports', 'activity']
+  // views a user MAY open. Admin sees all; others see dashboard+activity always,
+  // plus whatever the admin granted (profiles.views). These are the defaults.
+  var DEFAULT_VIEWS = {
+    sales: ['dashboard', 'leads', 'files', 'cars', 'appointments', 'tasks'],
+    files: ['dashboard', 'files', 'leads', 'appointments', 'tasks'],
+    accounting: ['dashboard', 'accounting', 'reports']
   };
+  // screens the admin can grant when creating a user (label + key)
+  var GRANTABLE_VIEWS = [
+    ['dashboard', 'דשבורד'], ['leads', 'לידים'], ['files', 'תיקי לקוחות'], ['accounting', 'הנהלת חשבונות'],
+    ['cars', 'רכבים'], ['appointments', 'יומן פגישות'], ['tasks', 'משימות'], ['analytics', 'אנליטיקס'], ['reports', 'דוחות']
+  ];
   function navAllowed(nav, role) {
     if (role === 'admin' || !role) return true;
-    if (!nav || nav.indexOf('soon:') === 0 || nav === 'users') return role === 'admin';
-    return (ROLE_VIEWS[role] || ['dashboard']).indexOf(nav) >= 0;
+    if (nav === 'activity' || nav === 'dashboard') return true;   // always available
+    if (nav === 'users' || (nav && nav.indexOf('soon:') === 0)) return false; // admin-only
+    var views = (window.C2B && window.C2B.views) || DEFAULT_VIEWS[role] || ['dashboard'];
+    return views.indexOf(nav) >= 0;
   }
   function applyRole(role) {
     $('nav').querySelectorAll('.nav-item, .nav-group-label').forEach(function (it) {
@@ -91,6 +101,8 @@
       it.style.display = navAllowed(it.dataset.nav, role) ? '' : 'none';
     });
   }
+  window.C2B.GRANTABLE_VIEWS = GRANTABLE_VIEWS;
+  window.C2B.DEFAULT_VIEWS = DEFAULT_VIEWS;
   $('loginForm').addEventListener('submit', function (e) {
     e.preventDefault(); $('loginErr').textContent = '';
     db.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value }).then(function (r) {
@@ -99,6 +111,19 @@
     });
   });
   $('logout').addEventListener('click', function () { db.auth.signOut().then(showLogin); });
+  // forgot password → Supabase recovery email → reset.html
+  $('forgot').addEventListener('click', function (e) {
+    e.preventDefault();
+    var em = $('email').value.trim();
+    if (!em) { $('loginErr').style.color = 'var(--danger)'; $('loginErr').textContent = 'הזינו אימייל למעלה ואז לחצו "שכחתי סיסמה".'; return; }
+    var redirect = location.href.replace(/[^/]*$/, 'reset.html');
+    db.auth.resetPasswordForEmail(em, { redirectTo: redirect }).then(function (r) {
+      $('loginErr').style.color = r.error ? 'var(--danger)' : 'var(--ok)';
+      $('loginErr').textContent = r.error ? ('שגיאה: ' + r.error.message) : 'נשלח מייל לאיפוס סיסמה (אם החשבון קיים). בדקו את תיבת הדואר.';
+    });
+  });
+  // activity screen now lives in the header (next to the bell)
+  $('activityBtn').addEventListener('click', function () { go('activity'); });
 
   // ---------- routing ----------
   function setActive(nav, status) {
@@ -155,22 +180,106 @@
   });
   document.addEventListener('click', function (e) { if (!e.target.closest('.search')) $('gsres').classList.add('hidden'); });
 
+  // ---------- generic field filter (used on leads / files / cars) ----------
+  var OPS = { contains: 'מכיל', eq: 'שווה ל', ne: 'שונה מ', gt: 'גדול מ', lt: 'קטן מ', empty: 'ריק', nempty: 'לא ריק' };
+  // fields: [{key,label,options?:[{v,l}],get?:fn(row)}]  onApply: fn() → caller redraws
+  function makeFilter(fields, onApply) {
+    var byKey = {}; fields.forEach(function (f) { byKey[f.key] = f; });
+    var state = [];
+    function valCtl(f) {
+      if (f && f.options) return '<select id="fbVal">' + f.options.map(function (o) { return '<option value="' + esc(o.v) + '">' + esc(o.l) + '</option>'; }).join('') + '</select>';
+      return '<input id="fbVal" placeholder="ערך…" style="width:150px">';
+    }
+    function get(f, row) { var d = byKey[f.field]; return d && d.get ? d.get(row) : row[f.field]; }
+    var api = {
+      render: function () {
+        var chips = state.map(function (f, i) {
+          var d = byKey[f.field];
+          var shown = d && d.options ? ((d.options.filter(function (o) { return String(o.v) === String(f.val); })[0] || {}).l || f.val) : f.val;
+          return '<span class="chip">' + esc(d ? d.label : f.field) + ' ' + OPS[f.op] + ' ' + esc(shown || '') + ' <b data-rmf="' + i + '">✕</b></span>';
+        }).join('');
+        return '<div class="filterbar" id="fbar"><span class="muted" style="font-size:12px">🧲 סינון לפי שדה:</span>' +
+          '<select id="fbField">' + fields.map(function (f) { return '<option value="' + f.key + '">' + esc(f.label) + '</option>'; }).join('') + '</select>' +
+          '<select id="fbOp">' + Object.keys(OPS).map(function (k) { return '<option value="' + k + '">' + OPS[k] + '</option>'; }).join('') + '</select>' +
+          valCtl(fields[0]) +
+          '<button class="btn btn-sm" id="fbAdd">+ הוסף</button>' +
+          (state.length ? '<button class="btn btn-ghost btn-sm" id="fbClear">נקה הכל</button>' : '') + chips + '</div>';
+      },
+      bind: function () {
+        var add = $('fbAdd'); if (!add) return;
+        $('fbField').addEventListener('change', function () { var f = byKey[this.value]; var holder = $('fbVal'); if (holder) holder.outerHTML = valCtl(f); });
+        add.addEventListener('click', function () {
+          var field = $('fbField').value, op = $('fbOp').value, val = ($('fbVal') && $('fbVal').value || '').trim();
+          if (op !== 'empty' && op !== 'nempty' && !val) return;
+          state.push({ field: field, op: op, val: val }); onApply();
+        });
+        if ($('fbClear')) $('fbClear').addEventListener('click', function () { state = []; onApply(); });
+        $('fbar').querySelectorAll('[data-rmf]').forEach(function (b) { b.addEventListener('click', function () { state.splice(+b.dataset.rmf, 1); onApply(); }); });
+      },
+      match: function (row) {
+        return state.every(function (f) {
+          var raw = get(f, row); var s = (raw == null ? '' : String(raw)).toLowerCase(), q = String(f.val).toLowerCase();
+          if (f.op === 'contains') return s.indexOf(q) >= 0;
+          if (f.op === 'eq') return s === q;
+          if (f.op === 'ne') return s !== q;
+          if (f.op === 'gt') return parseFloat(raw) > parseFloat(f.val);
+          if (f.op === 'lt') return parseFloat(raw) < parseFloat(f.val);
+          if (f.op === 'empty') return !s;
+          if (f.op === 'nempty') return !!s;
+          return true;
+        });
+      },
+      count: function () { return state.length; }
+    };
+    return api;
+  }
+  window.C2B.makeFilter = makeFilter;
+
   // ---------- CARS (read-only from the Google Sheet → cars.json) ----------
   var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LiK--j3BCPnHO4rZQj7N2RetdnExEmwimWTwn7kmWe8/edit';
+  var CAR_COLS = 12;
   function carRows(list) {
     return list.map(function (c) {
       return '<tr><td>' + (c.img ? '<img src="' + esc(c.img) + '" style="width:52px;height:34px;object-fit:cover;border-radius:8px" onerror="this.style.display=\'none\'">' : '') +
-        '</td><td>' + esc(c.brand) + '</td><td>' + esc(c.name) + '</td><td class="muted">' + esc(c.trim) + '</td><td>' + nis(c.m) + '</td><td>' + nis(c.p) + '</td></tr>';
+        '</td><td><b>' + esc(c.brand) + '</b></td><td>' + esc(c.name) + (c.nameEn ? '<div class="muted" style="font-size:11px">' + esc(c.nameEn) + '</div>' : '') + '</td>' +
+        '<td class="muted">' + esc(c.trim) + '</td><td class="muted">' + esc(c.engine) + '</td><td>' + esc(c.seats || '') + '</td>' +
+        '<td class="muted" style="white-space:normal;max-width:120px">' + esc(c.colors) + '</td>' +
+        '<td>' + nis(c.m) + '</td><td>' + nis(c.p) + '</td>' +
+        '<td style="color:var(--ok);font-weight:700">' + nis(c.commission) + '</td>' +
+        '<td class="muted">' + esc(c.down ? nis(c.down) : '—') + '</td><td class="muted">' + esc(c.code) + '</td></tr>';
     }).join('');
   }
   function renderCars() {
     loading();
     fetch('cars.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (cars) {
       cars = cars || [];
-      view('<div class="card"><div class="row-between"><h3>רכבים חדשים (' + cars.length + ')</h3><div><input class="inp" id="cq" placeholder="חיפוש מותג/דגם" style="width:200px"> <a class="btn btn-sm" href="' + SHEET_URL + '" target="_blank" rel="noopener">✎ פתח את הגיליון</a></div></div>' +
-        '<p class="muted" style="font-size:13px">מנוהל ב-Google Sheet, מתעדכן אוטומטית (~15 דק\'). להוספה/עריכה — ערוך את הגיליון.</p>' +
-        '<div class="table-scroll"><table><thead><tr><th>תמונה</th><th>מותג</th><th>דגם</th><th>גרסה</th><th>החזר</th><th>מחיר</th></tr></thead><tbody id="crows">' + (carRows(cars) || '<tr><td colspan="6" class="empty">אין רכבים</td></tr>') + '</tbody></table></div></div>');
-      $('cq').addEventListener('input', function () { var q = this.value.trim().toLowerCase(); $('crows').innerHTML = carRows(cars.filter(function (c) { return ((c.brand || '') + ' ' + (c.name || '')).toLowerCase().indexOf(q) >= 0; })) || '<tr><td colspan="6" class="empty">אין תואמים</td></tr>'; });
+      var brands = Object.keys(cars.reduce(function (a, c) { if (c.brand) a[c.brand] = 1; return a; }, {})).sort();
+      var filter = makeFilter([
+        { key: 'brand', label: 'מותג', options: [{ v: '', l: 'הכל' }].concat(brands.map(function (b) { return { v: b, l: b }; })) },
+        { key: 'name', label: 'דגם' }, { key: 'trim', label: 'גרסה' }, { key: 'engine', label: 'מנוע' },
+        { key: 'colors', label: 'צבע' }, { key: 'code', label: 'קוד דגם' },
+        { key: 'p', label: 'מחיר' }, { key: 'm', label: 'החזר חודשי' }, { key: 'commission', label: 'עמלת סוכן' }, { key: 'seats', label: 'מושבים' }
+      ], draw);
+      view('<div class="card"><div class="row-between"><h3>רכבים חדשים <span class="muted" id="ccount"></span></h3><div><input class="inp" id="cq" placeholder="חיפוש חופשי…" style="width:180px"> <a class="btn btn-sm" href="' + SHEET_URL + '" target="_blank" rel="noopener">✎ פתח את הגיליון</a></div></div>' +
+        '<p class="muted" style="font-size:13px">מנוהל ב-Google Sheet, מתעדכן אוטומטית (~15 דק\'). כל הפרטים — כולל עמלת סוכן — נמשכים מהגיליון.</p>' +
+        '<div id="carsBody"></div></div>');
+      function list() {
+        var q = ($('cq') && $('cq').value || '').trim().toLowerCase();
+        return cars.filter(function (c) {
+          if (q && ((c.brand || '') + ' ' + (c.name || '') + ' ' + (c.nameEn || '') + ' ' + (c.trim || '')).toLowerCase().indexOf(q) < 0) return false;
+          return filter.match(c);
+        });
+      }
+      function draw() {
+        var rows = list();
+        $('carsBody').innerHTML = filter.render() +
+          '<div class="table-scroll"><table><thead><tr><th>תמונה</th><th>מותג</th><th>דגם</th><th>גרסה</th><th>מנוע</th><th>מושבים</th><th>צבעים</th><th>החזר</th><th>מחיר</th><th>עמלת סוכן</th><th>מקדמה</th><th>קוד</th></tr></thead><tbody>' +
+          (carRows(rows) || '<tr><td colspan="' + CAR_COLS + '" class="empty">אין תואמים</td></tr>') + '</tbody></table></div>';
+        if ($('ccount')) $('ccount').textContent = '(' + rows.length + ')';
+        filter.bind();
+      }
+      $('cq').addEventListener('input', draw);
+      draw();
     }).catch(function (e) { errBox(e.message || e); });
   }
 
@@ -266,22 +375,79 @@
   var repTab = 'marketing';
 
   // ---------- USERS & ROLES (admin only) ----------
+  var ROLES = [['admin', 'מנהל מערכת'], ['sales', 'סוכן מכירות'], ['files', 'מנהלת תיקי לקוחות'], ['accounting', 'מנהלת חשבונות']];
+  function roleName(k) { var x = ROLES.filter(function (r) { return r[0] === k; })[0]; return x ? x[1] : k; }
+  function viewsLabel(v) { if (!v || !v.length) return '<span class="muted">ברירת מחדל</span>'; return v.map(function (k) { var g = GRANTABLE_VIEWS.filter(function (x) { return x[0] === k; })[0]; return '<span class="tag" style="margin:2px">' + esc(g ? g[1] : k) + '</span>'; }).join(''); }
+  function viewChecks(idPrefix, checked) {
+    return '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">' + GRANTABLE_VIEWS.map(function (g) {
+      return '<label style="display:flex;gap:5px;align-items:center;font-size:13px"><input type="checkbox" data-' + idPrefix + '="' + g[0] + '"' + (checked.indexOf(g[0]) >= 0 ? ' checked' : '') + '> ' + g[1] + '</label>';
+    }).join('') + '</div>';
+  }
   function renderUsers() {
     loading();
     db.from('profiles').select('*').order('created_at', { ascending: true }).then(function (r) {
       if (r.error) return errBox(r.error.message);
       var ps = r.data || [];
-      var ROLES = [['admin', 'מנהל מערכת'], ['sales', 'סוכן מכירות'], ['files', 'מנהלת תיקי לקוחות'], ['accounting', 'מנהלת חשבונות']];
       var rows = ps.map(function (p) {
-        return '<tr><td><span class="avatar" style="margin-inline-end:8px">' + esc((p.full_name || '?').charAt(0)) + '</span>' + esc(p.full_name) + '</td>' +
+        var reset = p.email ? '<button class="btn btn-ghost btn-sm" data-reset="' + esc(p.email) + '">🔑 אפס סיסמה</button>' : '<span class="muted" style="font-size:12px">אין אימייל</span>';
+        return '<tr><td><span class="avatar" style="margin-inline-end:8px">' + esc((p.full_name || '?').charAt(0)) + '</span>' + esc(p.full_name) + (p.email ? '<div class="muted" style="font-size:11px">' + esc(p.email) + '</div>' : '') + '</td>' +
           '<td><select class="inp" data-role="' + p.user_id + '">' + ROLES.map(function (x) { return '<option value="' + x[0] + '"' + (p.role === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select></td>' +
-          '<td><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-active="' + p.user_id + '"' + (p.active ? ' checked' : '') + '> פעיל</label></td></tr>';
+          '<td style="white-space:normal;max-width:260px">' + viewsLabel(p.views) + ' <button class="btn btn-ghost btn-sm" data-editviews="' + p.user_id + '">✏️</button><div class="hidden" id="ev_' + p.user_id + '"></div></td>' +
+          '<td><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-active="' + p.user_id + '"' + (p.active ? ' checked' : '') + '> פעיל</label></td>' +
+          '<td>' + reset + '</td></tr>';
       }).join('');
-      view('<div class="card"><h3>משתמשים והרשאות</h3><p class="muted" style="font-size:13px">צור משתמשים ב-Supabase → Authentication → Users → Add user. הם יופיעו כאן אוטומטית (ברירת מחדל: סוכן מכירות), וכאן קובעים את התפקיד.</p>' +
-        '<div class="table-scroll"><table><thead><tr><th>שם</th><th>תפקיד</th><th>סטטוס</th></tr></thead><tbody>' + (rows || '<tr><td colspan="3" class="empty">אין משתמשים</td></tr>') + '</tbody></table></div>' +
-        '<div class="muted" style="font-size:12.5px;margin-top:10px">תפקידים: <b>מנהל מערכת</b> — הכל · <b>סוכן מכירות</b> — לידים/עסקאות/תיקים/רכבים/יומן/משימות · <b>מנהלת תיקים</b> — תיקים/לידים/מסמכים · <b>מנהלת חשבונות</b> — הנהלת חשבונות/דוחות.</div></div>');
+      var addForm = '<div class="card"><h3>➕ הוספת משתמש</h3><p class="muted" style="font-size:13px">נשלח אליו מייל עם קישור, אימייל וסיסמה זמנית — הוא נכנס מיד ויכול לאפס סיסמה בעצמו.</p>' +
+        '<div class="grid2"><div class="field" style="margin:0"><label>שם מלא</label><input class="inp" id="nuName" placeholder="למשל: דנה כהן"></div>' +
+        '<div class="field" style="margin:0"><label>אימייל</label><input class="inp" id="nuEmail" type="email" placeholder="name@email.com"></div></div>' +
+        '<div class="field" style="margin-top:12px"><label>תפקיד</label><select class="inp" id="nuRole">' + ROLES.map(function (x) { return '<option value="' + x[0] + '">' + x[1] + '</option>'; }).join('') + '</select></div>' +
+        '<label style="font-size:13px;color:var(--muted);margin-top:12px;display:block">תצוגות שהמשתמש יראה (מוגדר לפי התפקיד — אפשר להוסיף/להוריד):</label><div id="nuViews">' + viewChecks('nv', DEFAULT_VIEWS.sales) + '</div>' +
+        '<div style="margin-top:14px"><button class="btn" id="nuCreate">צור משתמש ושלח הזמנה</button> <span id="nuMsg" style="font-size:13px;margin-inline-start:10px"></span></div></div>';
+      view('<h2 style="margin:0 0 14px">משתמשים והרשאות</h2>' + addForm +
+        '<div class="card"><h3>משתמשים קיימים (' + ps.length + ')</h3>' +
+        '<div class="table-scroll"><table><thead><tr><th>שם</th><th>תפקיד</th><th>תצוגות מותרות</th><th>פעיל</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="5" class="empty">אין משתמשים</td></tr>') + '</tbody></table></div>' +
+        '<div class="muted" style="font-size:12.5px;margin-top:10px">מנהל מערכת רואה הכל. שאר המשתמשים רואים רק את הלידים <b>שהוקצו להם</b> ואת התצוגות שסומנו כאן.</div></div>');
+
+      // add-user: role change → reset the view checkboxes to that role's defaults
+      $('nuRole').addEventListener('change', function () { $('nuViews').innerHTML = viewChecks('nv', DEFAULT_VIEWS[this.value] || ['dashboard']); });
+      $('nuCreate').addEventListener('click', function () {
+        var name = $('nuName').value.trim(), email = $('nuEmail').value.trim(), role = $('nuRole').value;
+        var views = []; $('nuViews').querySelectorAll('input[data-nv]:checked').forEach(function (c) { views.push(c.dataset.nv); });
+        var msg = $('nuMsg');
+        if (!email || email.indexOf('@') < 0) { msg.style.color = 'var(--danger)'; msg.textContent = 'הזינו אימייל תקין'; return; }
+        msg.style.color = 'var(--muted)'; msg.textContent = 'יוצר…'; this.disabled = true;
+        var btn = this;
+        db.rpc('admin_create_user', { p_email: email, p_name: name || email, p_role: role, p_views: views }).then(function (res) {
+          btn.disabled = false;
+          if (res.error) { msg.style.color = 'var(--danger)'; msg.textContent = 'שגיאה: ' + res.error.message; return; }
+          msg.style.color = 'var(--ok)'; msg.textContent = '✅ נשלחה הזמנה ל-' + email;
+          $('nuName').value = ''; $('nuEmail').value = '';
+          setTimeout(renderUsers, 2500);
+        });
+      });
+
       $('view').querySelectorAll('select[data-role]').forEach(function (s) { s.addEventListener('change', function () { db.from('profiles').update({ role: s.value }).eq('user_id', s.dataset.role).then(function (u) { if (u.error) alert('שגיאה: ' + u.error.message); }); }); });
       $('view').querySelectorAll('input[data-active]').forEach(function (c) { c.addEventListener('change', function () { db.from('profiles').update({ active: c.checked }).eq('user_id', c.dataset.active); }); });
+      // edit views inline
+      $('view').querySelectorAll('button[data-editviews]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var uid = b.dataset.editviews, box = $('ev_' + uid);
+          var cur = (ps.filter(function (p) { return p.user_id === uid; })[0] || {}).views || [];
+          if (!box.classList.contains('hidden')) { box.classList.add('hidden'); return; }
+          box.classList.remove('hidden');
+          box.innerHTML = viewChecks('vw_' + uid, cur) + '<button class="btn btn-sm" data-savev="' + uid + '" style="margin-top:8px">שמור תצוגות</button>';
+          box.querySelector('[data-savev]').addEventListener('click', function () {
+            var v = []; box.querySelectorAll('input[data-vw_' + uid + ']:checked').forEach(function (c) { v.push(c.getAttribute('data-vw_' + uid)); });
+            db.from('profiles').update({ views: v }).eq('user_id', uid).then(function (u) { if (u.error) alert('שגיאה: ' + u.error.message); else renderUsers(); });
+          });
+        });
+      });
+      // password reset for a user
+      $('view').querySelectorAll('button[data-reset]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var email = b.dataset.reset, redirect = location.href.replace(/[^/]*$/, 'reset.html');
+          db.auth.resetPasswordForEmail(email, { redirectTo: redirect }).then(function (r) { alert(r.error ? ('שגיאה: ' + r.error.message) : ('נשלח מייל לאיפוס סיסמה אל ' + email)); });
+        });
+      });
     });
   }
 

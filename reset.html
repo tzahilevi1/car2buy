@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Car2Buy · איפוס סיסמה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--brand:#F5691E;--brand-deep:#D14E0C;--surface:#fff;--surface-2:#f0f1f4;--line:#e5e7eb;--txt:#1c2430;--muted:#7b8494;--danger:#e2555a;--ok:#16a34a}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Heebo",Arial,sans-serif;color:var(--txt);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#12141a,#1b1e26)}
+  .card{background:var(--surface);border-radius:20px;padding:36px 30px;width:100%;max-width:390px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+  h1{margin:0 0 4px;font-size:23px}h1 b{color:var(--brand)}
+  p{margin:0 0 22px;color:var(--muted);font-size:14px}
+  label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px}
+  input{width:100%;padding:11px 13px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;font-size:15px;margin-bottom:14px}
+  input:focus{outline:none;border-color:var(--brand)}
+  .btn{background:var(--brand);color:#fff;border:none;border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;width:100%;cursor:pointer}
+  .btn:hover{background:var(--brand-deep)}
+  .msg{font-size:13.5px;margin-top:12px;min-height:18px}
+  .msg.err{color:var(--danger)}.msg.ok{color:var(--ok)}
+  a{color:var(--brand)}
+</style>
+</head>
+<body>
+  <form class="card" id="form">
+    <h1>Car<b>2</b>Buy · איפוס סיסמה</h1>
+    <p id="sub">בחרו סיסמה חדשה לחשבון שלכם.</p>
+    <div id="fields">
+      <label for="pw">סיסמה חדשה</label>
+      <input type="password" id="pw" autocomplete="new-password" minlength="6" required>
+      <label for="pw2">אימות סיסמה</label>
+      <input type="password" id="pw2" autocomplete="new-password" minlength="6" required>
+      <button type="submit" class="btn">שמור סיסמה והתחבר</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </form>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
+<script>
+(function () {
+  var db = window.supabase.createClient(
+    'https://tdxhqpauuqawcoivjnnm.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkeGhxcGF1dXFhd2NvaXZqbm5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NTE4MjgsImV4cCI6MjA5OTQyNzgyOH0.bKtres24IyE4IjyZ4h9y9Wtyhgacqw37ya5s9vNDltI'
+  );
+  var msg = document.getElementById('msg');
+  function show(t, ok) { msg.textContent = t; msg.className = 'msg ' + (ok ? 'ok' : 'err'); }
+
+  // The recovery link puts a session in the URL hash; supabase-js consumes it.
+  db.auth.onAuthStateChange(function (evt) {
+    if (evt === 'PASSWORD_RECOVERY' || evt === 'SIGNED_IN') { /* ready to set a new password */ }
+  });
+
+  document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pw = document.getElementById('pw').value, pw2 = document.getElementById('pw2').value;
+    if (pw.length < 6) return show('הסיסמה חייבת להכיל לפחות 6 תווים.');
+    if (pw !== pw2) return show('הסיסמאות אינן תואמות.');
+    show('שומר…', true);
+    db.auth.updateUser({ password: pw }).then(function (r) {
+      if (r.error) return show('שגיאה: ' + r.error.message + ' — ייתכן שהקישור פג. בקשו איפוס מחדש בעמוד הכניסה.');
+      document.getElementById('fields').style.display = 'none';
+      show('הסיסמה עודכנה! ', true);
+      msg.innerHTML = 'הסיסמה עודכנה בהצלחה ✅ <a href="admin.html">כניסה למערכת →</a>';
+    });
+  });
+})();
+</script>
+</body>
+</html>

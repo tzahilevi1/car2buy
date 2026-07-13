@@ -72,33 +72,68 @@
    * Never throws — a failure must not block the user's "thank you" UX.
    * @param {{name?,phone?,email?,car?,message?,source?,meta?}} payload
    */
+  // marketing attribution from the URL query (utm_* + ad ids), persisted per
+  // session so it survives navigation between the landing page and the form.
+  function qp(name) { try { return new URLSearchParams(location.search).get(name); } catch (e) { return null; } }
+  function attribution() {
+    var keys = ['utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term', 'ad_group', 'adgroup', 'gclid'];
+    var stored = {};
+    try { stored = JSON.parse(sessionStorage.getItem('c2b_attr') || '{}'); } catch (e) {}
+    var found = false, cur = {};
+    keys.forEach(function (k) { var v = qp(k); if (v) { cur[k] = v; found = true; } });
+    if (found) { try { sessionStorage.setItem('c2b_attr', JSON.stringify(cur)); } catch (e) {} return cur; }
+    return stored;
+  }
+  // best-effort public IP (never blocks the save for more than ~1.2s)
+  function getIp() {
+    return new Promise(function (resolve) {
+      var done = false, t = setTimeout(function () { if (!done) { done = true; resolve(null); } }, 1200);
+      fetch('https://api.ipify.org?format=json').then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { if (!done) { done = true; clearTimeout(t); resolve(j && j.ip || null); } })
+        .catch(function () { if (!done) { done = true; clearTimeout(t); resolve(null); } });
+    });
+  }
+
   window.submitLead = function (payload) {
     payload = payload || {};
-    var body = {
-      name: payload.name || null,
-      phone: payload.phone || null,
-      email: payload.email || null,
-      car: payload.car || null,
-      message: payload.message || null,
-      source: payload.source || (document.body && document.body.dataset ? document.body.dataset.page : null) || null,
-      page_url: location.href,
-      meta: payload.meta || null
-    };
-    return fetch(SUPABASE_URL + '/rest/v1/leads', {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(body)
-    }).then(function (res) {
-      if (!res.ok) {
-        return res.text().then(function (t) { console.warn('[Car2Buy] lead save failed', res.status, t); return false; });
-      }
-      if (window.c2bTrack) { try { c2bTrack('lead_saved', { source: body.source }); } catch (e) {} }
-      return true;
+    var attr = attribution(), meta = payload.meta || {};
+    return getIp().then(function (ip) {
+      var body = {
+        name: payload.name || null,
+        phone: payload.phone || null,
+        email: payload.email || null,
+        car: payload.car || null,
+        message: payload.message || null,
+        source: payload.source || (document.body && document.body.dataset ? document.body.dataset.page : null) || null,
+        page_url: location.href,
+        ip: ip,
+        city: payload.city || meta.city || meta['עיר'] || null,
+        brand: payload.brand || meta.brand || meta['מותג'] || null,
+        marketing_company: payload.marketing_company || attr.utm_source || null,
+        utm_source: attr.utm_source || null,
+        utm_campaign: attr.utm_campaign || null,
+        utm_medium: attr.utm_medium || null,
+        utm_content: attr.utm_content || null,
+        utm_term: attr.utm_term || null,
+        ad_group: attr.ad_group || attr.adgroup || null,
+        meta: payload.meta || null
+      };
+      return fetch(SUPABASE_URL + '/rest/v1/leads', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(body)
+      }).then(function (res) {
+        if (!res.ok) {
+          return res.text().then(function (t) { console.warn('[Car2Buy] lead save failed', res.status, t); return false; });
+        }
+        if (window.c2bTrack) { try { c2bTrack('lead_saved', { source: body.source }); } catch (e) {} }
+        return true;
+      });
     }).catch(function (e) {
       console.warn('[Car2Buy] lead save error', e);
       return false;

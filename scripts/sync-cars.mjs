@@ -64,8 +64,29 @@ for (let i = h + 1; i < rows.length; i++) {
   const p = numOf(r[21]) || numOf(r[19]); // מחירון מימון ישיר / מחירון
   const img = (r[22] || '').trim(); // תמונה ראשית
   if (!name || (!m && !p)) continue; // skip incomplete rows
-  cars.push({ brand, name, trim: (r[16] || '').trim(), m, p, img,
-    seats: numOf(r[14]) || 5, engine: (r[12] || '').trim() });
+  // full record — public site uses brand/name/m/p/img/seats/engine/trim;
+  // the CRM (cars screen, deal auto-fill, file manager) uses the rest.
+  cars.push({
+    brand, name,
+    nameEn: (r[17] || '').trim(),        // שם אנגלי / דגם באתר
+    trim: (r[16] || '').trim(),          // רמת גימור
+    m, p,
+    m50: numOf(r[8]),                    // החזר חודשי 50%
+    commission: numOf(r[10]),            // עמלת סוכן (אוטומטי מהגיליון)
+    down: numOf(r[11]),                  // מקדמה
+    listPrice: numOf(r[19]),             // מחירון
+    salePrice: numOf(r[20]),             // מחיר מבצע
+    directPrice: numOf(r[21]),           // מחירון מימון ישיר
+    engine: (r[12] || '').trim(),        // מנוע
+    colors: (r[13] || '').trim(),        // צבע
+    seats: numOf(r[14]) || 5,            // כמות מושבים
+    code: (r[15] || '').trim(),          // קוד דגם לוי יצחק
+    notes: (r[7] || '').trim(),          // הערות
+    img,
+    imgR: (r[23] || '').trim(),          // תמונה צד ימין
+    imgL: (r[24] || '').trim(),          // תמונה צד שמאל
+    imgB: (r[25] || '').trim()           // תמונה אחורית
+  });
 }
 
 const json = JSON.stringify(cars, null, 0);

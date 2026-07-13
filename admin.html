@@ -134,6 +134,34 @@
   .tl .ev{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
   .tl .ev .dot{width:34px;height:34px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
   .tl .ev .tm{font-size:12px;color:var(--muted)}
+  /* completed task in the timeline — clearly "done" */
+  .tl .ev.done{background:rgba(22,163,74,.06);border-radius:12px;padding:12px;margin-bottom:2px}
+  .tl .ev.done .dot{background:rgba(22,163,74,.15)}
+  .done-badge{display:inline-flex;align-items:center;gap:4px;background:var(--ok);color:#fff;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px}
+  .task-open{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--warn);color:var(--warn);font-size:11px;font-weight:700;padding:1px 9px;border-radius:999px}
+
+  /* consolidated action bar (above the timeline) */
+  .qa2{display:flex;gap:8px;flex-wrap:wrap}
+  .qa2 .btn{background:var(--surface-2)}
+  .qa2 .btn:hover{border-color:var(--brand);color:var(--brand);background:var(--surface-2)}
+
+  /* lead details field list */
+  .lead-fields{display:grid;grid-template-columns:1fr;gap:0}
+  .lead-fields .lf{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .lead-fields .lf .k{color:var(--muted);flex:none}
+  .lead-fields .lf .v{text-align:left;word-break:break-word}
+
+  /* prettier file-manager stage pills */
+  .stage-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:700;border:1.5px solid transparent;line-height:1}
+  .stage-pill .sd{width:8px;height:8px;border-radius:50%;flex:none}
+  .flow .st.clk{cursor:pointer;transition:transform .1s,box-shadow .15s}
+  .flow .st.clk:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+
+  /* filter bar */
+  .filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px;padding:10px;background:var(--surface-2);border-radius:12px}
+  .filterbar select,.filterbar input{padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-size:13px;font-family:inherit}
+  .filterbar .chip{display:inline-flex;align-items:center;gap:6px;background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700}
+  .filterbar .chip b{cursor:pointer}
 
   /* ---------- responsive ---------- */
   @media(max-width:820px){
@@ -156,6 +184,7 @@
     <div class="field"><label for="email">אימייל</label><input type="email" id="email" autocomplete="username" required></div>
     <div class="field"><label for="password">סיסמה</label><input type="password" id="password" autocomplete="current-password" required></div>
     <button type="submit" class="btn" style="width:100%;justify-content:center">התחברות</button>
+    <div style="text-align:center;margin-top:12px"><a href="#" id="forgot" style="font-size:13px">שכחתי סיסמה</a></div>
     <div class="err" id="loginErr"></div>
   </form>
 </div>
@@ -181,7 +210,6 @@
       <div class="nav-item" data-nav="cars"><span class="ic">🚗</span> רכבים</div>
       <div class="nav-item" data-nav="appointments"><span class="ic">📅</span> יומן פגישות</div>
       <div class="nav-item" data-nav="tasks"><span class="ic">✅</span> משימות <span class="badge" id="bTasks">0</span></div>
-      <div class="nav-item" data-nav="activity"><span class="ic">🕒</span> מסך פעילות</div>
       <div class="nav-item" data-nav="analytics"><span class="ic">📊</span> אנליטיקס</div>
       <div class="nav-item" data-nav="reports"><span class="ic">📈</span> דוחות</div>
       <div class="nav-group-label">בקרוב</div>
@@ -202,6 +230,7 @@
       <button class="burger" id="burger">☰</button>
       <div class="search"><span class="sic">🔎</span><input id="gsearch" placeholder="חיפוש ליד לפי שם / טלפון…" autocomplete="off"><div class="search-res hidden" id="gsres"></div></div>
       <div class="sp"></div>
+      <button class="icon-btn" id="activityBtn" title="מסך פעילות — מי עשה מה">🕒</button>
       <div style="position:relative">
         <button class="icon-btn" id="bell" title="משימות">🔔<span id="bellBadge" class="bell-badge hidden">0</span></button>
         <div id="bellMenu" class="bell-menu hidden"></div>
