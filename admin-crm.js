@@ -76,6 +76,33 @@
     m.querySelectorAll('.si').forEach(function (si) { si.addEventListener('click', function (e) { e.stopPropagation(); onPick(si.dataset.k); closeStMenu(); }); });
     setTimeout(function () { document.addEventListener('click', closeStMenu, { once: true }); }, 0);
   }
+  // ---- quick-assign a lead to a salesperson (from the leads table) ----
+  function closeAssignMenu() { var m = document.getElementById('assignmenu'); if (m) m.remove(); }
+  function openAssignMenu(anchor, leadId, current, onPick) {
+    closeAssignMenu();
+    var m = document.createElement('div'); m.className = 'stmenu'; m.id = 'assignmenu'; m.style.minWidth = '190px';
+    var uids = Object.keys(profiles);
+    m.innerHTML = '<div class="si" data-uid="" style="color:var(--muted)">— בטל שיוך —</div>' +
+      (uids.length ? uids.map(function (uid) { return '<div class="si" data-uid="' + uid + '"><span class="avatar" style="width:22px;height:22px;font-size:11px;margin-inline-end:7px">' + esc(initials(profiles[uid])) + '</span>' + esc(profiles[uid]) + (uid === current ? ' ✓' : '') + '</div>'; }).join('') : '<div class="si muted">אין סוכנים זמינים</div>');
+    document.body.appendChild(m);
+    var r = anchor.getBoundingClientRect();
+    m.style.top = (r.bottom + window.scrollY + 4) + 'px';
+    m.style.left = Math.max(8, r.left + window.scrollX - 40) + 'px';
+    m.querySelectorAll('.si[data-uid]').forEach(function (si) { si.addEventListener('click', function (e) { e.stopPropagation(); onPick(si.dataset.uid); closeAssignMenu(); }); });
+    setTimeout(function () { document.addEventListener('click', closeAssignMenu, { once: true }); }, 0);
+  }
+  function assignChip(l) {
+    var name = profiles[l.assigned_to];
+    var inner = name ? '<span class="avatar">' + esc(initials(name)) + '</span> ' + esc(name) : '<span class="muted">🔗 שייך לסוכן</span>';
+    return '<span class="assign-chip" data-assign="' + l.id + '" data-cur="' + (l.assigned_to || '') + '" title="שיוך לסוכן מכירות">' + inner + ' <span class="muted">▾</span></span>';
+  }
+  function assignLead(leadId, uid) {
+    db.from('leads').update({ assigned_to: uid || null }).eq('id', leadId).then(function (r) {
+      if (r.error) return alert('שגיאה בשיוך: ' + r.error.message);
+      logActivity(leadId, 'system', uid ? ('שויך לסוכן: ' + (profiles[uid] || '')) : 'בוטל שיוך הסוכן');
+      window.C2B_renderLeads(curFilter);
+    });
+  }
   function changeStatus(leadId, to, lead, after) {
     var from = lead && lead.status;
     var patch = { status: to, status_changed_at: new Date().toISOString() };
@@ -142,7 +169,7 @@
       return '<tr data-lead="' + l.id + '"><td style="cursor:pointer"><span class="avatar" style="margin-inline-end:8px">' + esc(initials(l.name)) + '</span><b>' + esc(l.name) + '</b></td>' +
         '<td>' + esc(l.phone) + '</td><td>' + (wa ? '<a class="wa-ic" href="' + wa + '" target="_blank" rel="noopener" title="פתח וואטסאפ" onclick="event.stopPropagation()">💬</a>' : '—') + '</td>' +
         '<td><span class="tag">' + esc(l.source) + '</span></td><td>' + esc(l.car) + '</td>' +
-        '<td class="muted">' + esc(profiles[l.assigned_to] || '—') + '</td><td>' + badge(l.status || 'new', true, l.id) + '</td><td class="muted">' + fmt(l.updated_at || l.status_changed_at || l.created_at) + '</td></tr>';
+        '<td>' + assignChip(l) + '</td><td>' + badge(l.status || 'new', true, l.id) + '</td><td class="muted">' + fmt(l.updated_at || l.status_changed_at || l.created_at) + '</td></tr>';
     }).join('') || '<tr><td colspan="8" class="empty">אין לידים</td></tr>';
     C.$('leadsBody').innerHTML = (leadFilter ? leadFilter.render() : '') +
       '<div class="table-scroll"><table><thead><tr><th>שם</th><th>טלפון</th><th>וואטסאפ</th><th>מקור</th><th>רכב</th><th>איש מכירות</th><th>סטטוס</th><th>עדכון</th></tr></thead><tbody id="ltbl">' + body + '</tbody></table></div>';
@@ -150,6 +177,9 @@
     C.$('ltbl').querySelectorAll('td[style]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openLeadCard(td.parentNode.dataset.lead); }); });
     C.$('ltbl').querySelectorAll('.tag.click').forEach(function (el) {
       el.addEventListener('click', function (e) { e.stopPropagation(); openStatusMenu(el, el.dataset.cur, function (to) { changeStatus(el.dataset.stLead, to, { status: el.dataset.cur }, function () { window.C2B_renderLeads(curFilter); }); }); });
+    });
+    C.$('ltbl').querySelectorAll('.assign-chip').forEach(function (el) {
+      el.addEventListener('click', function (e) { e.stopPropagation(); openAssignMenu(el, el.dataset.assign, el.dataset.cur, function (uid) { assignLead(el.dataset.assign, uid); }); });
     });
   }
 

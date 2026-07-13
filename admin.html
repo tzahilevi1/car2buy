@@ -90,6 +90,10 @@
   .ac-res .ai{padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
   .ac-res .ai:hover{background:var(--surface-2)}
   .wa-ic{color:#25D366;font-size:18px}
+  /* quick-assign chip in the leads table */
+  .assign-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);cursor:pointer;font-size:13px;background:var(--surface-2);transition:border-color .12s,color .12s;white-space:nowrap}
+  .assign-chip:hover{border-color:var(--brand);color:var(--brand)}
+  .assign-chip .avatar{width:22px;height:22px;font-size:11px}
 
   /* ---------- components ---------- */
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
@@ -262,7 +266,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.3/dist/html2pdf.bundle.min.js" crossorigin="anonymous"></script>
-<script src="admin.js?v=20260713c"></script>
-<script src="admin-crm.js?v=20260713c"></script>
+<script src="admin.js?v=20260713d"></script>
+<script src="admin-crm.js?v=20260713d"></script>
 </body>
 </html>
