@@ -154,6 +154,9 @@
   ];
   function roleShort(role) { return { sales: 'מכירות', files: 'תיקי לקוחות', accounting: 'הנה״ח' }[role] || ''; }
   function docIsImage(name) { return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name || ''); }
+  // only allow http(s) links — page_url comes from anon lead inserts (untrusted),
+  // so reject javascript:/data:/vbscript: before it reaches an href sink.
+  function safeHttpUrl(u) { try { var p = new URL(u); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : ''; } catch (e) { return ''; } }
 
   window.C2B_openLeadCard = function (id) {
     loading();
@@ -246,7 +249,8 @@
       html += lf('utm_source', esc(lead.utm_source)) + lf('utm_campaign', esc(lead.utm_campaign)) + lf('utm_medium', esc(lead.utm_medium));
       html += lf('utm_content', esc(lead.utm_content)) + lf('utm_term', esc(lead.utm_term)) + lf('ad_group', esc(lead.ad_group));
       html += lf('IP', esc(lead.ip));
-      html += lf('קישור לעמוד', lead.page_url ? '<a href="' + esc(lead.page_url) + '" target="_blank" rel="noopener" title="' + esc(lead.page_url) + '">פתח »</a>' : '');
+      var pageUrl = safeHttpUrl(lead.page_url);
+      html += lf('קישור לעמוד', pageUrl ? '<a href="' + esc(pageUrl) + '" target="_blank" rel="noopener noreferrer" title="' + esc(pageUrl) + '">פתח »</a>' : '');
       html += lf('כתובת - עיר', esc(lead.city));
       html += lf('איש מכירות', esc(profiles[lead.assigned_to]));
       html += lf('lead_id', '<span class="muted" style="font-size:10.5px">' + esc(lead.id) + '</span>');
