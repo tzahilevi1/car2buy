@@ -644,7 +644,7 @@
   function dealStatusLabel(s) { return { quote: 'הצעת מחיר', ordered: 'הזמנה', cancelled: 'בוטל' }[s] || s; }
   function dealList(deals) {
     if (!deals.length) return '<p class="muted" style="margin:6px 0">אין עסקאות</p>';
-    return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b> · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + '</div>'; }).join('');
+    return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b> · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + (d.signature ? ' · <span style="color:var(--ok);font-weight:700">✅ נחתם</span>' : '') + '</div>'; }).join('');
   }
   function dealForm(lead, deal, fileMode) {
     deal = deal || {}; var ad = deal.addons || {};
@@ -841,20 +841,34 @@
       '<div style="margin-top:34px;display:flex;justify-content:space-between;align-items:flex-end"><div>חתימת הלקוח:<br>' + (sig ? '<img src="' + sig + '" style="height:72px">' : '________________________') + '</div><div>תאריך: ' + today + '</div></div></div>';
   }
   function contractView(lead, deal) {
+    // pull the latest signature (esp. after a remote sign) so we can show it
+    if (deal.id && !deal._sigLoaded) {
+      db.from('deals').select('signature,signed_at').eq('id', deal.id).single().then(function (r) {
+        deal._sigLoaded = true;
+        if (r.data) { deal.signature = deal.signature || r.data.signature; deal.signed_at = r.data.signed_at; }
+        contractView(lead, deal);
+      });
+      return;
+    }
+    var signed = !!deal.signature;
     view(
-      '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם — ' + esc(deal.client_name || '') + '</h3>' +
-        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button> <button class="btn btn-ghost btn-sm" id="cSend">📤 שלח ושמור PDF</button> <button class="btn btn-sm" id="cSign">✍ חתום ושמור</button></div></div>' +
-      '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal) + '</div>' +
-      '<div class="card"><h3>חתימה במקום (צייר עם העכבר / אצבע)</h3><canvas id="sig" width="480" height="150" style="border:1px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;max-width:100%"></canvas><div style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="cClear">נקה חתימה</button></div></div>' +
-      '<div class="card"><h3>📨 שליחה לחתימה מרחוק</h3>' +
-        (deal.id ? '<p class="muted" style="font-size:13px;margin:-6px 0 12px">הלקוח מקבל קישור, חותם מהטלפון — וברגע שחתם זה מתעדכן כאן ומגיעה התראה במייל.</p>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input class="inp" id="cLinkEmail" value="' + esc(deal.client_email || '') + '" placeholder="אימייל הלקוח" style="flex:1;min-width:170px"><button class="btn btn-sm" id="cSendMail">📧 שלח במייל</button></div>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="cWa">💬 וואטסאפ</button><button class="btn btn-ghost btn-sm" id="cSms">✉️ SMS</button><button class="btn btn-ghost btn-sm" id="cCopy">🔗 העתק קישור</button></div>' +
-          '<div id="cLinkMsg" style="font-size:13px;margin-top:10px"></div>'
-          : '<p class="muted">שמרו את העסקה תחילה (💾) כדי לשלוח לחתימה מרחוק.</p>') + '</div>'
+      '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם — ' + esc(deal.client_name || '') + (signed ? ' <span class="tag" style="border-color:var(--ok);color:var(--ok);background:rgba(22,163,74,.1)">✅ נחתם</span>' : '') + '</h3>' +
+        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס / PDF</button>' + (signed ? '' : ' <button class="btn btn-ghost btn-sm" id="cSend">📤 שלח ושמור PDF</button> <button class="btn btn-sm" id="cSign">✍ חתום ושמור</button>') + '</div></div>' +
+      (signed ? '<div class="card" style="border:1px solid var(--ok);background:rgba(22,163,74,.06)"><b style="color:var(--ok)">✅ ההסכם נחתם על ידי הלקוח' + (deal.signed_at ? ' בתאריך ' + fmt(deal.signed_at) : '') + '</b><span class="muted"> — למטה ההסכם המלא עם חתימת הלקוח.</span></div>' : '') +
+      '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal, deal.signature || null) + '</div>' +
+      (signed ? '' :
+        '<div class="card"><h3>חתימה במקום (צייר עם העכבר / אצבע)</h3><canvas id="sig" width="480" height="150" style="border:1px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;max-width:100%"></canvas><div style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="cClear">נקה חתימה</button></div></div>' +
+        '<div class="card"><h3>📨 שליחה לחתימה מרחוק</h3>' +
+          (deal.id ? '<p class="muted" style="font-size:13px;margin:-6px 0 12px">הלקוח מקבל קישור, חותם מהטלפון — וברגע שחתם זה מתעדכן כאן ומגיעה התראה במייל.</p>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input class="inp" id="cLinkEmail" value="' + esc(deal.client_email || '') + '" placeholder="אימייל הלקוח" style="flex:1;min-width:170px"><button class="btn btn-sm" id="cSendMail">📧 שלח במייל</button></div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="cWa">💬 וואטסאפ</button><button class="btn btn-ghost btn-sm" id="cSms">✉️ SMS</button><button class="btn btn-ghost btn-sm" id="cCopy">🔗 העתק קישור</button></div>' +
+            '<div id="cLinkMsg" style="font-size:13px;margin-top:10px"></div>'
+            : '<p class="muted">שמרו את העסקה תחילה (💾) כדי לשלוח לחתימה מרחוק.</p>') + '</div>')
     );
     var $ = C.$;
     $('cBack').addEventListener('click', function () { dealForm(lead, deal); });
+    $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
+    if (signed) return;   // signed → view/print only, no signing controls
     var cv = $('sig'), ctx = cv.getContext('2d'), drawing = false, hasSig = false;
     ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#111';
     function pos(e) { var r = cv.getBoundingClientRect(); var t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top }; }
@@ -889,7 +903,6 @@
       $('cSms').addEventListener('click', function () { withUrl(function (u) { window.location.href = 'sms:' + (deal.client_phone || '') + '?body=' + encodeURIComponent('לחתימה על ההסכם: ' + u); }); });
       $('cCopy').addEventListener('click', function () { withUrl(function (u) { (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { linkMsg.style.color = 'var(--ok)'; linkMsg.textContent = '🔗 הקישור הועתק'; }).catch(function () { linkMsg.style.color = 'var(--txt)'; linkMsg.textContent = u; }); }); });
     }
-    $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
     $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', deal.stage); });
     $('cSign').addEventListener('click', function () {
       if (!hasSig) { alert('נא לחתום באזור החתימה קודם.'); return; }
