@@ -54,7 +54,9 @@ begin
   if d.signed_at is not null then return jsonb_build_object('ok', false, 'error', 'ההסכם כבר נחתם'); end if;
   if p_sig is null or length(p_sig) < 100 then return jsonb_build_object('ok', false, 'error', 'חתימה חסרה'); end if;
 
-  update public.deals set signature = p_sig, signed_at = now(), stage = 'signed',
+  -- signing hands the file to the file manager (→ שיחת שיקוף), unless already further
+  update public.deals set signature = p_sig, signed_at = now(),
+     stage = case when coalesce(stage, 'initial') = 'initial' then 'screening' else stage end,
      checklist = coalesce(checklist, '{}'::jsonb) || jsonb_build_object('התקבל הסכם', true)
    where id = p_deal;
 

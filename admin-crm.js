@@ -358,7 +358,7 @@
           '<div id="ldInfo">' + leadInfo(lead, deals, pays, feed.length ? feed[0].ts : null) +
             (lead.message ? '<div style="margin-top:10px;font-size:14px">🗒️ ' + esc(lead.message) + '</div>' : '') + '</div>' +
           '<div id="ldMkt" class="hidden">' + leadMkt(lead) + '</div>' + '</div>' +
-          '<div class="card"><div class="row-between"><h3 style="margin:0">עסקאות</h3>' + (role !== 'accounting' ? '<button class="btn btn-sm" id="lpNewDeal">+ עסקה</button>' : '') + '</div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
+          '<div class="card"><div class="row-between"><h3 style="margin:0">הצעות / הסכמים לחתימה</h3>' + (role !== 'accounting' ? '<button class="btn btn-sm" id="lpNewDeal">+ הצעה</button>' : '') + '</div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
         '</div>' +
         '<div>' +
           '<div class="card">' +
@@ -898,24 +898,26 @@
       $('cSms').addEventListener('click', function () { withUrl(function (u) { window.location.href = 'sms:' + (deal.client_phone || '') + '?body=' + encodeURIComponent('לחתימה על ההסכם: ' + u); }); });
       $('cCopy').addEventListener('click', function () { withUrl(function (u) { (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { linkMsg.style.color = 'var(--ok)'; linkMsg.textContent = '🔗 הקישור הועתק'; }).catch(function () { linkMsg.style.color = 'var(--txt)'; linkMsg.textContent = u; }); }); });
     }
-    $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', deal.stage); });
+    $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', false); });
     $('cSign').addEventListener('click', function () {
       if (!hasSig) { alert('נא לחתום באזור החתימה קודם.'); return; }
       var sig = cv.toDataURL('image/png');
       $('cSign').disabled = true; $('cSign').textContent = 'שומר…';
       $('cDoc').innerHTML = contractHTML(deal, sig);   // embed the signature into the document
-      finishContract(lead, deal, $('cDoc'), 'נחתם הסכם', 'הסכם חתום', 'signed');
+      finishContract(lead, deal, $('cDoc'), 'נחתם הסכם', 'הסכם חתום', true);
     });
   }
   // render a contract element to a PDF (fallback: HTML), save it to the lead file + timeline
-  function finishContract(lead, deal, docEl, activityText, docTitle, stage) {
+  function finishContract(lead, deal, docEl, activityText, docTitle, signedContract) {
     var suffix = deal.order_no ? ' #' + deal.order_no : '';
+    // on signing, hand the file to the file manager (→ שיחת שיקוף), unless it's already further along
+    var newStage = signedContract ? ((deal.stage && deal.stage !== 'initial') ? deal.stage : 'screening') : deal.stage;
     function afterSave(path) {
       db.from('lead_documents').insert({ lead_id: lead.id, name: docTitle + suffix, storage_path: path });
-      if (deal.id) { var chk = deal.checklist || {}; if (stage === 'signed') chk['התקבל הסכם'] = true; db.from('deals').update({ checklist: chk, stage: stage || deal.stage }).eq('id', deal.id); }
+      if (deal.id) { var chk = deal.checklist || {}; if (signedContract) chk['התקבל הסכם'] = true; db.from('deals').update({ checklist: chk, stage: newStage }).eq('id', deal.id); }
       logActivity(lead.id, 'contract', activityText + suffix).then(function () {
-        alert('ההסכם נשמר בתיק הלקוח כ-PDF! ✅');
-        if (stage === 'signed') changeStatus(lead.id, 'underwriting', lead, function () { window.C2B_openLeadCard(lead.id); });
+        alert(signedContract ? 'ההסכם נחתם ונשמר! התיק הועבר למנהלת תיקי הלקוחות ✅' : 'ההסכם נשמר כ-PDF! ✅');
+        if (signedContract) changeStatus(lead.id, 'underwriting', lead, function () { window.C2B_openLeadCard(lead.id); });
         else window.C2B_openLeadCard(lead.id);
       });
     }
