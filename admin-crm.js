@@ -316,11 +316,12 @@
     var items = [];
     acts.forEach(function (a) { items.push({ ts: a.created_at, icon: ACT_ICON[a.type] || '•', who: profiles[a.created_by], html: a.body ? esc(a.body) : '', tag: FEED_TAG[a.type] || a.type }); });
     docs.forEach(function (d) {
-      var u = urls[d.storage_path], body;
+      var u = urls[d.storage_path], body, isPdf = /\.pdf$/i.test(d.name || '') || /\.pdf$/i.test(d.storage_path || '');
       if (u && docIsImage(d.name)) body = '<div style="margin:2px 0 4px">' + esc(d.name) + '</div><a href="' + u + '" target="_blank" rel="noopener"><img src="' + u + '" alt="' + esc(d.name) + '" style="max-width:100%;max-height:280px;border-radius:10px;border:1px solid var(--line);display:block"></a>';
+      else if (u && isPdf) body = '<div style="margin:2px 0 6px">📄 ' + esc(d.name) + ' · <a href="' + u + '" target="_blank" rel="noopener noreferrer">פתח במסך מלא »</a></div><iframe src="' + u + '" title="' + esc(d.name) + '" style="width:100%;height:360px;border:1px solid var(--line);border-radius:10px"></iframe>';
       else if (u) body = '<a href="' + u + '" target="_blank" rel="noopener">📎 ' + esc(d.name) + '</a>';
       else body = '<a href="#" data-doc="' + esc(d.storage_path) + '">📎 ' + esc(d.name) + '</a>';
-      items.push({ ts: d.created_at, icon: '📎', who: profiles[d.created_by], html: body, tag: 'מסמך' });
+      items.push({ ts: d.created_at, icon: isPdf ? '📄' : '📎', who: profiles[d.created_by], html: body, tag: isPdf ? 'PDF' : 'מסמך' });
     });
     tasks.forEach(function (t) {
       var over = !t.done && t.due_at && new Date(t.due_at) < new Date();
@@ -428,7 +429,7 @@
     if (k === 'deal') return dealForm(lead, null);
     if (k === 'meeting') return meetingForm(lead);
     if (k === 'car') return carPicker(lead);
-    if (k === 'contract') { logActivity(lead.id, 'contract', 'סומן: נשלח הסכם').then(function () { window.C2B_openLeadCard(lead.id); }); alert('מילוי + חתימה על ההסכם זמינים דרך כרטיס העסקה. הפעולה תועדה בציר הזמן.'); return; }
+    if (k === 'contract') { var dd = curDeals[0]; if (!dd) { alert('אין עדיין עסקה. צרו עסקה תחילה, ואז אפשר לשלוח/לחתום על ההסכם.'); return; } return contractView(lead, dd); }
     var box = $('lpForm');
     if (k === 'doc') {
       box.innerHTML = '<label class="muted" style="font-size:12px">העלה מסמך / תמונה — תוצג מיד פתוחה בציר הזמן</label><input type="file" id="lpUp" style="margin-top:6px;display:block">';
@@ -512,12 +513,14 @@
     var grid = function (inner) { return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' + inner + '</div>'; };
     var statusSel = '<div class="field" style="margin:0"><label>סטטוס הזמנה</label><select class="inp" id="dl_status" style="width:100%">' + [['quote', 'הצעת מחיר'], ['ordered', 'הזמנה'], ['cancelled', 'בוטל']].map(function (s) { return '<option value="' + s[0] + '"' + ((deal.status || 'quote') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></div>';
     var fin = deal.financing || {}, ti = deal.tradein || {};
+    var isFiles = (C.role || '') === 'files';
+    function gearboxSel(v) { return '<div class="field" style="margin:0"><label>תיבת הילוכים</label><select class="inp" id="dl_car_gearbox" style="width:100%"><option value="">— בחר —</option>' + ['אוטומט', 'ידני', 'רובוטית', 'טיפטרוניק'].map(function (g) { return '<option' + (v === g ? ' selected' : '') + '>' + g + '</option>'; }).join('') + '</select></div>'; }
     // --- cards (grouped into tabs matching the reference layout) ---
     var clientCard = '<div class="card"><h3>👤 פרטי הלקוח</h3>' + grid(G('שם לקוח', 'client_name', deal.client_name || lead.name) + G('טלפון נייד', 'client_phone', deal.client_phone || lead.phone) + G('דוא"ל', 'client_email', deal.client_email || lead.email) + G('כתובת', 'client_address', deal.client_address || lead.city) + G('ת.ז / ח.פ', 'client_id', deal.client_id) + G('שם לחשבונית', 'invoice_name', deal.invoice_name || lead.name)) + '</div>';
     var formCard = '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', deal.form_type || 'חוזה קאר פלוס') + statusSel + G('מנהל מכירות / נציג משוייך', 'salesperson', deal.salesperson || '')) + '</div>';
     var carCard = '<div class="card ac-box"><h3>🚗 פרטי הרכב המוזמן</h3>' +
       '<input class="inp" id="dl_carSearch" placeholder="🔎 חפש רכב מהקטלוג (עברית/אנגלית) — ימלא אוטומטית" style="width:100%;margin-bottom:10px"><div class="ac-res hidden" id="dl_carRes"></div>' +
-      grid(G('יצרן', 'car_make', deal.car_make) + G('דגם', 'car_model', deal.car_model) + G('שנת ייצור', 'car_year', deal.car_year || 2026, 'number') + G('רמת גימור', 'car_trim', deal.car_trim) + G('נפח מנוע', 'car_engine', deal.car_engine) + G('תיבת הילוכים', 'car_gearbox', deal.car_gearbox) + G('צבע מבוקש', 'car_color', deal.car_color) + G('מחיר הרכב ₪', 'car_price', deal.car_price, 'number') + G('עמלת סוכן ₪ (אוטומטי מהקטלוג)', 'commission', deal.commission, 'number')) + '</div>';
+      grid(G('יצרן', 'car_make', deal.car_make) + G('דגם', 'car_model', deal.car_model) + G('שנת ייצור', 'car_year', deal.car_year || 2026, 'number') + G('רמת גימור', 'car_trim', deal.car_trim) + G('נפח מנוע', 'car_engine', deal.car_engine) + gearboxSel(deal.car_gearbox) + G('צבע מבוקש', 'car_color', deal.car_color) + G('מחיר הרכב ₪', 'car_price', deal.car_price, 'number') + G('עמלת סוכן ₪ (אוטומטי מהקטלוג)', 'commission', deal.commission, 'number')) + '</div>';
     var specCard = '<div class="card"><h3>מפרט / הערות</h3><textarea class="inp" id="dl_spec" rows="5" style="width:100%" placeholder="מפרט / הערות לחוזה…">' + esc(deal.spec || '') + '</textarea></div>';
     var pricingCard = '<div class="card"><h3>תמחור ומקדמה</h3>' + grid(G('סכום מקדמה כולל ₪', 'down_total', deal.down_total, 'number') + G('מקדמה ראשונית ₪', 'down_initial', deal.down_initial, 'number') + G('החזר חודשי משוער ₪', 'monthly', deal.monthly, 'number') + G('זמן אספקה (ימים)', 'delivery_days', deal.delivery_days, 'number')) + '</div>';
     var addonsCard = '<div class="card"><h3>תוספות</h3><label style="display:flex;gap:8px;align-items:center;padding:5px 0"><input type="checkbox" id="dl_charging"' + (ad.charging ? ' checked' : '') + '> עמדת טעינה</label>' +
@@ -531,7 +534,8 @@
     var tradeCard = '<div class="card"><h3>🔁 מקטע טרייד-אין</h3>' + grid(G('יצרן טרייד-אין', 'ti_make', ti.make) + G('דגם', 'ti_model', ti.model) + G('רמת גימור', 'ti_trim', ti.trim) + G('שנת דגם', 'ti_year', ti.year, 'number') + G('יד', 'ti_hand', ti.hand) + G('מחיר מחירון ₪', 'ti_list', ti.list, 'number') + G('מחיר קנייה ₪', 'ti_buy', ti.buy, 'number') + G('סכום שעבוד ₪', 'ti_lien', ti.lien, 'number') + G('גורם משעבד', 'ti_holder', ti.holder) + G('תאריך מסירה בפועל', 'ti_delivery', ti.delivery, 'date')) +
       '<label style="display:flex;gap:8px;align-items:center;padding:8px 0"><input type="checkbox" id="dl_ti_liened"' + (ti.liened ? ' checked' : '') + '> הרכב משועבד</label></div>';
     var checklistCard = '<div class="card"><h3>צ\'קליסט תיק</h3><div id="dlChecklist">' + CHECKLIST_ITEMS.map(function (it) { return '<label style="display:flex;gap:8px;align-items:center;padding:4px 0"><input type="checkbox" data-chk="' + esc(it) + '"' + (checklist[it] ? ' checked' : '') + '> ' + esc(it) + '</label>'; }).join('') + '</div></div>';
-    var recordCard = '<div class="card"><h3>פרטי רשומה</h3>' + grid(row('מספר הזמנה', esc(deal.order_no || '—')) + row('נוצר', deal.created_at ? fmt(deal.created_at) : '—') + row('שלב תיק', stageBadge(curStage)) + row('מזהה עסקה', '<span class="muted" style="font-size:11px">' + esc(deal.id || '—') + '</span>')) + '</div>';
+    var recordCard = '<div class="card"><h3>פרטי רשומה</h3>' + grid(row('מספר הזמנה', esc(deal.order_no || '—')) + row('נוצר', deal.created_at ? fmt(deal.created_at) : '—') + row('שלב תיק', stageBadge(curStage)) + row('מזהה עסקה', '<span class="muted" style="font-size:11px">' + esc(deal.id || '—') + '</span>')) + '</div>' +
+      '<div class="card"><h3>📁 מסמכי הלקוח (שהעלה הסוכן)</h3><p class="muted" style="font-size:12px;margin:-6px 0 10px">ת"ז · תלושים · דפי בנק · הסכם חתום וכו\'</p><div id="dlDocs">' + (lead.id ? 'טוען…' : '—') + '</div></div>';
     var paymentsCard = '<div class="card"><h3>תשלומים / קבלות / חשבוניות</h3><div id="dlPayList">' + (deal.id ? 'טוען…' : '<p class="muted">שמרו את העסקה כדי לנהל תשלומים</p>') + '</div>' +
       (deal.id ? '<form id="dlPayForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><select class="inp" name="kind"><option value="payment">תשלום</option><option value="receipt">קבלה</option><option value="invoice">חשבונית</option></select><input class="inp" name="amount" type="number" placeholder="סכום ₪" style="width:120px"><input class="inp" name="method" placeholder="אמצעי (מזומן/אשראי)" style="width:150px"><input class="inp" name="ref" placeholder="אסמכתא" style="width:130px"><button class="btn btn-sm">+ הוסף</button></form>' : '') + '</div>';
     function dTab(k, label, active) { return '<button data-dtab="' + k + '"' + (active ? ' class="active"' : '') + '>' + label + '</button>'; }
@@ -539,7 +543,7 @@
     view(
       '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">' + ((C.role || '') === 'files' ? '→ לרשימת התיקים' : '→ לכרטיס') + '</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
         '<div><button class="btn btn-ghost btn-sm" id="dlContract">✍ הסכם לחתימה</button> <button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
-      '<div class="card" style="padding:12px"><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' +
+      (isFiles || (C.role || '') === 'admin' ? '<div class="card" style="padding:12px"><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' : '') +
       '<nav class="tabs" id="dlTabs" style="margin-bottom:14px;flex-wrap:wrap">' +
         dTab('client', '👤 פרטי הלקוח', true) + dTab('deal', '📋 פרטי העסקה') + dTab('car', '🚗 פרטי הרכב המוזמן') + dTab('fin', '🏦 מקטע מימון') + dTab('trade', '🔁 מקטע טרייד-אין') + dTab('record', '🗂️ פרטי רשומה') +
       '</nav>' +
@@ -553,8 +557,25 @@
     var $ = C.$;
     $('dlBack').addEventListener('click', function () { if ((C.role || '') === 'files') return window.C2B_renderFiles(); window.C2B_openLeadCard(lead.id); });
     $('dlTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-dtab]'); if (!b) return; $('dlTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); C.$('view').querySelectorAll('[data-dpanel]').forEach(function (p) { p.classList.toggle('hidden', p.dataset.dpanel !== b.dataset.dtab); }); });
-    // stage bar
-    $('dlStageBar').addEventListener('click', function (e) { var st = e.target.closest('[data-stage]'); if (!st) return; curStage = st.dataset.stage; $('dlStageBar').innerHTML = stageBar(curStage); if (deal.id) { db.from('deals').update({ stage: curStage }).eq('id', deal.id); logActivity(lead.id, 'system', 'שלב עסקה: ' + stageDef(curStage).label); } });
+    // stage bar (shown to file manager / admin only)
+    if ($('dlStageBar')) $('dlStageBar').addEventListener('click', function (e) { var st = e.target.closest('[data-stage]'); if (!st) return; curStage = st.dataset.stage; $('dlStageBar').innerHTML = stageBar(curStage); if (deal.id) { db.from('deals').update({ stage: curStage }).eq('id', deal.id); logActivity(lead.id, 'system', 'שלב עסקה: ' + stageDef(curStage).label); } });
+    // load the client's documents into the record tab (uploaded by the sales agent)
+    if (lead.id) {
+      db.from('lead_documents').select('*').eq('lead_id', lead.id).order('created_at', { ascending: false }).then(function (dr) {
+        var docs = (dr && dr.data) || [];
+        if (!$('dlDocs')) return;
+        if (!docs.length) { $('dlDocs').innerHTML = '<p class="muted">אין מסמכים שהועלו</p>'; return; }
+        var paths = docs.map(function (x) { return x.storage_path; }), sf = db.storage.from('lead-docs');
+        (sf.createSignedUrls ? sf.createSignedUrls(paths, 3600) : Promise.resolve({ data: [] })).then(function (sr) {
+          var urls = {}; ((sr && sr.data) || []).forEach(function (s) { if (s && s.signedUrl) urls[s.path] = s.signedUrl; });
+          if (!$('dlDocs')) return;
+          $('dlDocs').innerHTML = docs.map(function (x) {
+            var u = urls[x.storage_path], ic = /\.pdf$/i.test(x.name || '') ? '📄' : (/\.(png|jpe?g|gif|webp)$/i.test(x.name || '') ? '🖼️' : '📎');
+            return '<div style="padding:7px 0;border-bottom:1px solid var(--line)">' + (u ? '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + ic + ' ' + esc(x.name) + '</a>' : ic + ' ' + esc(x.name)) + ' <span class="muted" style="font-size:11px">· ' + fmt(x.created_at) + '</span></div>';
+          }).join('');
+        });
+      });
+    }
     // checklist
     $('dlChecklist').addEventListener('change', function (e) { var cb = e.target.closest('input[data-chk]'); if (!cb) return; checklist[cb.dataset.chk] = cb.checked; if (deal.id) db.from('deals').update({ checklist: checklist }).eq('id', deal.id); });
     // submit to financing (validation)
@@ -566,7 +587,7 @@
       if (!checklist['התקבל הסכם']) miss.push('הסכם חתום');
       if (!checklist['התקבלה ת"ז']) miss.push('צילום ת"ז');
       if (miss.length) { alert('לא ניתן להגיש למימון — חסר:\n• ' + miss.join('\n• ')); return; }
-      curStage = 'submitted'; $('dlStageBar').innerHTML = stageBar(curStage);
+      curStage = 'submitted'; if ($('dlStageBar')) $('dlStageBar').innerHTML = stageBar(curStage);
       logActivity(lead.id, 'system', 'התיק הוגש למימון');
       $('dlSave').click();
     });
@@ -682,7 +703,7 @@
   function contractView(lead, deal) {
     view(
       '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם — ' + esc(deal.client_name || '') + '</h3>' +
-        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס / PDF</button> <button class="btn btn-sm" id="cSign">✍ חתום ושמור</button></div></div>' +
+        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button> <button class="btn btn-ghost btn-sm" id="cSend">📤 שלח ושמור PDF</button> <button class="btn btn-sm" id="cSign">✍ חתום ושמור</button></div></div>' +
       '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal) + '</div>' +
       '<div class="card"><h3>חתימת לקוח (צייר עם העכבר / אצבע)</h3><canvas id="sig" width="480" height="150" style="border:1px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;max-width:100%"></canvas><div style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="cClear">נקה חתימה</button></div></div>'
     );
@@ -698,20 +719,33 @@
     cv.addEventListener('touchstart', start); cv.addEventListener('touchmove', move); cv.addEventListener('touchend', end);
     $('cClear').addEventListener('click', function () { ctx.clearRect(0, 0, cv.width, cv.height); hasSig = false; });
     $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
+    $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', deal.stage); });
     $('cSign').addEventListener('click', function () {
       if (!hasSig) { alert('נא לחתום באזור החתימה קודם.'); return; }
       var sig = cv.toDataURL('image/png');
-      var full = '<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם חתום ' + esc(deal.order_no || '') + '</title></head><body>' + contractHTML(deal, sig) + '</body></html>';
-      var path = lead.id + '/contract_' + Date.now() + '.html';
-      db.storage.from('lead-docs').upload(path, new Blob([full], { type: 'text/html' })).then(function (u) {
-        if (u.error) { alert('שמירה נכשלה: ' + u.error.message); return; }
-        db.from('lead_documents').insert({ lead_id: lead.id, name: 'הסכם חתום #' + (deal.order_no || ''), storage_path: path });
-        if (deal.id) { var chk = deal.checklist || {}; chk['התקבל הסכם'] = true; db.from('deals').update({ checklist: chk, stage: 'signed' }).eq('id', deal.id); }
-        logActivity(lead.id, 'contract', 'נחתם הסכם' + (deal.order_no ? ' #' + deal.order_no : ''));
-        alert('ההסכם נחתם ונשמר בתיק הלקוח! ✅');
-        window.C2B_openLeadCard(lead.id);
-      });
+      $('cSign').disabled = true; $('cSign').textContent = 'שומר…';
+      $('cDoc').innerHTML = contractHTML(deal, sig);   // embed the signature into the document
+      finishContract(lead, deal, $('cDoc'), 'נחתם הסכם', 'הסכם חתום', 'signed');
     });
+  }
+  // render a contract element to a PDF (fallback: HTML), save it to the lead file + timeline
+  function finishContract(lead, deal, docEl, activityText, docTitle, stage) {
+    var suffix = deal.order_no ? ' #' + deal.order_no : '';
+    function afterSave(path) {
+      db.from('lead_documents').insert({ lead_id: lead.id, name: docTitle + suffix, storage_path: path });
+      if (deal.id) { var chk = deal.checklist || {}; if (stage === 'signed') chk['התקבל הסכם'] = true; db.from('deals').update({ checklist: chk, stage: stage || deal.stage }).eq('id', deal.id); }
+      logActivity(lead.id, 'contract', activityText + suffix).then(function () { alert('ההסכם נשמר בתיק הלקוח כ-PDF! ✅'); window.C2B_openLeadCard(lead.id); });
+    }
+    if (window.html2pdf) {
+      var path = lead.id + '/contract_' + Date.now() + '.pdf';
+      window.html2pdf().set({ margin: 8, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(docEl).outputPdf('blob').then(function (blob) {
+        db.storage.from('lead-docs').upload(path, blob, { contentType: 'application/pdf' }).then(function (u) { if (u.error) { alert('שמירה נכשלה: ' + u.error.message); return; } afterSave(path); });
+      }).catch(function (e) { alert('יצירת PDF נכשלה: ' + (e.message || e)); });
+    } else {
+      var full = '<!doctype html><html dir="rtl"><head><meta charset="utf-8"></head><body>' + docEl.innerHTML + '</body></html>';
+      var hpath = lead.id + '/contract_' + Date.now() + '.html';
+      db.storage.from('lead-docs').upload(hpath, new Blob([full], { type: 'text/html' })).then(function (u) { if (u.error) { alert('שמירה נכשלה: ' + u.error.message); return; } afterSave(hpath); });
+    }
   }
 
   // ---------- FILES (client file manager) ----------
