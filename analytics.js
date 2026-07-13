@@ -47,4 +47,14 @@
   }
   window.addEventListener('pagehide', end);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') end(); });
+
+  // also record key first-party events (clicks / conversions) to the events table
+  function hookTrack() {
+    var orig = window.c2bTrack;
+    window.c2bTrack = function (event, params) {
+      if (typeof orig === 'function') { try { orig(event, params); } catch (e) {} }
+      if (event && event !== 'page_view') { try { send({ type: event, referrer: (params && params.referrer) || null }); } catch (e) {} }
+    };
+  }
+  if (window.c2bTrack) hookTrack(); else window.addEventListener('DOMContentLoaded', hookTrack);
 })();

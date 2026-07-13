@@ -500,7 +500,7 @@
       var flag = t.done ? '<span class="done-badge">✓ בוצע</span>' : '<span class="task-open">● פתוחה</span>';
       var title = '<span' + (t.done ? ' style="text-decoration:line-through;color:var(--muted)"' : '') + '>' + esc(t.title) + '</span>';
       items.push({ ts: t.created_at || t.due_at, icon: t.done ? '✅' : '🔲', who: profiles[t.created_by], cls: t.done ? 'done' : '', tag: 'משימה',
-        html: '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-wrap:wrap"><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '>' + title + ' ' + flag + due + created + '</label>' });
+        html: '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-wrap:wrap"><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '>' + title + ' ' + flag + due + created + '</label>' + (t.notes ? '<div class="muted" style="font-size:12.5px;margin-top:3px">🗒️ ' + esc(t.notes) + '</div>' : '') });
     });
     deals.forEach(function (d) { items.push({ ts: d.created_at, icon: '💰', who: profiles[d.created_by], html: 'עסקה #' + esc(d.order_no || String(d.id).slice(0, 6)) + (d.car_make ? ' · ' + esc(d.car_make + ' ' + (d.car_model || '')) : '') + (d.total ? ' · ' + nis(d.total) : '') + ' — <a href="#" data-open-deal="' + d.id + '">פתח</a>', tag: 'עסקה' }); });
     pays.forEach(function (p) { items.push({ ts: p.created_at, icon: '🧾', who: profiles[p.created_by], html: ({ invoice: 'חשבונית', receipt: 'קבלה', payment: 'תשלום' }[p.kind] || 'תשלום') + ' · ' + nis(p.amount) + (p.method ? ' · ' + esc(p.method) : '') + (p.ref_no ? ' · ' + esc(p.ref_no) : ''), tag: 'כספים' }); });
@@ -612,11 +612,11 @@
       return;
     }
     if (k === 'task') {
-      box.innerHTML = '<form id="lpTaskForm"><input class="inp" name="title" placeholder="משימה חדשה…" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:6px"><input class="inp" name="due" type="datetime-local" style="flex:1"><button class="btn btn-sm">הוסף</button></div></form>';
+      box.innerHTML = '<form id="lpTaskForm"><input class="inp" name="title" placeholder="משימה חדשה…" style="width:100%;margin-bottom:6px"><textarea class="inp" name="notes" rows="2" placeholder="הערות למשימה (אופציונלי)…" style="width:100%;margin-bottom:6px"></textarea><div style="display:flex;gap:6px"><input class="inp" name="due" type="datetime-local" style="flex:1"><button class="btn btn-sm">הוסף</button></div></form>';
       $('lpTaskForm').addEventListener('submit', function (e) {
         e.preventDefault(); var title = this.title.value.trim(); if (!title) return;
-        var due = this.due.value ? new Date(this.due.value).toISOString() : null;
-        db.from('tasks').insert({ lead_id: lead.id, title: title, due_at: due }).then(function () { logActivity(lead.id, 'task', 'נפתחה משימה: ' + title); C.refreshBadges && C.refreshBadges(); window.C2B_openLeadCard(lead.id); });
+        var due = this.due.value ? new Date(this.due.value).toISOString() : null, notes = this.notes.value.trim() || null;
+        db.from('tasks').insert({ lead_id: lead.id, title: title, due_at: due, notes: notes }).then(function () { logActivity(lead.id, 'task', 'נפתחה משימה: ' + title); C.refreshBadges && C.refreshBadges(); window.C2B_openLeadCard(lead.id); });
       });
       $('lpTaskForm').querySelector('[name=title]').focus();
       return;
@@ -641,7 +641,7 @@
       var d = this.date.value, t = this.time.value; if (!d || !t) return;
       var appt_at = new Date(d + 'T' + t).toISOString();
       var disp = new Date(d + 'T' + t).toLocaleDateString('he-IL');
-      db.from('appointments').insert({ name: lead.name, phone: lead.phone, email: lead.email, type: lead.car || 'פגישה', branch: '', note: '', appt_date: disp, appt_time: t, appt_at: appt_at, status: 'new' }).then(function (r) {
+      db.from('appointments').insert({ lead_id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, type: lead.car || 'פגישה', branch: '', note: '', appt_date: disp, appt_time: t, appt_at: appt_at, status: 'new' }).then(function (r) {
         if (r.error) return alert('שגיאה: ' + r.error.message);
         logActivity(lead.id, 'meeting', 'נקבעה פגישה: ' + disp + ' ' + t);
         changeStatus(lead.id, 'meeting_set', lead, function () { window.C2B_openLeadCard(lead.id); });
@@ -868,8 +868,9 @@
     { k: 'partial', label: 'תשלום חלקי', color: '#eab308' },
     { k: 'paid', label: 'שולם ונסגר', color: '#16a34a' }
   ];
-  var acctTab = 'deals';
+  var acctTab = 'deals', selectedAcct = {};
   window.C2B_renderAccounting = function () {
+    selectedAcct = {};
     loading();
     Promise.all([
       db.from('deals').select('*').order('created_at', { ascending: false }),
@@ -898,7 +899,7 @@
     // TAB 1 — deals + receipts (what bought, invoice name, balance, commission, status, issue)
     var dealRows = deals.map(function (d) {
       var tot = +d.total || 0, paid = paidByDeal[d.id] || 0, bal = tot - paid;
-      return '<tr data-lead="' + (d.lead_id || '') + '"><td><b>#' + esc(d.order_no) + '</b></td>' +
+      return '<tr data-lead="' + (d.lead_id || '') + '"><td style="width:28px;text-align:center"><input type="checkbox" data-asel="' + d.id + '"' + (selectedAcct[d.id] ? ' checked' : '') + '></td><td><b>#' + esc(d.order_no) + '</b></td>' +
         '<td>' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td>' +
         '<td>' + esc(d.invoice_name || d.client_name || '—') + '</td>' +
         '<td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim() || '—') + '</td>' +
@@ -906,7 +907,8 @@
         '<td>' + esc(d.salesperson || '—') + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td>' +
         '<td>' + acctStatusSel(d.id, d.acct_status) + '</td></tr>';
     }).join('');
-    var dealsPanel = '<div class="card"><h3>עסקאות · קבלות · חשבוניות <span class="muted" style="font-size:12px">(לחצו על שורה לפתיחת תיק החשבונות של הלקוח)</span></h3><div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>קבלה על שם</th><th>מה נקנה</th><th>סכום</th><th>שולם</th><th>יתרה</th><th>סוכן</th><th>עמלה</th><th>סטטוס</th></tr></thead><tbody>' + (dealRows || '<tr><td colspan="10" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div></div>';
+    var aBulk = '<div id="aBulk" class="filterbar" style="display:none;background:var(--brand-soft);align-items:center"><b id="aBulkCount" style="color:var(--brand)">נבחרו 0</b><select id="aBulkStatus"><option value="">🏷️ שנה סטטוס…</option>' + ACCT_STATUSES.map(function (s) { return '<option value="' + s.k + '">' + esc(s.label) + '</option>'; }).join('') + '</select><button class="btn btn-sm" id="aBulkApply">החל על הנבחרים</button><button class="btn btn-ghost btn-sm" id="aBulkClear">בטל בחירה</button></div>';
+    var dealsPanel = '<div class="card"><h3>עסקאות · קבלות · חשבוניות <span class="muted" style="font-size:12px">(סמנו לפעולה גורפת · לחצו על שורה לפתיחת תיק החשבונות)</span></h3>' + aBulk + '<div class="table-scroll"><table><thead><tr><th style="width:28px;text-align:center"><input type="checkbox" id="aSelAll"></th><th>#</th><th>לקוח</th><th>קבלה על שם</th><th>מה נקנה</th><th>סכום</th><th>שולם</th><th>יתרה</th><th>סוכן</th><th>עמלה</th><th>סטטוס</th></tr></thead><tbody>' + (dealRows || '<tr><td colspan="11" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div></div>';
 
     // TAB 2 — commission per agent (frozen values)
     var byAgent = {}; deals.forEach(function (d) { var a = d.salesperson || 'לא שויך'; byAgent[a] = byAgent[a] || { n: 0, comm: 0, total: 0 }; byAgent[a].n++; byAgent[a].comm += (+d.commission || 0); byAgent[a].total += (+d.total || 0); });
@@ -929,10 +931,17 @@
       '<nav class="tabs" id="acctTabs" style="margin-bottom:14px;flex-wrap:wrap">' + tab('deals', '🧾 עסקאות וקבלות') + tab('commissions', '💸 עמלות סוכנים') + tab('documents', '📁 מסמכים') + '</nav><div id="acctPanel">' + panels[acctTab] + '</div>');
 
     function bindPanel() {
-      C.$('acctPanel').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function (e) { if (e.target.closest('select,button,a')) return; if (tr.dataset.lead) window.C2B_openLeadCard(tr.dataset.lead); }); });
-      C.$('acctPanel').querySelectorAll('.acct-st').forEach(function (s) { s.addEventListener('change', function () { db.from('deals').update({ acct_status: s.value }).eq('id', s.dataset.acct); }); });
-      C.$('acctPanel').querySelectorAll('[data-receipt]').forEach(function (b) { b.addEventListener('click', function () { db.from('deals').update({ acct_status: 'receipt' }).eq('id', b.dataset.receipt).then(function () { alert('סומן "הופקה קבלה". חיבור לחשבונית ירוקה יאפשר הפקה אוטומטית. 🧾'); window.C2B_renderAccounting(); }); }); });
-      C.$('acctPanel').querySelectorAll('[data-invoice]').forEach(function (b) { b.addEventListener('click', function () { db.from('deals').update({ acct_status: 'invoice' }).eq('id', b.dataset.invoice).then(function () { alert('סומן "הופקה חשבונית". חיבור לחשבונית ירוקה יאפשר הפקה אוטומטית. 🧾'); window.C2B_renderAccounting(); }); }); });
+      var P = C.$('acctPanel');
+      P.querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function (e) { if (e.target.closest('select,button,a,input')) return; if (tr.dataset.lead) window.C2B_openLeadCard(tr.dataset.lead); }); });
+      P.querySelectorAll('.acct-st').forEach(function (s) { s.addEventListener('change', function () { db.from('deals').update({ acct_status: s.value }).eq('id', s.dataset.acct); }); });
+      // bulk selection + status change
+      function ids() { return Object.keys(selectedAcct).filter(function (k) { return selectedAcct[k]; }); }
+      function upd() { var n = ids().length, bar = C.$('aBulk'); if (!bar) return; bar.style.display = n ? 'flex' : 'none'; if (C.$('aBulkCount')) C.$('aBulkCount').textContent = 'נבחרו ' + n; var sa = C.$('aSelAll'); if (sa) { var b = P.querySelectorAll('input[data-asel]'), c = P.querySelectorAll('input[data-asel]:checked'); sa.checked = b.length && c.length === b.length; sa.indeterminate = c.length > 0 && c.length < b.length; } }
+      P.querySelectorAll('input[data-asel]').forEach(function (cb) { cb.addEventListener('change', function () { if (cb.checked) selectedAcct[cb.dataset.asel] = true; else delete selectedAcct[cb.dataset.asel]; upd(); }); });
+      if (C.$('aSelAll')) C.$('aSelAll').addEventListener('change', function () { var on = this.checked; P.querySelectorAll('input[data-asel]').forEach(function (cb) { cb.checked = on; if (on) selectedAcct[cb.dataset.asel] = true; else delete selectedAcct[cb.dataset.asel]; }); upd(); });
+      if (C.$('aBulkClear')) C.$('aBulkClear').addEventListener('click', function () { selectedAcct = {}; P.querySelectorAll('input[data-asel]').forEach(function (cb) { cb.checked = false; }); upd(); });
+      if (C.$('aBulkApply')) C.$('aBulkApply').addEventListener('click', function () { var list = ids(); if (!list.length) return; var st = C.$('aBulkStatus').value; if (!st) { alert('בחרו סטטוס'); return; } db.from('deals').update({ acct_status: st }).in('id', list).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } selectedAcct = {}; window.C2B_renderAccounting(); }); });
+      upd();
     }
     C.$('acctTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-atab]'); if (!b) return; acctTab = b.dataset.atab; C.$('acctTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x.dataset.atab === acctTab); }); C.$('acctPanel').innerHTML = panels[acctTab]; bindPanel(); });
     bindPanel();

@@ -295,17 +295,37 @@
     }).catch(function (e) { errBox(e.message || e); });
   }
 
-  // ---------- APPOINTMENTS ----------
+  // ---------- APPOINTMENTS (calendar) ----------
+  var apptFilter = 'all';
   function renderAppointments() {
     loading();
-    db.from('appointments').select('*').order('created_at', { ascending: false }).then(function (r) {
-      if (r.error) return errBox(r.error.message);
-      var rows = (r.data || []).map(function (a) {
-        var handled = a.status === 'handled';
-        return '<tr><td>' + fmtDateTime(a.created_at) + '</td><td><b>' + esc(a.name) + '</b></td><td>' + esc(a.phone) + '</td><td>' + esc(a.appt_date) + ' ' + esc(a.appt_time) + '</td><td>' + esc(a.branch) + '</td><td><span class="tag">' + (handled ? 'טופל' : 'חדש') + '</span></td>' +
-          '<td><button class="btn btn-sm ' + (handled ? 'btn-ghost' : '') + '" data-appt="' + a.id + '" data-to="' + (handled ? 'new' : 'handled') + '">' + (handled ? 'החזר' : 'סמן כטופל') + '</button></td></tr>';
+    Promise.all([
+      db.from('appointments').select('*').order('appt_at', { ascending: true }),
+      db.from('leads').select('id,phone')
+    ]).then(function (res) {
+      if (res[0].error) return errBox(res[0].error.message);
+      var appts = res[0].data || [], byPhone = {};
+      (res[1].data || []).forEach(function (l) { if (l.phone) byPhone[String(l.phone).replace(/\D/g, '')] = l.id; });
+      function leadOf(a) { return a.lead_id || byPhone[String(a.phone || '').replace(/\D/g, '')] || null; }
+      function whenMs(a) { return a.appt_at ? new Date(a.appt_at).getTime() : (a.created_at ? new Date(a.created_at).getTime() : 0); }
+      var now = Date.now();
+      var upcoming = appts.filter(function (a) { return a.status !== 'handled' && whenMs(a) >= now; });
+      var past = appts.filter(function (a) { return a.status === 'handled' || whenMs(a) < now; });
+      var list = apptFilter === 'upcoming' ? upcoming : apptFilter === 'past' ? past : appts;
+      function tab(k, label, n) { return '<button data-af="' + k + '"' + (apptFilter === k ? ' class="active"' : '') + '>' + label + ' (' + n + ')</button>'; }
+      var rows = list.map(function (a) {
+        var handled = a.status === 'handled', lid = leadOf(a), soon = !handled && whenMs(a) >= now;
+        var when = a.appt_at ? fmtDateTime(a.appt_at) : ((esc(a.appt_date) || '') + ' ' + (esc(a.appt_time) || ''));
+        return '<tr' + (handled ? ' style="background:rgba(22,163,74,.06)"' : '') + (lid ? ' data-lead="' + lid + '" title="פתח כרטיס לקוח"' : '') + ' style="' + (lid ? 'cursor:pointer;' : '') + (handled ? 'background:rgba(22,163,74,.06)' : '') + '">' +
+          '<td>' + (handled ? '<span class="done-badge">✓ בוצעה</span>' : soon ? '<span class="task-open">● עתידית</span>' : '<span class="tag">חדשה</span>') + '</td>' +
+          '<td><b>' + esc(a.name) + '</b>' + (lid ? ' <span class="muted" style="font-size:11px">→ לכרטיס</span>' : '') + '</td>' +
+          '<td>' + esc(a.phone) + '</td><td>' + when + '</td><td>' + esc(a.type || a.branch || '') + '</td>' +
+          '<td><button class="btn btn-sm ' + (handled ? 'btn-ghost' : '') + '" data-appt="' + a.id + '" data-to="' + (handled ? 'new' : 'handled') + '" onclick="event.stopPropagation()">' + (handled ? 'החזר' : 'סמן כבוצעה') + '</button></td></tr>';
       }).join('');
-      view('<div class="card"><h3>יומן פגישות (' + (r.data || []).length + ')</h3><div class="table-scroll"><table><thead><tr><th>נקבע ב-</th><th>שם</th><th>טלפון</th><th>מועד</th><th>סניף</th><th>סטטוס</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="7" class="empty">אין פגישות</td></tr>') + '</tbody></table></div></div>');
+      view('<div class="card"><h3>📅 יומן פגישות</h3><nav class="tabs" id="apptTabs" style="margin-bottom:12px;flex-wrap:wrap">' + tab('all', 'הכל', appts.length) + tab('upcoming', 'עתידיות', upcoming.length) + tab('past', 'בוצעו / עברו', past.length) + '</nav>' +
+        '<div class="table-scroll"><table><thead><tr><th>סטטוס</th><th>שם</th><th>טלפון</th><th>מועד</th><th>עניין/סניף</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="6" class="empty">אין פגישות</td></tr>') + '</tbody></table></div></div>');
+      $('apptTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-af]'); if (b) { apptFilter = b.dataset.af; renderAppointments(); } });
+      $('view').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openLeadCard(tr.dataset.lead); }); });
       $('view').querySelectorAll('button[data-appt]').forEach(function (b) { b.addEventListener('click', function () { db.from('appointments').update({ status: b.dataset.to }).eq('id', b.dataset.appt).then(renderAppointments); }); });
     });
   }
@@ -332,28 +352,70 @@
           '<td>' + client + '</td>' +
           '<td class="muted">' + (t.created_at ? fmtDateTime(t.created_at) : '—') + '</td>' +
           '<td' + (over ? ' style="color:var(--danger);font-weight:600"' : ' class="muted"') + '>' + (t.due_at ? fmtDateTime(t.due_at) : '—') + '</td>' +
+          '<td><input class="inp" data-tnote="' + t.id + '" value="' + esc(t.notes || '') + '" placeholder="הוסף הערה…" style="width:100%;min-width:160px;font-size:13px"></td>' +
           '<td>' + (t.lead_id ? '<a href="#" data-lead="' + t.lead_id + '">פתח ליד →</a>' : '') + '</td></tr>';
       }).join('');
-      view('<div class="card"><h3>משימות <span class="muted" style="font-size:13px">(' + open + ' פתוחות · ' + doneN + ' בוצעו)</span></h3><div class="table-scroll"><table><thead><tr><th></th><th>סטטוס</th><th>משימה</th><th>לקוח</th><th>נוצרה</th><th>מועד</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="7" class="empty">אין משימות</td></tr>') + '</tbody></table></div></div>');
+      view('<div class="card"><h3>משימות <span class="muted" style="font-size:13px">(' + open + ' פתוחות · ' + doneN + ' בוצעו)</span></h3><div class="table-scroll"><table><thead><tr><th></th><th>סטטוס</th><th>משימה</th><th>לקוח</th><th>נוצרה</th><th>מועד</th><th>הערות</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="empty">אין משימות</td></tr>') + '</tbody></table></div></div>');
+      $('view').querySelectorAll('input[data-tnote]').forEach(function (inp) { inp.addEventListener('change', function () { db.from('tasks').update({ notes: inp.value.trim() || null }).eq('id', inp.dataset.tnote); }); });
       $('view').querySelectorAll('input[data-task]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('tasks').update({ done: cb.checked }).eq('id', cb.dataset.task).then(function () { refreshBadges(); renderTasks(); }); }); });
       $('view').querySelectorAll('a[data-lead]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); window.C2B_openLeadCard(a.dataset.lead); }); });
     });
   }
 
   // ---------- ANALYTICS ----------
+  function refDomain(r) { if (!r) return '(ישיר / הקלדה)'; try { var h = new URL(r).hostname.replace(/^www\./, ''); if (/google\./.test(h)) return 'Google (אורגני)'; if (/facebook|fb\.com|instagram/.test(h)) return 'Meta (פייסבוק/אינסטגרם)'; if (/t\.co|twitter|x\.com/.test(h)) return 'X/Twitter'; if (/youtube/.test(h)) return 'YouTube'; if (h.indexOf('tzahilevi1.github.io') >= 0) return '(פנימי)'; return h; } catch (e) { return '(אחר)'; } }
+  function deviceOf(ua) { ua = ua || ''; if (/iPad|Tablet/i.test(ua)) return 'טאבלט'; if (/Mobi|Android|iPhone/i.test(ua)) return 'מובייל'; return 'דסקטופ'; }
+  function browserOf(ua) { ua = ua || ''; if (/Edg/i.test(ua)) return 'Edge'; if (/Chrome/i.test(ua)) return 'Chrome'; if (/Firefox/i.test(ua)) return 'Firefox'; if (/Safari/i.test(ua)) return 'Safari'; return 'אחר'; }
+  function anBars(days) {
+    var max = Math.max(1, Math.max.apply(null, days.map(function (d) { return d.v; }))), W = 100 / days.length;
+    var bars = days.map(function (d, i) { var h = d.v / max * 90; return '<rect x="' + (i * W + W * 0.15) + '" y="' + (100 - h) + '" width="' + (W * 0.7) + '" height="' + h + '" rx="1.5" fill="var(--brand)"><title>' + d.d + ': ' + d.v + '</title></rect>'; }).join('');
+    var labels = days.map(function (d, i) { return i % 2 === 0 ? '<text x="' + (i * W + W / 2) + '" y="99" font-size="3" fill="var(--muted)" text-anchor="middle">' + d.d.slice(5) + '</text>' : ''; }).join('');
+    return '<svg viewBox="0 0 100 108" preserveAspectRatio="none" style="width:100%;height:180px">' + bars + labels + '</svg>';
+  }
+  function breakdown(title, obj, limit) {
+    var keys = Object.keys(obj).sort(function (a, b) { return obj[b] - obj[a]; }).slice(0, limit || 10);
+    var mx = keys.length ? obj[keys[0]] : 1, total = keys.reduce(function (s, k) { return s + obj[k]; }, 0);
+    return '<div class="card"><h3>' + title + '</h3><div class="table-scroll"><table><tbody>' + (keys.map(function (k) { return '<tr><td class="wrap">' + esc(k) + '</td><td>' + obj[k] + '</td><td class="muted">' + (total ? Math.round(obj[k] / total * 100) : 0) + '%</td><td style="width:40%"><div class="bar"><span style="width:' + Math.round(obj[k] / mx * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') + '</tbody></table></div></div>';
+  }
   function renderAnalytics() {
     loading();
-    db.from('events').select('*').order('created_at', { ascending: false }).limit(5000).then(function (r) {
+    db.from('events').select('*').order('created_at', { ascending: false }).limit(8000).then(function (r) {
       if (r.error) return errBox(r.error.message);
       var ev = r.data || [], pv = ev.filter(function (e) { return e.type === 'pageview'; });
-      var sessions = {}; ev.forEach(function (e) { if (e.session_id) sessions[e.session_id] = 1; });
+      var STD = { pageview: 1, session_end: 1 };
+      var sessions = {}, pvBySession = {}, firstUaBySession = {};
+      ev.forEach(function (e) { if (!e.session_id) return; sessions[e.session_id] = 1; if (e.type === 'pageview') { pvBySession[e.session_id] = (pvBySession[e.session_id] || 0) + 1; if (!firstUaBySession[e.session_id]) firstUaBySession[e.session_id] = e.ua; } });
+      var sessCount = Object.keys(sessions).length, pvCount = pv.length;
       var durs = ev.filter(function (e) { return e.type === 'session_end' && e.duration_ms; }).map(function (e) { return e.duration_ms; });
       var avg = durs.length ? Math.round(durs.reduce(function (a, b) { return a + b; }, 0) / durs.length / 1000) : 0;
-      var byPage = {}; pv.forEach(function (e) { var p = e.page || '/'; byPage[p] = (byPage[p] || 0) + 1; });
-      var top = Object.keys(byPage).sort(function (a, b) { return byPage[b] - byPage[a]; }).slice(0, 12);
-      var mx = top.length ? byPage[top[0]] : 1;
-      view('<div class="cards">' + stat('צפיות', pv.length) + stat('מבקרים', Object.keys(sessions).length) + stat('זמן שהייה ממוצע', avg ? avg + ' שנ\'' : '—') + '</div>' +
-        '<div class="card"><h3>עמודים מובילים</h3><div class="table-scroll"><table><tbody>' + (top.map(function (p) { return '<tr><td class="wrap">' + esc(p) + '</td><td>' + byPage[p] + '</td><td style="width:45%"><div class="bar"><span style="width:' + Math.round(byPage[p] / mx * 100) + '%"></span></div></td></tr>'; }).join('') || '<tr><td class="empty">אין נתונים</td></tr>') + '</tbody></table></div></div>');
+      var bounces = Object.keys(pvBySession).filter(function (s) { return pvBySession[s] === 1; }).length;
+      var bounceRate = sessCount ? Math.round(bounces / sessCount * 100) : 0;
+      var perSession = sessCount ? (pvCount / sessCount).toFixed(1) : 0;
+      // breakdowns
+      var byPage = {}, byRef = {}, byDev = {}, byBrowser = {}, byEvent = {}, byDay = {};
+      pv.forEach(function (e) { var p = e.page || '/'; byPage[p] = (byPage[p] || 0) + 1; var dd = (e.created_at || '').slice(0, 10); if (dd) byDay[dd] = (byDay[dd] || 0) + 1; });
+      Object.keys(firstUaBySession).forEach(function (s) { var ua = firstUaBySession[s]; byDev[deviceOf(ua)] = (byDev[deviceOf(ua)] || 0) + 1; byBrowser[browserOf(ua)] = (byBrowser[browserOf(ua)] || 0) + 1; });
+      ev.forEach(function (e) { if (e.type === 'pageview') { var ref = refDomain(e.referrer); /* count referrer per pageview that has one, else direct */ } });
+      // referrers: count sessions by their first pageview referrer
+      var seenSessRef = {}; pv.slice().reverse().forEach(function (e) { if (e.session_id && !seenSessRef[e.session_id]) { seenSessRef[e.session_id] = 1; var k = refDomain(e.referrer); byRef[k] = (byRef[k] || 0) + 1; } });
+      ev.forEach(function (e) { if (!STD[e.type]) byEvent[e.type || 'event'] = (byEvent[e.type || 'event'] || 0) + 1; });
+      var conversions = (byEvent.whatsapp_click || 0) + (byEvent.phone_click || 0) + (byEvent.lead_saved || 0) + (byEvent.lead_form_submit || 0);
+      var days = []; for (var i = 13; i >= 0; i--) { var dz = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10); days.push({ d: dz, v: byDay[dz] || 0 }); }
+
+      view(
+        '<h2 style="margin:0 0 12px">📊 אנליטיקס</h2>' +
+        '<div class="cards">' +
+          stat('צפיות בעמודים', pvCount) + stat('מבקרים (סשנים)', sessCount) +
+          stat('זמן שהייה ממוצע', avg ? avg + ' שנ\'' : '—') + stat('אחוז נטישה', bounceRate + '%') +
+          stat('עמודים לסשן', perSession) + stat('המרות (קליקים/לידים)', conversions, true) +
+        '</div>' +
+        '<div class="card"><h3>תנועה ב-14 הימים האחרונים</h3>' + anBars(days) + '</div>' +
+        '<div class="grid2">' + breakdown('🔗 מקורות תנועה', byRef) + breakdown('📄 עמודים מובילים', byPage, 12) + '</div>' +
+        '<div class="grid2">' + breakdown('📱 מכשירים', byDev) + breakdown('🌐 דפדפנים', byBrowser) + '</div>' +
+        '<div class="card"><h3>⚡ אירועים והמרות</h3><div class="table-scroll"><table><thead><tr><th>אירוע</th><th>כמות</th></tr></thead><tbody>' +
+          (Object.keys(byEvent).sort(function (a, b) { return byEvent[b] - byEvent[a]; }).map(function (k) { return '<tr><td>' + esc({ whatsapp_click: '💬 קליק וואטסאפ', phone_click: '📞 קליק טלפון', lead_saved: '✅ ליד נשמר', lead_form_submit: '📝 שליחת טופס', finance_calculator_start: '🧮 התחיל מחשבון', finance_calculator_result: '🧮 תוצאת מחשבון' }[k] || k) + '</td><td>' + byEvent[k] + '</td></tr>'; }).join('') || '<tr><td class="empty" colspan="2">אין אירועים עדיין — ייאספו מהאתר</td></tr>') +
+        '</tbody></table></div><p class="muted" style="font-size:12px;margin-top:8px">נאסף first-party מהאתר (ללא עוגיות/צד ג\'). לפילוח קמפיינים לפי UTM — ראו "דוחות → שיווק" ושדות ה-UTM בלידים.</p></div>'
+      );
     });
   }
 
