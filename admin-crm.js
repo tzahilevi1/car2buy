@@ -181,7 +181,7 @@
       '<select id="bulkStatus"><option value="">🏷️ שנה סטטוס…</option>' + STATUSES.map(function (s) { return '<option value="' + s.k + '">' + esc(s.label) + '</option>'; }).join('') + '</select>' +
       '<input id="bulkSource" list="bulkSrcL" placeholder="📍 מקור הגעה" style="width:130px"><datalist id="bulkSrcL">' + srcList + '</datalist>' +
       '<input id="bulkBrand" list="bulkBrandL" placeholder="🚗 מותג" style="width:120px"><datalist id="bulkBrandL">' + brandList + '</datalist>' +
-      '<button class="btn btn-sm" id="bulkApply">החל על הנבחרים</button><button class="btn btn-ghost btn-sm" id="bulkClear">בטל בחירה</button></div>';
+      '<button class="btn btn-sm" id="bulkApply">החל</button><button class="btn btn-ghost btn-sm" id="bulkDel" style="color:var(--danger);border-color:var(--danger)">🗑️ מחק</button><button class="btn btn-ghost btn-sm" id="bulkClear">בטל בחירה</button></div>';
     C.$('leadsBody').innerHTML = (leadFilter ? leadFilter.render() : '') + bulkBar +
       '<div class="table-scroll"><table><thead><tr><th style="width:30px;text-align:center"><input type="checkbox" id="selAll" title="בחר הכל"></th><th>שם</th><th>טלפון</th><th>וואטסאפ</th><th>מקור</th><th>רכב</th><th>איש מכירות</th><th>סטטוס</th><th>עדכון</th></tr></thead><tbody id="ltbl">' + body + '</tbody></table></div>';
     if (leadFilter) leadFilter.bind();
@@ -207,6 +207,14 @@
     $('ltbl').querySelectorAll('input[data-sel]').forEach(function (cb) { cb.addEventListener('change', function () { if (cb.checked) selectedLeads[cb.dataset.sel] = true; else delete selectedLeads[cb.dataset.sel]; update(); }); });
     if ($('selAll')) $('selAll').addEventListener('change', function () { var on = this.checked; $('ltbl').querySelectorAll('input[data-sel]').forEach(function (cb) { cb.checked = on; if (on) selectedLeads[cb.dataset.sel] = true; else delete selectedLeads[cb.dataset.sel]; }); update(); });
     if ($('bulkClear')) $('bulkClear').addEventListener('click', function () { selectedLeads = {}; $('ltbl').querySelectorAll('input[data-sel]').forEach(function (cb) { cb.checked = false; }); update(); });
+    if ($('bulkDel')) $('bulkDel').addEventListener('click', function () {
+      var list = ids(); if (!list.length) return;
+      if (!confirm('למחוק ' + list.length + ' לידים? כולל כל הפעילות, המסמכים והעסקאות שלהם. פעולה בלתי הפיכה.')) return;
+      db.from('leads').delete().in('id', list).then(function (r) {
+        if (r.error) { alert('שגיאה במחיקה: ' + r.error.message); return; }
+        selectedLeads = {}; C.refreshBadges && C.refreshBadges(); window.C2B_renderLeads(curFilter);
+      });
+    });
     if ($('bulkApply')) $('bulkApply').addEventListener('click', function () {
       var list = ids(); if (!list.length) return;
       var patch = {};
@@ -268,6 +276,11 @@
   ];
   function roleShort(role) { return { sales: 'מכירות', files: 'תיקי לקוחות', accounting: 'הנה״ח' }[role] || ''; }
   function docIsImage(name) { return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name || ''); }
+  // Supabase storage keys must be ASCII-safe — sanitize the filename (Hebrew/spaces → _)
+  function safeStoragePath(leadId, name) {
+    var safe = String(name || 'file').replace(/[^A-Za-z0-9._-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').slice(0, 60) || 'file';
+    return leadId + '/' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) + '_' + safe;
+  }
   // only allow http(s) links — page_url comes from anon lead inserts (untrusted),
   // so reject javascript:/data:/vbscript: before it reaches an href sink.
   function safeHttpUrl(u) { try { var p = new URL(u); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : ''; } catch (e) { return ''; } }
@@ -573,7 +586,7 @@
     if (k === 'doc') {
       box.innerHTML = '<label class="muted" style="font-size:12px">העלה מסמך / תמונה — תוצג מיד פתוחה בציר הזמן</label><input type="file" id="lpUp" style="margin-top:6px;display:block">';
       $('lpUp').addEventListener('change', function () {
-        var file = this.files[0]; if (!file) return; var path = lead.id + '/' + Date.now() + '_' + file.name;
+        var file = this.files[0]; if (!file) return; var path = safeStoragePath(lead.id, file.name);
         box.innerHTML = '<p class="muted">מעלה…</p>';
         db.storage.from('lead-docs').upload(path, file).then(function (u) { if (u.error) { box.innerHTML = ''; return alert('העלאה נכשלה: ' + u.error.message); } db.from('lead_documents').insert({ lead_id: lead.id, name: file.name, storage_path: path }).then(function () { logActivity(lead.id, 'document', 'הועלה מסמך: ' + file.name); window.C2B_openLeadCard(lead.id); }); });
       });
@@ -658,7 +671,7 @@
     var formCard = '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', deal.form_type || 'חוזה קאר פלוס') + statusSel + G('מנהל מכירות / נציג משוייך', 'salesperson', deal.salesperson || '')) + '</div>';
     var carCard = '<div class="card ac-box"><h3>🚗 פרטי הרכב המוזמן</h3>' +
       '<input class="inp" id="dl_carSearch" placeholder="🔎 חפש רכב מהקטלוג (עברית/אנגלית) — ימלא אוטומטית" style="width:100%;margin-bottom:10px"><div class="ac-res hidden" id="dl_carRes"></div>' +
-      grid(G('יצרן', 'car_make', deal.car_make) + G('דגם', 'car_model', deal.car_model) + G('שנת ייצור', 'car_year', deal.car_year || 2026, 'number') + G('רמת גימור', 'car_trim', deal.car_trim) + G('נפח מנוע', 'car_engine', deal.car_engine) + gearboxSel(deal.car_gearbox) + G('צבע מבוקש', 'car_color', deal.car_color) + G('מחיר הרכב ₪', 'car_price', deal.car_price, 'number') + G('עמלת סוכן ₪ (אוטומטי מהקטלוג)', 'commission', deal.commission, 'number')) + '</div>';
+      grid(G('יצרן', 'car_make', deal.car_make) + G('דגם', 'car_model', deal.car_model) + G('שנת ייצור', 'car_year', deal.car_year || 2026, 'number') + G('רמת גימור', 'car_trim', deal.car_trim) + G('נפח מנוע', 'car_engine', deal.car_engine) + gearboxSel(deal.car_gearbox) + G('צבע מבוקש', 'car_color', deal.car_color) + G('מחיר הרכב ₪', 'car_price', deal.car_price, 'number') + '<div class="field" style="margin:0"><label>עמלת סוכן ₪ (אוטומטי · קריאה בלבד)</label><input class="inp" id="dl_commission" type="number" value="' + esc(deal.commission == null ? '' : deal.commission) + '" readonly tabindex="-1" style="width:100%;background:var(--surface-2);cursor:not-allowed;color:var(--muted)"></div>') + '</div>';
     var specCard = '<div class="card"><h3>מפרט / הערות</h3><textarea class="inp" id="dl_spec" rows="5" style="width:100%" placeholder="מפרט / הערות לחוזה…">' + esc(deal.spec || '') + '</textarea></div>';
     var pricingCard = '<div class="card"><h3>תמחור ומקדמה</h3>' + grid(G('סכום מקדמה כולל ₪', 'down_total', deal.down_total, 'number') + G('מקדמה ראשונית ₪', 'down_initial', deal.down_initial, 'number') + G('החזר חודשי משוער ₪', 'monthly', deal.monthly, 'number') + G('זמן אספקה (ימים)', 'delivery_days', deal.delivery_days, 'number')) + '</div>';
     var addonsCard = '<div class="card"><h3>תוספות</h3><label style="display:flex;gap:8px;align-items:center;padding:5px 0"><input type="checkbox" id="dl_charging"' + (ad.charging ? ' checked' : '') + '> עמדת טעינה</label>' +
@@ -729,7 +742,7 @@
         $('dlDocs').innerHTML = '<p class="muted">מעלה ' + files.length + ' קבצים…</p>';
         var done = 0;
         files.forEach(function (file) {
-          var path = lead.id + '/' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) + '_' + file.name;
+          var path = safeStoragePath(lead.id, file.name);
           db.storage.from('lead-docs').upload(path, file).then(function (u) {
             if (!u.error) db.from('lead_documents').insert({ lead_id: lead.id, name: file.name, storage_path: path });
             if (u.error) alert('העלאה נכשלה (' + file.name + '): ' + u.error.message);
@@ -991,9 +1004,25 @@
   }
 
   // ---------- FILES (client file manager) ----------
-  var fileFilter = null;
+  var fileFilter = null, selectedDeals = {};
+  function bindFilesBulk(stageFilter) {
+    var $ = C.$;
+    function ids() { return Object.keys(selectedDeals).filter(function (k) { return selectedDeals[k]; }); }
+    function reRender() { selectedDeals = {}; window.C2B_renderFiles(stageFilter); }
+    function update() {
+      var n = ids().length, bar = $('fBulk'); if (!bar) return;
+      bar.style.display = n ? 'flex' : 'none'; if ($('fBulkCount')) $('fBulkCount').textContent = 'נבחרו ' + n;
+      var sa = $('fSelAll'); if (sa) { var b = $('filesBody').querySelectorAll('input[data-fsel]'), c = $('filesBody').querySelectorAll('input[data-fsel]:checked'); sa.checked = b.length && c.length === b.length; sa.indeterminate = c.length > 0 && c.length < b.length; }
+    }
+    $('filesBody').querySelectorAll('input[data-fsel]').forEach(function (cb) { cb.addEventListener('change', function () { if (cb.checked) selectedDeals[cb.dataset.fsel] = true; else delete selectedDeals[cb.dataset.fsel]; update(); }); });
+    if ($('fSelAll')) $('fSelAll').addEventListener('change', function () { var on = this.checked; $('filesBody').querySelectorAll('input[data-fsel]').forEach(function (cb) { cb.checked = on; if (on) selectedDeals[cb.dataset.fsel] = true; else delete selectedDeals[cb.dataset.fsel]; }); update(); });
+    if ($('fBulkClear')) $('fBulkClear').addEventListener('click', function () { selectedDeals = {}; $('filesBody').querySelectorAll('input[data-fsel]').forEach(function (cb) { cb.checked = false; }); update(); });
+    if ($('fBulkApply')) $('fBulkApply').addEventListener('click', function () { var list = ids(); if (!list.length) return; var st = $('fBulkStage').value; if (!st) { alert('בחרו שלב'); return; } db.from('deals').update({ stage: st }).in('id', list).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } reRender(); }); });
+    if ($('fBulkDel')) $('fBulkDel').addEventListener('click', function () { var list = ids(); if (!list.length) return; if (!confirm('למחוק ' + list.length + ' תיקים/הסכמים? פעולה בלתי הפיכה.')) return; db.from('deals').delete().in('id', list).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } reRender(); }); });
+    update();
+  }
   window.C2B_renderFiles = function (stageFilter) {
-    loading();
+    loading(); selectedDeals = {};
     db.from('deals').select('*').order('created_at', { ascending: false }).then(function (r) {
       if (r.error) return errBox(r.error.message);
       var deals = r.data || [];
@@ -1012,12 +1041,16 @@
         var lst = (f === 'all' ? deals : deals.filter(function (d) { return (d.stage || 'initial') === f; })).filter(function (d) { return fileFilter.match(d); });
         var rows = lst.map(function (d) {
           var chk = d.checklist || {}, done = CHECKLIST_ITEMS.filter(function (k) { return chk[k]; }).length, tot = CHECKLIST_ITEMS.length;
-          return '<tr data-deal="' + d.id + '" style="cursor:pointer"><td><b>#' + esc(d.order_no) + '</b></td><td>' + esc(d.client_name) + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(d.total) + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td><td>' + stageBadge(d.stage || 'initial') + '</td><td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td></tr>';
+          return '<tr data-deal="' + d.id + '"><td style="width:30px;text-align:center"><input type="checkbox" data-fsel="' + d.id + '"' + (selectedDeals[d.id] ? ' checked' : '') + ' onclick="event.stopPropagation()"></td><td data-open="1" style="cursor:pointer"><b>#' + esc(d.order_no) + '</b></td><td data-open="1" style="cursor:pointer">' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(d.total) + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td><td>' + stageBadge(d.stage || 'initial') + '</td><td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td></tr>';
         }).join('');
-        C.$('filesBody').innerHTML = fileFilter.render() +
-          '<div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>עמלת סוכן</th><th>שלב</th><th>צ\'קליסט</th></tr></thead><tbody>' + (rows || '<tr><td colspan="7" class="empty">אין תיקים</td></tr>') + '</tbody></table></div>';
+        var bulk = '<div id="fBulk" class="filterbar" style="display:none;background:var(--brand-soft);align-items:center"><b id="fBulkCount" style="color:var(--brand)">נבחרו 0</b>' +
+          '<select id="fBulkStage"><option value="">🏷️ שנה שלב…</option>' + DEAL_STAGES.map(function (s) { return '<option value="' + s.k + '">' + esc(s.label) + '</option>'; }).join('') + '</select>' +
+          '<button class="btn btn-sm" id="fBulkApply">החל</button><button class="btn btn-ghost btn-sm" id="fBulkDel" style="color:var(--danger);border-color:var(--danger)">🗑️ מחק נבחרים</button><button class="btn btn-ghost btn-sm" id="fBulkClear">בטל בחירה</button></div>';
+        C.$('filesBody').innerHTML = fileFilter.render() + bulk +
+          '<div class="table-scroll"><table><thead><tr><th style="width:30px;text-align:center"><input type="checkbox" id="fSelAll"></th><th>#</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>עמלת סוכן</th><th>שלב</th><th>צ\'קליסט</th></tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="empty">אין תיקים</td></tr>') + '</tbody></table></div>';
         fileFilter.bind();
-        C.$('filesBody').querySelectorAll('tr[data-deal]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openDeal(tr.dataset.deal); }); });
+        C.$('filesBody').querySelectorAll('td[data-open]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openDeal(td.parentNode.dataset.deal); }); });
+        bindFilesBulk(stageFilter);
       }
       C.$('fTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-fstage]'); if (b) window.C2B_renderFiles(b.dataset.fstage === 'all' ? null : b.dataset.fstage); });
       drawF();
