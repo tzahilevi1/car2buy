@@ -58,8 +58,14 @@ begin
      checklist = coalesce(checklist, '{}'::jsonb) || jsonb_build_object('התקבל הסכם', true)
    where id = p_deal;
 
+  -- after signing → move the sales lead to "בתהליך חיתום"
+  update public.leads set status = 'underwriting', status_changed_at = now()
+   where id = d.lead_id and status not in ('won', 'lost');
+
   insert into public.activities (lead_id, type, body)
     values (d.lead_id, 'contract', 'הלקוח חתם על ההסכם' || case when d.order_no is not null then ' #' || d.order_no else '' end);
+  insert into public.activities (lead_id, type, body)
+    values (d.lead_id, 'status_change', 'סטטוס עודכן ל: בתהליך חיתום (לאחר חתימה)');
 
   select decrypted_secret into rk from vault.decrypted_secrets where name = 'resend_key';
   if rk is not null then

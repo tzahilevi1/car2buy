@@ -421,33 +421,28 @@
       lf('lead_id', '<span class="muted" style="font-size:10.5px">' + esc(lead.id) + '</span>') +
       '</div>';
   }
-  function uniqSort(a) { var s = {}; a.forEach(function (x) { if (x) s[x] = 1; }); return Object.keys(s).sort(); }
-  // cascading car picker from inventory: מותג → דגם → גרסה
+  // single car search from inventory → fills the car + the existing מותג field
   function setupCarPicker(lead) {
     var box = C.$('carPick'); if (!box) return;
     loadCars(function (cars) {
       if (!C.$('carPick')) return;
-      var brands = uniqSort(cars.map(function (c) { return c.brand; }));
-      function opts(arr, sel, ph) { return '<option value="">' + ph + '</option>' + arr.map(function (v) { return '<option' + (v === sel ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join(''); }
-      box.innerHTML =
-        '<select class="lf-edit" id="cpBrand" style="max-width:none;min-width:90px">' + opts(brands, lead.brand || '', 'מותג…') + '</select>' +
-        '<select class="lf-edit" id="cpModel" style="max-width:none;min-width:90px"><option value="">דגם…</option></select>' +
-        '<select class="lf-edit" id="cpTrim" style="max-width:none;min-width:80px"><option value="">גרסה…</option></select>' +
-        '<div class="muted" id="cpShow" style="font-size:11px;width:100%;text-align:right">' + (lead.car ? 'נבחר: ' + esc(lead.car) : '') + '</div>';
-      function models(b) { return uniqSort(cars.filter(function (c) { return c.brand === b; }).map(function (c) { return c.name; })); }
-      function trims(b, m) { return uniqSort(cars.filter(function (c) { return c.brand === b && c.name === m; }).map(function (c) { return c.trim; })); }
-      function fillModels() { C.$('cpModel').innerHTML = opts(models(C.$('cpBrand').value), '', 'דגם…'); C.$('cpTrim').innerHTML = '<option value="">גרסה…</option>'; }
-      function fillTrims() { C.$('cpTrim').innerHTML = opts(trims(C.$('cpBrand').value, C.$('cpModel').value), '', 'גרסה…'); }
-      function save() {
-        var b = C.$('cpBrand').value, m = C.$('cpModel').value, t = C.$('cpTrim').value;
-        var car = (b + ' ' + m + (t ? ' ' + t : '')).trim();
-        C.$('cpShow').textContent = car ? 'נבחר: ' + car : '';
-        db.from('leads').update({ car: car || null, brand: b || null }).eq('id', lead.id).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } lead.car = car; lead.brand = b; logActivity(lead.id, 'system', 'רכב מבוקש: ' + (car || '—')); });
-      }
-      if (lead.brand) fillModels();
-      C.$('cpBrand').addEventListener('change', function () { fillModels(); save(); });
-      C.$('cpModel').addEventListener('change', function () { fillTrims(); save(); });
-      C.$('cpTrim').addEventListener('change', save);
+      box.innerHTML = '<div class="ac-box" style="position:relative;width:100%"><input class="lf-edit" id="carSearch2" value="' + esc(lead.car || '') + '" placeholder="🔎 חפש רכב מהמלאי…" style="max-width:none;width:100%"><div class="ac-res hidden" id="carRes2"></div></div>';
+      var inp = C.$('carSearch2'), res = C.$('carRes2');
+      inp.addEventListener('input', function () {
+        var q = this.value.trim().toLowerCase(); if (!q) { res.classList.add('hidden'); return; }
+        var m = cars.filter(function (c) { return ((c.brand || '') + ' ' + (c.name || '') + ' ' + (c.trim || '')).toLowerCase().indexOf(q) >= 0; }).slice(0, 12);
+        res.innerHTML = m.map(function (c) { return '<div class="ai" data-i="' + cars.indexOf(c) + '">' + (c.img ? '<img src="' + esc(c.img) + '" style="width:40px;height:26px;object-fit:cover;border-radius:5px">' : '') + '<span><b>' + esc(c.brand) + ' ' + esc(c.name) + '</b> ' + esc(c.trim || '') + '</span></div>'; }).join('') || '<div class="ai muted">אין תוצאות</div>';
+        res.classList.remove('hidden');
+        res.querySelectorAll('.ai[data-i]').forEach(function (el) {
+          el.addEventListener('mousedown', function () {   // mousedown fires before blur
+            var c = cars[+el.dataset.i], label = (c.brand + ' ' + c.name + (c.trim ? ' ' + c.trim : '')).trim();
+            inp.value = label; res.classList.add('hidden');
+            var bf = C.$('view').querySelector('[data-field="brand"]'); if (bf) bf.value = c.brand || '';
+            db.from('leads').update({ car: label, brand: c.brand || null }).eq('id', lead.id).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } lead.car = label; lead.brand = c.brand; logActivity(lead.id, 'system', 'רכב מבוקש: ' + label); });
+          });
+        });
+      });
+      inp.addEventListener('blur', function () { setTimeout(function () { res.classList.add('hidden'); }, 150); });
     });
   }
   // ---- unified timeline feed (everything, newest first) ----
@@ -918,7 +913,11 @@
     function afterSave(path) {
       db.from('lead_documents').insert({ lead_id: lead.id, name: docTitle + suffix, storage_path: path });
       if (deal.id) { var chk = deal.checklist || {}; if (stage === 'signed') chk['התקבל הסכם'] = true; db.from('deals').update({ checklist: chk, stage: stage || deal.stage }).eq('id', deal.id); }
-      logActivity(lead.id, 'contract', activityText + suffix).then(function () { alert('ההסכם נשמר בתיק הלקוח כ-PDF! ✅'); window.C2B_openLeadCard(lead.id); });
+      logActivity(lead.id, 'contract', activityText + suffix).then(function () {
+        alert('ההסכם נשמר בתיק הלקוח כ-PDF! ✅');
+        if (stage === 'signed') changeStatus(lead.id, 'underwriting', lead, function () { window.C2B_openLeadCard(lead.id); });
+        else window.C2B_openLeadCard(lead.id);
+      });
     }
     if (window.html2pdf) {
       var path = lead.id + '/contract_' + Date.now() + '.pdf';
