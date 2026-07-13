@@ -104,8 +104,9 @@
       ], draw);
       var title = statusFilter ? stDef(statusFilter).label : 'כל הלידים';
       view('<div class="card"><div class="row-between"><h3>' + esc(title) + ' <span class="muted" id="lcount"></span></h3>' +
-        '<div><input class="inp" id="lq" placeholder="חיפוש חופשי…" style="width:190px"> <button class="btn btn-sm" id="lcsv">CSV</button></div></div>' +
+        '<div><input class="inp" id="lq" placeholder="חיפוש חופשי…" style="width:170px"> <button class="btn btn-sm" id="lnew">+ ליד חדש</button> <button class="btn btn-ghost btn-sm" id="lcsv">CSV</button></div></div>' +
         '<div id="leadsBody"></div></div>');
+      C.$('lnew').addEventListener('click', newLeadForm);
       C.$('lq').addEventListener('input', draw);
       C.$('lcsv').addEventListener('click', function () { C.exportCsv(listRows(), ['created_at', 'name', 'phone', 'email', 'car', 'source', 'status', 'city', 'brand', 'marketing_company', 'utm_source', 'utm_campaign', 'message'], 'car2buy-leads'); });
       draw();
@@ -137,6 +138,30 @@
     C.$('ltbl').querySelectorAll('td[style]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openLeadCard(td.parentNode.dataset.lead); }); });
     C.$('ltbl').querySelectorAll('.tag.click').forEach(function (el) {
       el.addEventListener('click', function (e) { e.stopPropagation(); openStatusMenu(el, el.dataset.cur, function (to) { changeStatus(el.dataset.stLead, to, { status: el.dataset.cur }, function () { window.C2B_renderLeads(curFilter); }); }); });
+    });
+  }
+
+  // ---------- NEW LEAD (create from scratch) ----------
+  function newLeadForm() {
+    var lists = (C.lists || {});
+    function dl(id, arr) { return '<datalist id="' + id + '">' + (arr || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('') + '</datalist>'; }
+    function fld(label, id, type, list) { return '<div class="field"><label>' + label + '</label><input class="inp" id="' + id + '" type="' + (type || 'text') + '"' + (list ? ' list="' + list + '"' : '') + ' style="width:100%">' + (list ? dl(list, lists[id.replace('nl_', '')]) : '') + '</div>'; }
+    view('<div class="lead-top"><button class="btn btn-ghost btn-sm" id="nlBack">→ לרשימה</button><h3 style="margin:0">➕ ליד חדש</h3></div>' +
+      '<div class="card" style="max-width:640px"><div class="grid2">' +
+        fld('שם לקוח', 'nl_name') + fld('טלפון ראשי', 'nl_phone', 'tel') + fld('דואר אלקטרוני', 'nl_email', 'email') + fld('באיזה רכב מתעניין', 'nl_car') +
+        fld('מותג', 'nl_brand', 'text', 'dlB') + fld('מקור הגעה', 'nl_source', 'text', 'dlS') + fld('כתובת - עיר', 'nl_city') +
+      '</div><div style="margin-top:14px"><button class="btn" id="nlSave">צור ליד ופתח כרטיס</button> <span id="nlMsg" class="muted" style="font-size:13px;margin-inline-start:8px"></span></div></div>');
+    C.$('nlBack').addEventListener('click', function () { window.C2B_renderLeads(curFilter); });
+    C.$('nlSave').addEventListener('click', function () {
+      var name = C.$('nl_name').value.trim(), phone = C.$('nl_phone').value.trim(), msg = C.$('nlMsg');
+      if (!name && !phone) { msg.style.color = 'var(--danger)'; msg.textContent = 'נא למלא לפחות שם או טלפון'; return; }
+      msg.style.color = 'var(--muted)'; msg.textContent = 'יוצר…';
+      var payload = { name: name || null, phone: phone || null, email: C.$('nl_email').value.trim() || null, car: C.$('nl_car').value.trim() || null, brand: C.$('nl_brand').value.trim() || null, source: C.$('nl_source').value.trim() || 'ידני', city: C.$('nl_city').value.trim() || null, status: 'new', assigned_to: C.userId || null };
+      db.from('leads').insert(payload).select('id').single().then(function (r) {
+        if (r.error) { msg.style.color = 'var(--danger)'; msg.textContent = 'שגיאה: ' + r.error.message; return; }
+        C.refreshBadges && C.refreshBadges();
+        window.C2B_openLeadCard(r.data.id);
+      });
     });
   }
 
@@ -705,7 +730,13 @@
       '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם — ' + esc(deal.client_name || '') + '</h3>' +
         '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button> <button class="btn btn-ghost btn-sm" id="cSend">📤 שלח ושמור PDF</button> <button class="btn btn-sm" id="cSign">✍ חתום ושמור</button></div></div>' +
       '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal) + '</div>' +
-      '<div class="card"><h3>חתימת לקוח (צייר עם העכבר / אצבע)</h3><canvas id="sig" width="480" height="150" style="border:1px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;max-width:100%"></canvas><div style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="cClear">נקה חתימה</button></div></div>'
+      '<div class="card"><h3>חתימה במקום (צייר עם העכבר / אצבע)</h3><canvas id="sig" width="480" height="150" style="border:1px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;max-width:100%"></canvas><div style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="cClear">נקה חתימה</button></div></div>' +
+      '<div class="card"><h3>📨 שליחה לחתימה מרחוק</h3>' +
+        (deal.id ? '<p class="muted" style="font-size:13px;margin:-6px 0 12px">הלקוח מקבל קישור, חותם מהטלפון — וברגע שחתם זה מתעדכן כאן ומגיעה התראה במייל.</p>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input class="inp" id="cLinkEmail" value="' + esc(deal.client_email || '') + '" placeholder="אימייל הלקוח" style="flex:1;min-width:170px"><button class="btn btn-sm" id="cSendMail">📧 שלח במייל</button></div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="cWa">💬 וואטסאפ</button><button class="btn btn-ghost btn-sm" id="cSms">✉️ SMS</button><button class="btn btn-ghost btn-sm" id="cCopy">🔗 העתק קישור</button></div>' +
+          '<div id="cLinkMsg" style="font-size:13px;margin-top:10px"></div>'
+          : '<p class="muted">שמרו את העסקה תחילה (💾) כדי לשלוח לחתימה מרחוק.</p>') + '</div>'
     );
     var $ = C.$;
     $('cBack').addEventListener('click', function () { dealForm(lead, deal); });
@@ -718,6 +749,31 @@
     cv.addEventListener('mousedown', start); cv.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
     cv.addEventListener('touchstart', start); cv.addEventListener('touchmove', move); cv.addEventListener('touchend', end);
     $('cClear').addEventListener('click', function () { ctx.clearRect(0, 0, cv.width, cv.height); hasSig = false; });
+    // ---- remote signing: build link + send via email / WhatsApp / SMS ----
+    if (deal.id) {
+      var signBase = location.href.split('#')[0].replace(/[^/]*$/, 'sign.html');
+      var signUrl = null;
+      function withUrl(cb) {
+        if (signUrl) return cb(signUrl);
+        db.rpc('make_sign_token', { p_deal: deal.id }).then(function (r) {
+          if (r.error || !r.data) { alert('שגיאה ביצירת קישור: ' + ((r.error && r.error.message) || '')); return; }
+          signUrl = signBase + '?d=' + deal.id + '&t=' + r.data; cb(signUrl);
+        });
+      }
+      var linkMsg = $('cLinkMsg');
+      $('cSendMail').addEventListener('click', function () {
+        var to = ($('cLinkEmail').value || '').trim();
+        if (!to || to.indexOf('@') < 0) { linkMsg.style.color = 'var(--danger)'; linkMsg.textContent = 'הזינו אימייל תקין'; return; }
+        linkMsg.style.color = 'var(--muted)'; linkMsg.textContent = 'שולח…';
+        db.rpc('send_contract_email', { p_deal: deal.id, p_to: to }).then(function (r) {
+          if (r.error) { linkMsg.style.color = 'var(--danger)'; linkMsg.textContent = 'שגיאה: ' + r.error.message; return; }
+          linkMsg.style.color = 'var(--ok)'; linkMsg.textContent = '✅ נשלח ל-' + to; logActivity(lead.id, 'contract', 'נשלח הסכם לחתימה: ' + to);
+        });
+      });
+      $('cWa').addEventListener('click', function () { withUrl(function (u) { var p = waIntl(deal.client_phone); window.open('https://wa.me/' + p + '?text=' + encodeURIComponent('שלום, לחתימה על ההסכם: ' + u), '_blank'); }); });
+      $('cSms').addEventListener('click', function () { withUrl(function (u) { window.location.href = 'sms:' + (deal.client_phone || '') + '?body=' + encodeURIComponent('לחתימה על ההסכם: ' + u); }); });
+      $('cCopy').addEventListener('click', function () { withUrl(function (u) { (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { linkMsg.style.color = 'var(--ok)'; linkMsg.textContent = '🔗 הקישור הועתק'; }).catch(function () { linkMsg.style.color = 'var(--txt)'; linkMsg.textContent = u; }); }); });
+    }
     $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
     $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', deal.stage); });
     $('cSign').addEventListener('click', function () {
