@@ -807,7 +807,7 @@
         var m = cars.filter(function (c) { return ((c.brand || '') + ' ' + (c.name || '') + ' ' + (c.trim || '')).toLowerCase().indexOf(q) >= 0; }).slice(0, 12);
         res.innerHTML = m.map(function (c) { return '<div class="ai" data-i="' + cars.indexOf(c) + '">' + (c.img ? '<img src="' + esc(c.img) + '" style="width:40px;height:26px;object-fit:cover;border-radius:5px">' : '') + '<span><b>' + esc(c.brand) + ' ' + esc(c.name) + '</b> ' + esc(c.trim || '') + ' · ' + nis(c.p) + '</span></div>'; }).join('') || '<div class="ai muted">אין תוצאות</div>';
         res.classList.remove('hidden');
-        res.querySelectorAll('.ai[data-i]').forEach(function (el) { el.addEventListener('click', function () { var c = cars[+el.dataset.i]; $('dl_car_make').value = c.brand || ''; $('dl_car_model').value = c.name || ''; $('dl_car_trim').value = c.trim || ''; $('dl_car_engine').value = c.engine || ''; $('dl_car_color').value = c.colors || ''; $('dl_car_price').value = c.p || ''; $('dl_monthly').value = c.m || ''; if ($('dl_commission')) $('dl_commission').value = c.commission || ''; res.classList.add('hidden'); inp.value = ''; compute(); }); });
+        res.querySelectorAll('.ai[data-i]').forEach(function (el) { el.addEventListener('click', function () { var c = cars[+el.dataset.i]; $('dl_car_make').value = c.brand || ''; $('dl_car_model').value = c.name || ''; $('dl_car_trim').value = c.trim || ''; $('dl_car_engine').value = c.engine || ''; $('dl_car_color').value = c.colors || ''; $('dl_car_price').value = c.p || ''; $('dl_monthly').value = c.m || ''; if ($('dl_commission') && !deal.id) $('dl_commission').value = c.commission || ''; res.classList.add('hidden'); inp.value = ''; compute(); }); });
       });
     });
     // read the current form into a deal object (reused by save + contract)
@@ -859,24 +859,85 @@
     }
   }
 
-  // ---------- ACCOUNTING (payments ledger + balances) ----------
+  // ---------- ACCOUNTING WORKSPACE (מנהלת חשבונות) ----------
+  var ACCT_STATUSES = [
+    { k: 'pending', label: 'ממתין לטיפול', color: '#6b7280' },
+    { k: 'receipt', label: 'הופקה קבלה', color: '#16a34a' },
+    { k: 'invoice', label: 'הופקה חשבונית', color: '#0ea5e9' },
+    { k: 'partial', label: 'תשלום חלקי', color: '#eab308' },
+    { k: 'paid', label: 'שולם ונסגר', color: '#16a34a' }
+  ];
+  var acctTab = 'deals';
   window.C2B_renderAccounting = function () {
     loading();
-    Promise.all([db.from('deals').select('*'), db.from('payments').select('*')]).then(function (res) {
+    Promise.all([
+      db.from('deals').select('*').order('created_at', { ascending: false }),
+      db.from('payments').select('*'),
+      db.from('profiles').select('user_id,full_name'),
+      db.from('lead_documents').select('*').order('created_at', { ascending: false }).limit(500),
+      db.from('leads').select('id,name')
+    ]).then(function (res) {
       if (res[0].error) return errBox(res[0].error.message);
-      var deals = res[0].data || [], pays = (res[1] && res[1].data) || [];
-      var paidByDeal = {}; pays.forEach(function (p) { if (p.kind !== 'invoice') paidByDeal[p.deal_id] = (paidByDeal[p.deal_id] || 0) + (+p.amount || 0); });
-      var revenue = 0, collected = 0, open = 0;
-      var rows = deals.map(function (d) {
-        var tot = +d.total || 0, paid = paidByDeal[d.id] || 0, bal = tot - paid;
-        revenue += tot; collected += paid; open += Math.max(0, bal);
-        return '<tr' + (d.lead_id ? ' data-lead="' + d.lead_id + '" style="cursor:pointer"' : '') + '><td><b>#' + esc(d.order_no) + '</b></td><td>' + esc(d.client_name) + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(tot) + '</td><td>' + nis(paid) + '</td><td style="color:' + (bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(bal) + '</td></tr>';
-      }).join('');
-      view('<div class="cards">' + C.stat('שווי עסקאות', nis(revenue), true) + C.stat('נגבה בפועל', nis(collected)) + C.stat('יתרה פתוחה', nis(open)) + C.stat('מספר עסקאות', deals.length) + '</div>' +
-        '<div class="card"><h3>מצב כספי לפי עסקה</h3><div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>שולם</th><th>יתרה</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div></div>');
-      C.$('view').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openLeadCard(tr.dataset.lead); }); });
-    });
+      var deals = res[0].data || [], pays = (res[1] && res[1].data) || [], docs = (res[3] && res[3].data) || [];
+      var prof = {}; ((res[2] && res[2].data) || []).forEach(function (p) { prof[p.user_id] = p.full_name; });
+      var lname = {}; ((res[4] && res[4].data) || []).forEach(function (l) { lname[l.id] = l.name; });
+      var paths = docs.map(function (d) { return d.storage_path; }), sf = db.storage.from('lead-docs');
+      (paths.length && sf.createSignedUrls ? sf.createSignedUrls(paths, 3600) : Promise.resolve({ data: [] })).then(function (sr) {
+        var urls = {}; ((sr && sr.data) || []).forEach(function (s) { if (s && s.signedUrl) urls[s.path] = s.signedUrl; });
+        acctWorkspace(deals, pays, prof, lname, docs, urls);
+      });
+    }).catch(function (e) { errBox(e.message || e); });
   };
+  function acctStatusSel(id, cur) { return '<select class="inp acct-st" data-acct="' + id + '" style="width:auto;font-size:12.5px">' + ACCT_STATUSES.map(function (s) { return '<option value="' + s.k + '"' + ((cur || 'pending') === s.k ? ' selected' : '') + '>' + esc(s.label) + '</option>'; }).join('') + '</select>'; }
+  function acctWorkspace(deals, pays, prof, lname, docs, urls) {
+    var paidByDeal = {}; pays.forEach(function (p) { if (p.kind !== 'invoice') paidByDeal[p.deal_id] = (paidByDeal[p.deal_id] || 0) + (+p.amount || 0); });
+    var revenue = 0, collected = 0, open = 0, commTotal = 0;
+    deals.forEach(function (d) { var tot = +d.total || 0, paid = paidByDeal[d.id] || 0; revenue += tot; collected += paid; open += Math.max(0, tot - paid); commTotal += (+d.commission || 0); });
+
+    // TAB 1 — deals + receipts (what bought, invoice name, balance, commission, status, issue)
+    var dealRows = deals.map(function (d) {
+      var tot = +d.total || 0, paid = paidByDeal[d.id] || 0, bal = tot - paid;
+      return '<tr data-lead="' + (d.lead_id || '') + '"><td><b>#' + esc(d.order_no) + '</b></td>' +
+        '<td>' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td>' +
+        '<td>' + esc(d.invoice_name || d.client_name || '—') + '</td>' +
+        '<td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim() || '—') + '</td>' +
+        '<td>' + nis(tot) + '</td><td>' + nis(paid) + '</td><td style="color:' + (bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(bal) + '</td>' +
+        '<td>' + esc(d.salesperson || '—') + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td>' +
+        '<td>' + acctStatusSel(d.id, d.acct_status) + '</td>' +
+        '<td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-receipt="' + d.id + '">📄 קבלה</button> <button class="btn btn-ghost btn-sm" data-invoice="' + d.id + '">🧾 חשבונית</button></td></tr>';
+    }).join('');
+    var dealsPanel = '<div class="card"><h3>עסקאות · קבלות · חשבוניות <span class="muted" style="font-size:12px">(לחצו על שורה לפתיחת הלקוח)</span></h3><div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>קבלה על שם</th><th>מה נקנה</th><th>סכום</th><th>שולם</th><th>יתרה</th><th>סוכן</th><th>עמלה</th><th>סטטוס</th><th>הפקה</th></tr></thead><tbody>' + (dealRows || '<tr><td colspan="11" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div>' +
+      '<p class="muted" style="font-size:12px;margin-top:10px">💡 "הפק קבלה/חשבונית" יחובר ל<b>חשבונית ירוקה</b> להפקה אוטומטית. כרגע מסמן סטטוס.</p></div>';
+
+    // TAB 2 — commission per agent (frozen values)
+    var byAgent = {}; deals.forEach(function (d) { var a = d.salesperson || 'לא שויך'; byAgent[a] = byAgent[a] || { n: 0, comm: 0, total: 0 }; byAgent[a].n++; byAgent[a].comm += (+d.commission || 0); byAgent[a].total += (+d.total || 0); });
+    var agents = Object.keys(byAgent).sort(function (a, b) { return byAgent[b].comm - byAgent[a].comm; });
+    var commRows = agents.map(function (a) { var o = byAgent[a]; return '<tr><td><b>' + esc(a) + '</b></td><td>' + o.n + '</td><td>' + nis(o.total) + '</td><td style="color:var(--ok);font-weight:800">' + nis(o.comm) + '</td></tr>'; }).join('');
+    var commPanel = '<div class="cards">' + C.stat('סה"כ עמלות לתשלום', nis(commTotal), true) + C.stat('מספר סוכנים', agents.length) + '</div>' +
+      '<div class="card"><h3>💸 עמלות לפי סוכן <span class="muted" style="font-size:12px">(ערכים מוקפאים — לא משתנים עם עדכון הקטלוג)</span></h3><div class="table-scroll"><table><thead><tr><th>סוכן</th><th>עסקאות</th><th>שווי עסקאות</th><th>עמלה מצטברת</th></tr></thead><tbody>' + (commRows || '<tr><td colspan="4" class="empty">אין נתונים</td></tr>') + '</tbody></table></div></div>';
+
+    // TAB 3 — documents (signed contracts + uploads)
+    var docRows = docs.map(function (x) {
+      var u = urls[x.storage_path], ic = /\.pdf$/i.test(x.name || '') ? '📄' : (/\.(png|jpe?g|gif|webp)$/i.test(x.name || '') ? '🖼️' : '📎');
+      return '<tr><td>' + esc(lname[x.lead_id] || '—') + '</td><td>' + (u ? '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + ic + ' ' + esc(x.name) + '</a>' : ic + ' ' + esc(x.name)) + '</td><td class="muted">' + fmt(x.created_at) + '</td></tr>';
+    }).join('');
+    var docsPanel = '<div class="card"><h3>📁 כל המסמכים (הסכמים חתומים ומסמכי לקוח)</h3><div class="table-scroll"><table><thead><tr><th>לקוח</th><th>מסמך</th><th>תאריך</th></tr></thead><tbody>' + (docRows || '<tr><td colspan="3" class="empty">אין מסמכים</td></tr>') + '</tbody></table></div></div>';
+
+    var panels = { deals: dealsPanel, commissions: commPanel, documents: docsPanel };
+    function tab(k, l) { return '<button data-atab="' + k + '"' + (acctTab === k ? ' class="active"' : '') + '>' + l + '</button>'; }
+    view('<h2 style="margin:0 0 12px">🧮 מרכז הנהלת חשבונות</h2>' +
+      '<div class="cards">' + C.stat('שווי עסקאות', nis(revenue), true) + C.stat('נגבה בפועל', nis(collected)) + C.stat('יתרה פתוחה', nis(open)) + C.stat('סה"כ עמלות סוכנים', nis(commTotal)) + '</div>' +
+      '<nav class="tabs" id="acctTabs" style="margin-bottom:14px;flex-wrap:wrap">' + tab('deals', '🧾 עסקאות וקבלות') + tab('commissions', '💸 עמלות סוכנים') + tab('documents', '📁 מסמכים') + '</nav><div id="acctPanel">' + panels[acctTab] + '</div>');
+
+    function bindPanel() {
+      C.$('acctPanel').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function (e) { if (e.target.closest('select,button,a')) return; if (tr.dataset.lead) window.C2B_openLeadCard(tr.dataset.lead); }); });
+      C.$('acctPanel').querySelectorAll('.acct-st').forEach(function (s) { s.addEventListener('change', function () { db.from('deals').update({ acct_status: s.value }).eq('id', s.dataset.acct); }); });
+      C.$('acctPanel').querySelectorAll('[data-receipt]').forEach(function (b) { b.addEventListener('click', function () { db.from('deals').update({ acct_status: 'receipt' }).eq('id', b.dataset.receipt).then(function () { alert('סומן "הופקה קבלה". חיבור לחשבונית ירוקה יאפשר הפקה אוטומטית. 🧾'); window.C2B_renderAccounting(); }); }); });
+      C.$('acctPanel').querySelectorAll('[data-invoice]').forEach(function (b) { b.addEventListener('click', function () { db.from('deals').update({ acct_status: 'invoice' }).eq('id', b.dataset.invoice).then(function () { alert('סומן "הופקה חשבונית". חיבור לחשבונית ירוקה יאפשר הפקה אוטומטית. 🧾'); window.C2B_renderAccounting(); }); }); });
+    }
+    C.$('acctTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-atab]'); if (!b) return; acctTab = b.dataset.atab; C.$('acctTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x.dataset.atab === acctTab); }); C.$('acctPanel').innerHTML = panels[acctTab]; bindPanel(); });
+    bindPanel();
+  }
 
   // ---------- CONTRACT (auto-filled + browser signature) ----------
   function contractHTML(d, sig) {
