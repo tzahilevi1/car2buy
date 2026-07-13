@@ -67,12 +67,22 @@
     $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('whoami').textContent = session.user.email;
     window.C2B.userId = session.user.id;
     window.C2B.userName = session.user.email;
+    window.C2B.lists = {};
+    loadLists();
     db.from('profiles').select('role,full_name,views').eq('user_id', session.user.id).single().then(function (r) {
       window.C2B.role = (r.data && r.data.role) || 'sales';
       window.C2B.views = (r.data && r.data.views && r.data.views.length) ? r.data.views : (DEFAULT_VIEWS[window.C2B.role] || ['dashboard']);
       if (r.data && r.data.full_name) { window.C2B.userName = r.data.full_name; $('whoami').textContent = r.data.full_name + ' · ' + roleLabel(window.C2B.role); }
       applyRole(window.C2B.role); refreshBadges(); go('dashboard');
     });
+  }
+  // admin-managed dropdown lists (brand / source / marketing_company / utm_source)
+  var LIST_FIELDS = [['brand', 'מותג'], ['source', 'מקור הגעה'], ['marketing_company', 'חברת שיווק'], ['utm_source', 'utm_source']];
+  function loadLists() {
+    db.from('field_options').select('field,value').order('value', { ascending: true }).then(function (r) {
+      var lists = {}; (r.data || []).forEach(function (o) { (lists[o.field] = lists[o.field] || []).push(o.value); });
+      window.C2B.lists = lists;
+    }).catch(function () { window.C2B.lists = {}; });
   }
   var ROLE_LABELS = { admin: 'מנהל מערכת', sales: 'סוכן מכירות', files: 'מנהלת תיקי לקוחות', accounting: 'מנהלת חשבונות' };
   function roleLabel(r) { return ROLE_LABELS[r] || r; }
@@ -151,6 +161,7 @@
     if (nav === 'analytics') return renderAnalytics();
     if (nav === 'reports') return renderReports();
     if (nav === 'ai') return renderAI();
+    if (nav === 'settings') return renderSettings();
     if (nav.indexOf('soon:') === 0) return renderSoon(nav.slice(5));
     return window.C2B_renderDashboard && window.C2B_renderDashboard();
   }
@@ -535,6 +546,42 @@
           ans.innerHTML = '<div class="card" style="box-shadow:none;border:1px solid var(--line);background:var(--surface-2)"><div style="white-space:pre-wrap;line-height:1.7">' + esc(text || 'לא התקבלה תשובה.') + '</div></div>';
         });
       }, 1500);
+    });
+  }
+
+  // ---------- SETTINGS: managed field lists (admin) ----------
+  function renderSettings() {
+    loading();
+    db.from('field_options').select('*').order('field', { ascending: true }).order('value', { ascending: true }).then(function (r) {
+      if (r.error) return errBox(r.error.message + ' — ודא שהרצת את field-lists.sql');
+      var opts = r.data || [], byField = {};
+      LIST_FIELDS.forEach(function (f) { byField[f[0]] = []; });
+      opts.forEach(function (o) { (byField[o.field] = byField[o.field] || []).push(o); });
+      var cards = LIST_FIELDS.map(function (f) {
+        var key = f[0], label = f[1];
+        var chips = (byField[key] || []).map(function (o) { return '<span class="tag" style="margin:3px">' + esc(o.value) + ' <b data-del="' + o.id + '" style="cursor:pointer;color:var(--danger)">✕</b></span>'; }).join('') || '<span class="muted" style="font-size:13px">אין ערכים עדיין</span>';
+        return '<div class="card"><div class="row-between"><h3 style="margin:0">' + esc(label) + '</h3>' + (key === 'brand' ? '<button class="btn btn-ghost btn-sm" id="impBrands">⬇ ייבא מותגים מהקטלוג</button>' : '') + '</div>' +
+          '<div style="margin:10px 0;line-height:2.2">' + chips + '</div>' +
+          '<div style="display:flex;gap:8px"><input class="inp" data-add="' + key + '" placeholder="ערך חדש…" style="flex:1"><button class="btn btn-sm" data-addbtn="' + key + '">+ הוסף</button></div></div>';
+      }).join('');
+      view('<h2 style="margin:0 0 6px">הגדרות ורשימות</h2><p class="muted" style="font-size:13px;margin-bottom:16px">ערכי הרשימות שמופיעים כאפשרויות בחירה בשדות (מותג, מקור הגעה, חברת שיווק, utm_source) — בטופס עריכת ליד ובסינון.</p>' + cards);
+      $('view').querySelectorAll('[data-addbtn]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var key = b.dataset.addbtn, inp = $('view').querySelector('[data-add="' + key + '"]'), val = (inp.value || '').trim();
+          if (!val) return;
+          db.from('field_options').insert({ field: key, value: val }).then(function (u) { if (u.error) return alert('שגיאה: ' + u.error.message); loadLists(); renderSettings(); });
+        });
+      });
+      $('view').querySelectorAll('[data-del]').forEach(function (b) { b.addEventListener('click', function () { db.from('field_options').delete().eq('id', b.dataset.del).then(function () { loadLists(); renderSettings(); }); }); });
+      if ($('impBrands')) $('impBrands').addEventListener('click', function () {
+        fetch('cars.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (cars) {
+          var brands = Object.keys((cars || []).reduce(function (a, c) { if (c.brand) a[c.brand] = 1; return a; }, {}));
+          var existing = (byField.brand || []).map(function (o) { return o.value; });
+          var rows = brands.filter(function (b) { return existing.indexOf(b) < 0; }).map(function (b) { return { field: 'brand', value: b }; });
+          if (!rows.length) { alert('כל המותגים כבר קיימים ברשימה.'); return; }
+          db.from('field_options').insert(rows).then(function (u) { if (u.error) return alert('שגיאה: ' + u.error.message); loadLists(); renderSettings(); });
+        });
+      });
     });
   }
 

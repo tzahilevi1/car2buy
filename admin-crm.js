@@ -74,6 +74,9 @@
     });
   }
 
+  // admin-managed dropdown options for a field (or null → free-text filter)
+  function listOpts(field) { var vs = (C.lists && C.lists[field]) || []; return vs.length ? [{ v: '', l: '— הכל —' }].concat(vs.map(function (v) { return { v: v, l: v }; })) : null; }
+
   // ---- car catalog cache (for the deal / car picker) ----
   var carsCache = null;
   function loadCars(cb) { if (carsCache) return cb(carsCache); fetch('cars.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (c) { carsCache = c || []; cb(carsCache); }).catch(function () { cb([]); }); }
@@ -92,10 +95,10 @@
       profiles = {}; (res[1].data || []).forEach(function (p) { profiles[p.user_id] = p.full_name; });
       leadFilter = C.makeFilter([
         { key: 'name', label: 'שם לקוח' }, { key: 'phone', label: 'טלפון' }, { key: 'email', label: 'אימייל' },
-        { key: 'car', label: 'רכב' }, { key: 'brand', label: 'מותג' },
+        { key: 'car', label: 'רכב' }, { key: 'brand', label: 'מותג', options: listOpts('brand') },
         { key: 'status', label: 'סטטוס', options: STATUSES.map(function (s) { return { v: s.k, l: s.label }; }) },
-        { key: 'source', label: 'מקור הגעה' }, { key: 'marketing_company', label: 'חברת שיווק' },
-        { key: 'utm_source', label: 'utm_source' }, { key: 'utm_campaign', label: 'utm_campaign' }, { key: 'utm_medium', label: 'utm_medium' },
+        { key: 'source', label: 'מקור הגעה', options: listOpts('source') }, { key: 'marketing_company', label: 'חברת שיווק', options: listOpts('marketing_company') },
+        { key: 'utm_source', label: 'utm_source', options: listOpts('utm_source') }, { key: 'utm_campaign', label: 'utm_campaign' }, { key: 'utm_medium', label: 'utm_medium' },
         { key: 'ad_group', label: 'ad_group' }, { key: 'city', label: 'עיר' },
         { key: 'assigned', label: 'איש מכירות', get: function (l) { return profiles[l.assigned_to] || ''; } }
       ], draw);
@@ -205,10 +208,9 @@
       '</div>' +
       '<div class="card" style="padding:14px"><div class="flow" id="leadFlow">' + flowBar(lead.status || 'new') + '</div></div>' +
       '<div class="lead-grid">' +
-        '<div><div class="card"><h3 style="margin-bottom:12px">פרטי לקוח' + (role !== 'admin' && roleShort(role) ? ' · ' + roleShort(role) : '') + '</h3>' +
+        '<div><div class="card"><div class="row-between" style="margin-bottom:12px"><h3 style="margin:0">פרטי לקוח' + (role !== 'admin' && roleShort(role) ? ' · ' + roleShort(role) : '') + '</h3><button class="btn btn-ghost btn-sm" id="ldEdit">✏️ ערוך</button></div>' +
           '<div class="tabs2" id="ldTabs"><button class="active" data-ld="info">📋 פרטים</button><button data-ld="mkt">📣 שיווק ומקורות</button></div>' +
           '<div id="ldInfo">' + leadInfo(lead, deals, pays, feed.length ? feed[0].ts : null) +
-            (lead.status === 'lost' ? '<div style="margin-top:10px"><label class="muted" style="font-size:12px">סיבת סגירה</label><select class="inp" id="lpReason" style="width:100%;margin-top:4px"><option value="">בחר…</option>' + CLOSE_REASONS.map(function (x) { return '<option' + (lead.close_reason === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' : '') +
             (lead.message ? '<div style="margin-top:10px;font-size:14px">🗒️ ' + esc(lead.message) + '</div>' : '') + '</div>' +
           '<div id="ldMkt" class="hidden">' + leadMkt(lead) + '</div>' + '</div>' +
           '<div class="card"><div class="row-between"><h3 style="margin:0">עסקאות</h3>' + (role !== 'accounting' ? '<button class="btn btn-sm" id="lpNewDeal">+ עסקה</button>' : '') + '</div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
@@ -231,6 +233,9 @@
     var role = C.role || 'admin', deal = deals[0];
     var html = '<div class="lead-fields">';
     html += '<div class="lf"><span class="k">סטטוס לקוח</span><span class="v" id="lpStatusInline">' + badge(lead.status || 'new', true, lead.id) + '</span></div>';
+    html += '</div>';                                  // close the top field group
+    if (lead.status === 'lost') html += reasonSelect(lead);   // reason opens right under the status
+    html += '<div class="lead-fields">';
     html += lf('עודכן בתאריך', fmt(lastTs || lead.updated_at || lead.status_changed_at || lead.created_at));
     html += lf('שם לקוח', esc(lead.name));
     html += lf('טלפון ראשי', lead.phone ? '<a href="tel:' + esc(lead.phone) + '">' + esc(lead.phone) + '</a>' : '');
@@ -268,6 +273,25 @@
       lf('lead_id', '<span class="muted" style="font-size:10.5px">' + esc(lead.id) + '</span>') +
       '</div>';
   }
+  // inline edit of the business fields (NOT the marketing/attribution fields)
+  function leadEditForm(lead) {
+    var $ = C.$, lists = (C.lists || {});
+    var brandOpts = (lists.brand || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+    var staff = Object.keys(profiles).map(function (uid) { return '<option value="' + uid + '"' + (lead.assigned_to === uid ? ' selected' : '') + '>' + esc(profiles[uid]) + '</option>'; }).join('');
+    function fld(label, id, val, type) { return '<div class="field" style="margin:0 0 10px"><label>' + label + '</label><input class="inp" id="' + id + '" type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '" style="width:100%"></div>'; }
+    $('ldInfo').innerHTML =
+      fld('שם לקוח', 'ed_name', lead.name) + fld('טלפון ראשי', 'ed_phone', lead.phone) + fld('דואר אלקטרוני', 'ed_email', lead.email) +
+      fld('באיזה רכב מתעניין', 'ed_car', lead.car) +
+      '<div class="field" style="margin:0 0 10px"><label>מותג</label><input class="inp" id="ed_brand" list="ed_brandOpts" value="' + esc(lead.brand || '') + '" style="width:100%"><datalist id="ed_brandOpts">' + brandOpts + '</datalist></div>' +
+      fld('כתובת - עיר', 'ed_city', lead.city) +
+      '<div class="field" style="margin:0 0 12px"><label>איש מכירות</label><select class="inp" id="ed_assigned" style="width:100%"><option value="">— לא שויך —</option>' + staff + '</select></div>' +
+      '<div style="display:flex;gap:8px"><button class="btn btn-sm" id="ed_save">💾 שמור</button><button class="btn btn-ghost btn-sm" id="ed_cancel">ביטול</button></div>';
+    $('ed_cancel').addEventListener('click', function () { window.C2B_openLeadCard(lead.id); });
+    $('ed_save').addEventListener('click', function () {
+      var patch = { name: $('ed_name').value.trim() || null, phone: $('ed_phone').value.trim() || null, email: $('ed_email').value.trim() || null, car: $('ed_car').value.trim() || null, brand: $('ed_brand').value.trim() || null, city: $('ed_city').value.trim() || null, assigned_to: $('ed_assigned').value || null };
+      db.from('leads').update(patch).eq('id', lead.id).then(function (r) { if (r.error) return alert('שגיאה: ' + r.error.message); logActivity(lead.id, 'system', 'עודכנו פרטי לקוח'); window.C2B_openLeadCard(lead.id); });
+    });
+  }
   // ---- unified timeline feed (everything, newest first) ----
   var FEED_TAG = { note: 'הערה', call: 'שיחה', whatsapp: 'WhatsApp', email: 'מייל', status: 'סטטוס', task: 'משימה', document: 'מסמך', meeting: 'פגישה', deal: 'עסקה', contract: 'הסכם' };
   function buildFeed(acts, tasks, docs, deals, pays, urls) {
@@ -302,11 +326,22 @@
   function row(k, v) { return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span class="muted" style="font-size:13px">' + k + '</span><span>' + v + '</span></div>'; }
   function flowBar(cur) {
     var idx = FLOW.map(function (s) { return s.k; }).indexOf(cur), lost = cur === 'lost' || cur === 'no_answer';
-    return FLOW.map(function (s, i) {
-      var state = lost ? (i === 0 ? 'red' : 'gray') : (i < idx ? 'green' : i === idx ? 'cur' : 'gray');
-      var bg = { gray: 'var(--surface-2)', cur: s.color, green: '#16a34a', red: '#e2555a' }[state];
+    var html = FLOW.map(function (s, i) {
+      var state = lost ? 'gray' : (i < idx ? 'green' : i === idx ? 'cur' : 'gray');
+      var bg = { gray: 'var(--surface-2)', cur: s.color, green: '#16a34a' }[state];
       return '<div class="st clk" data-status="' + s.k + '" title="לחצו כדי לעדכן סטטוס" style="background:' + bg + ';color:' + (state === 'gray' ? 'var(--muted)' : '#fff') + '">' + s.icon + '<br>' + esc(s.label) + '</div>';
     }).join('');
+    // "לא רלוונטי" always visible at the end of the funnel (red when active)
+    var ls = stDef('lost');
+    html += '<div class="st clk" data-status="lost" title="סמן כלא רלוונטי" style="background:' + (cur === 'lost' ? '#e2555a' : 'var(--surface-2)') + ';color:' + (cur === 'lost' ? '#fff' : 'var(--muted)') + '">' + ls.icon + '<br>' + esc(ls.label) + '</div>';
+    return html;
+  }
+  function reasonSelect(lead) {
+    var need = !lead.close_reason;
+    return '<div id="lpReasonWrap" style="margin:4px 0 10px;padding:10px;border-radius:10px;background:' + (need ? 'rgba(226,85,90,.08)' : 'var(--surface-2)') + ';border:1px solid ' + (need ? 'var(--danger)' : 'var(--line)') + '">' +
+      '<label class="muted" style="font-size:12px;font-weight:700;color:' + (need ? 'var(--danger)' : 'var(--muted)') + '">סיבת "לא רלוונטי" ' + (need ? '· חובה לבחור' : '') + '</label>' +
+      '<select class="inp" id="lpReason" style="width:100%;margin-top:4px"><option value="">בחר סיבה…</option>' +
+      CLOSE_REASONS.map(function (x) { return '<option' + (lead.close_reason === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>';
   }
   // ---------- ACTIVITY (global feed: who did what) ----------
   window.C2B_renderActivity = function () {
@@ -341,7 +376,8 @@
     // clickable funnel — move the lead through statuses straight from the flow bar
     var lfb = $('leadFlow');
     if (lfb) lfb.addEventListener('click', function (e) { var st = e.target.closest('[data-status]'); if (!st) return; changeStatus(lead.id, st.dataset.status, lead, function () { window.C2B_openLeadCard(lead.id); }); });
-    var rs = $('lpReason'); if (rs) rs.addEventListener('change', function () { db.from('leads').update({ close_reason: rs.value }).eq('id', lead.id); });
+    var rs = $('lpReason'); if (rs) { if (!lead.close_reason) rs.focus(); rs.addEventListener('change', function () { db.from('leads').update({ close_reason: rs.value }).eq('id', lead.id).then(function () { logActivity(lead.id, 'system', 'סיבת אי-רלוונטיות: ' + rs.value); window.C2B_openLeadCard(lead.id); }); }); }
+    if ($('ldEdit')) $('ldEdit').addEventListener('click', function () { leadEditForm(lead); });
     // details tabs: פרטים ⇄ שיווק ומקורות
     var ldt = $('ldTabs');
     if (ldt) ldt.addEventListener('click', function (e) { var b = e.target.closest('[data-ld]'); if (!b) return; ldt.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); $('ldInfo').classList.toggle('hidden', b.dataset.ld !== 'info'); $('ldMkt').classList.toggle('hidden', b.dataset.ld !== 'mkt'); });
