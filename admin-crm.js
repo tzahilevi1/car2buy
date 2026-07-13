@@ -57,7 +57,7 @@
   function loadCars(cb) { if (carsCache) return cb(carsCache); fetch('cars.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (c) { carsCache = c || []; cb(carsCache); }).catch(function () { cb([]); }); }
 
   // ---------- LEADS TABLE ----------
-  var cache = [], profiles = {}, orderIds = [], curFilter = null;
+  var cache = [], profiles = {}, orderIds = [], curFilter = null, curDeals = [];
   window.C2B_renderLeads = function (statusFilter) {
     curFilter = statusFilter || null;
     loading();
@@ -109,10 +109,12 @@
       db.from('leads').select('*').eq('id', id).single(),
       db.from('activities').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
       db.from('tasks').select('*').eq('lead_id', id).order('due_at', { ascending: true }),
-      db.from('lead_documents').select('*').eq('lead_id', id).order('created_at', { ascending: false })
+      db.from('lead_documents').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
+      db.from('deals').select('*').eq('lead_id', id).order('created_at', { ascending: false })
     ]).then(function (r) {
       if (r[0].error) return errBox(r[0].error.message);
-      var lead = r[0].data, acts = r[1].data || [], tasks = r[2].data || [], docs = r[3].data || [];
+      var lead = r[0].data, acts = r[1].data || [], tasks = r[2].data || [], docs = r[3].data || [], deals = (r[4] && r[4].data) || [];
+      curDeals = deals;
       var wa = waLink(lead.phone);
       var idx = orderIds.indexOf(id);
       var prev = idx > 0 ? orderIds[idx - 1] : null, next = idx >= 0 && idx < orderIds.length - 1 ? orderIds[idx + 1] : null;
@@ -129,7 +131,7 @@
             (wa ? '<a href="' + wa + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') +
             (lead.email ? '<a href="mailto:' + esc(lead.email) + '">📧 מייל</a>' : '') +
             '<button data-qa="meeting">📅 קבע פגישה</button><button data-qa="car">🚗 בחר רכב</button>' +
-            '<button data-qa="quote">📄 הצעת מחיר</button><button data-qa="contract">✍ הסכם</button><button data-qa="won">💰 סגור עסקה</button>' +
+            '<button data-qa="deal">💰 סגירת עסקה / הצעה</button><button data-qa="contract">✍ הסכם</button>' +
           '</div><div id="qaArea"></div></div>' +
         '<div class="lead-grid">' +
           '<div><div class="card"><h3>פרטי לקוח</h3>' +
@@ -139,6 +141,7 @@
             '<div class="card"><h3>משימות</h3><div id="lpTasks">' + taskList(tasks) + '</div>' +
               '<form id="lpTaskForm" style="margin-top:10px"><input class="inp" name="title" placeholder="משימה חדשה…" style="width:100%;margin-bottom:6px"><div style="display:flex;gap:6px"><input class="inp" name="due" type="datetime-local" style="flex:1"><button class="btn btn-sm">הוסף</button></div></form></div>' +
             '<div class="card"><h3>מסמכים</h3><div id="lpDocs">' + docList(docs) + '</div><input type="file" id="lpUp" style="margin-top:10px"></div>' +
+            '<div class="card"><div class="row-between"><h3 style="margin:0">עסקאות</h3><button class="btn btn-sm" id="lpNewDeal">+ עסקה</button></div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
           '</div>' +
           '<div class="card"><h3>ציר זמן</h3>' +
             '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">' + ['note', 'call', 'whatsapp', 'email'].map(function (t) { return '<button class="btn btn-ghost btn-sm" data-act="' + t + '">' + ACT_ICON[t] + ' ' + ({ note: 'הערה', call: 'שיחה', whatsapp: 'WhatsApp', email: 'מייל' }[t]) + '</button>'; }).join('') + '</div>' +
@@ -176,13 +179,14 @@
     $('view').querySelectorAll('button[data-qa]').forEach(function (b) {
       b.addEventListener('click', function () {
         var qa = b.dataset.qa;
-        if (qa === 'won') return changeStatus(lead.id, 'won', lead, function () { window.C2B_openLeadCard(lead.id); });
-        if (qa === 'quote') { changeStatus(lead.id, 'quote_sent', lead, function () { logActivity(lead.id, 'quote', 'סומן: הצעת מחיר נשלחה'); window.C2B_openLeadCard(lead.id); }); return; }
+        if (qa === 'deal') return dealForm(lead, null);
         if (qa === 'contract') { logActivity(lead.id, 'contract', 'סומן: נשלח הסכם'); alert('מודול ההסכמים (מילוי + חתימה) מגיע בהמשך. הפעולה תועדה.'); return; }
         if (qa === 'meeting') return meetingForm(lead);
         if (qa === 'car') return carPicker(lead);
       });
     });
+    if ($('lpNewDeal')) $('lpNewDeal').addEventListener('click', function () { dealForm(lead, null); });
+    $('lpDeals').querySelectorAll('[data-deal-id]').forEach(function (el) { el.addEventListener('click', function () { var dd = curDeals.filter(function (x) { return x.id === el.dataset.dealId; })[0]; dealForm(lead, dd); }); });
     // activity feed
     $('view').querySelectorAll('button[data-act]').forEach(function (b) { b.addEventListener('click', function () { var f = $('lpActForm'); f.style.display = 'block'; f.querySelector('[name=type]').value = b.dataset.act; f.querySelector('[name=body]').focus(); }); });
     $('lpActCancel').addEventListener('click', function () { $('lpActForm').style.display = 'none'; });
@@ -239,6 +243,90 @@
             db.from('leads').update({ car: label }).eq('id', lead.id).then(function () { logActivity(lead.id, 'car', 'נבחר רכב לעסקה: ' + label); window.C2B_openLeadCard(lead.id); });
           });
         });
+      });
+    });
+  }
+
+  // ---------- DEALS (order / quote form) ----------
+  function dealStatusLabel(s) { return { quote: 'הצעת מחיר', ordered: 'הזמנה', cancelled: 'בוטל' }[s] || s; }
+  function dealList(deals) {
+    if (!deals.length) return '<p class="muted" style="margin:6px 0">אין עסקאות</p>';
+    return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b> · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + '</div>'; }).join('');
+  }
+  function dealForm(lead, deal) {
+    deal = deal || {}; var ad = deal.addons || {};
+    var G = function (label, name, val, type) { return '<div class="field" style="margin:0"><label>' + label + '</label><input class="inp" id="dl_' + name + '" type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '" style="width:100%"></div>'; };
+    var grid = function (inner) { return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' + inner + '</div>'; };
+    var statusSel = '<div class="field" style="margin:0"><label>סטטוס הזמנה</label><select class="inp" id="dl_status" style="width:100%">' + [['quote', 'הצעת מחיר'], ['ordered', 'הזמנה'], ['cancelled', 'בוטל']].map(function (s) { return '<option value="' + s[0] + '"' + ((deal.status || 'quote') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></div>';
+    view(
+      '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">→ לכרטיס</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
+        '<div><button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
+      '<div class="grid2">' +
+        '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', deal.form_type || 'חוזה קאר פלוס') + statusSel + G('מנהל מכירות', 'salesperson', deal.salesperson || '')) + '</div>' +
+        '<div class="card"><h3>פרטי לקוח</h3>' + grid(G('שם לקוח', 'client_name', deal.client_name || lead.name) + G('טלפון נייד', 'client_phone', deal.client_phone || lead.phone) + G('דוא"ל', 'client_email', deal.client_email || lead.email) + G('כתובת', 'client_address', deal.client_address || lead.city) + G('ת.ז / ח.פ', 'client_id', deal.client_id) + G('שם לחשבונית', 'invoice_name', deal.invoice_name || lead.name)) + '</div>' +
+      '</div>' +
+      '<div class="card ac-box"><h3>הצעת מחיר והזמנת רכב</h3>' +
+        '<input class="inp" id="dl_carSearch" placeholder="🔎 חפש רכב מהקטלוג (עברית/אנגלית) — ימלא אוטומטית" style="width:100%;margin-bottom:10px"><div class="ac-res hidden" id="dl_carRes"></div>' +
+        grid(G('יצרן', 'car_make', deal.car_make) + G('דגם', 'car_model', deal.car_model) + G('שנת ייצור', 'car_year', deal.car_year || 2026, 'number') + G('רמת גימור', 'car_trim', deal.car_trim) + G('נפח מנוע', 'car_engine', deal.car_engine) + G('תיבת הילוכים', 'car_gearbox', deal.car_gearbox) + G('צבע הרכב', 'car_color', deal.car_color) + G('מחיר הרכב ₪', 'car_price', deal.car_price, 'number')) + '</div>' +
+      '<div class="grid2">' +
+        '<div class="card"><h3>תמחור ומקדמה</h3>' + grid(G('סכום מקדמה כולל ₪', 'down_total', deal.down_total, 'number') + G('מקדמה ראשונית ₪', 'down_initial', deal.down_initial, 'number') + G('החזר חודשי משוער ₪', 'monthly', deal.monthly, 'number') + G('זמן אספקה (ימים)', 'delivery_days', deal.delivery_days, 'number')) + '</div>' +
+        '<div class="card"><h3>תוספות</h3><label style="display:flex;gap:8px;align-items:center;padding:5px 0"><input type="checkbox" id="dl_charging"' + (ad.charging ? ' checked' : '') + '> עמדת טעינה</label>' +
+          '<label style="display:flex;gap:8px;align-items:center;padding:5px 0"><input type="checkbox" id="dl_armor"' + (ad.armor ? ' checked' : '') + '> מיגון לפי דרישת ביטוח</label>' +
+          '<label style="display:flex;gap:8px;align-items:center;padding:5px 0"><input type="checkbox" id="dl_accessories"' + (ad.accessories ? ' checked' : '') + '> אביזרים נלווים</label>' +
+          '<div class="field" style="margin-top:6px"><label>סכום תוספות ₪</label><input class="inp" id="dl_addons_amount" type="number" value="' + esc(ad.addons_amount == null ? '' : ad.addons_amount) + '" style="width:100%"></div></div>' +
+      '</div>' +
+      '<div class="grid2">' +
+        '<div class="card"><h3>סיכום הזמנה</h3>' + grid(G('הנחה (%)', 'discount_pct', deal.discount_pct, 'number') + G('הנחה (סכום) ₪', 'discount_amt', deal.discount_amt, 'number') + G('שולם ₪', 'paid', deal.paid, 'number')) +
+          '<label style="display:flex;gap:8px;align-items:center;padding:8px 0"><input type="checkbox" id="dl_vat"' + (deal.vat_included !== false ? ' checked' : '') + '> כולל מע"מ</label>' +
+          '<div id="dlSummary" style="margin-top:8px"></div></div>' +
+        '<div class="card"><h3>מפרט רכב</h3><textarea class="inp" id="dl_spec" rows="6" style="width:100%" placeholder="מפרט / הערות לחוזה…">' + esc(deal.spec || '') + '</textarea></div>' +
+      '</div>'
+    );
+    var $ = C.$;
+    $('dlBack').addEventListener('click', function () { window.C2B_openLeadCard(lead.id); });
+    function num(id) { var v = parseFloat(($(id) && $(id).value) || ''); return isNaN(v) ? 0 : v; }
+    function compute() {
+      var price = num('dl_car_price'), addons = num('dl_addons_amount');
+      var subtotal = price + addons;
+      var disc = num('dl_discount_amt') || (subtotal * num('dl_discount_pct') / 100);
+      var total = Math.max(0, subtotal - disc);
+      var downBal = num('dl_down_total') - num('dl_down_initial');
+      var balPay = total - num('dl_down_total');
+      $('dlSummary').innerHTML = row2('סכום מוצרים', nis(price)) + row2('תוספות', nis(addons)) + row2('הנחה', nis(disc)) + row2('יתרת מקדמה', nis(downBal)) +
+        '<div style="display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid var(--brand);margin-top:6px;font-weight:800;font-size:17px"><span>סכום כולל</span><span style="color:var(--brand)">' + nis(total) + '</span></div>' + row2('יתרה לתשלום', nis(balPay));
+      return { subtotal: subtotal, disc: disc, total: total, downBal: downBal, balPay: balPay };
+    }
+    function row2(k, v) { return '<div style="display:flex;justify-content:space-between;padding:5px 0"><span class="muted">' + k + '</span><span>' + v + '</span></div>'; }
+    ['dl_car_price', 'dl_addons_amount', 'dl_discount_amt', 'dl_discount_pct', 'dl_down_total', 'dl_down_initial'].forEach(function (id) { if ($(id)) $(id).addEventListener('input', compute); });
+    compute();
+    // car search fills fields
+    loadCars(function (cars) {
+      var inp = $('dl_carSearch'), res = $('dl_carRes');
+      inp.addEventListener('input', function () {
+        var q = this.value.trim().toLowerCase(); if (!q) { res.classList.add('hidden'); return; }
+        var m = cars.filter(function (c) { return ((c.brand || '') + ' ' + (c.name || '') + ' ' + (c.trim || '')).toLowerCase().indexOf(q) >= 0; }).slice(0, 12);
+        res.innerHTML = m.map(function (c) { return '<div class="ai" data-i="' + cars.indexOf(c) + '">' + (c.img ? '<img src="' + esc(c.img) + '" style="width:40px;height:26px;object-fit:cover;border-radius:5px">' : '') + '<span><b>' + esc(c.brand) + ' ' + esc(c.name) + '</b> ' + esc(c.trim || '') + ' · ' + nis(c.p) + '</span></div>'; }).join('') || '<div class="ai muted">אין תוצאות</div>';
+        res.classList.remove('hidden');
+        res.querySelectorAll('.ai[data-i]').forEach(function (el) { el.addEventListener('click', function () { var c = cars[+el.dataset.i]; $('dl_car_make').value = c.brand || ''; $('dl_car_model').value = c.name || ''; $('dl_car_trim').value = c.trim || ''; $('dl_car_price').value = c.p || ''; $('dl_monthly').value = c.m || ''; res.classList.add('hidden'); inp.value = ''; compute(); }); });
+      });
+    });
+    // save
+    $('dlSave').addEventListener('click', function () {
+      var c = compute();
+      var payload = {
+        lead_id: lead.id, form_type: $('dl_form_type').value, status: $('dl_status').value, salesperson: $('dl_salesperson').value,
+        client_name: $('dl_client_name').value, client_phone: $('dl_client_phone').value, client_email: $('dl_client_email').value, client_address: $('dl_client_address').value, client_id: $('dl_client_id').value, invoice_name: $('dl_invoice_name').value,
+        car_make: $('dl_car_make').value, car_model: $('dl_car_model').value, car_year: num('dl_car_year') || null, car_trim: $('dl_car_trim').value, car_engine: $('dl_car_engine').value, car_gearbox: $('dl_car_gearbox').value, car_color: $('dl_car_color').value,
+        car_price: num('dl_car_price'), down_total: num('dl_down_total'), down_initial: num('dl_down_initial'), down_balance: c.downBal, monthly: num('dl_monthly'), delivery_days: num('dl_delivery_days') || null, balance_to_pay: c.balPay,
+        addons: { charging: $('dl_charging').checked, armor: $('dl_armor').checked, accessories: $('dl_accessories').checked, addons_amount: num('dl_addons_amount') },
+        vat_included: $('dl_vat').checked, discount_pct: num('dl_discount_pct') || null, discount_amt: c.disc, total: c.total, paid: num('dl_paid') || null, spec: $('dl_spec').value
+      };
+      var q = deal.id ? db.from('deals').update(payload).eq('id', deal.id) : db.from('deals').insert(payload);
+      q.then(function (r) {
+        if (r.error) return alert('שגיאה: ' + r.error.message);
+        var newStatus = payload.status === 'ordered' ? 'won' : (payload.status === 'cancelled' ? 'lost' : 'quote_sent');
+        logActivity(lead.id, 'quote', (deal.id ? 'עודכנה' : 'נוצרה') + ' עסקה: ' + (payload.car_make + ' ' + payload.car_model) + ' · ' + nis(payload.total));
+        changeStatus(lead.id, newStatus, lead, function () { window.C2B_openLeadCard(lead.id); });
       });
     });
   }
