@@ -65,18 +65,20 @@
   function showLogin() { $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
   function showApp(session) {
     $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('whoami').textContent = session.user.email;
+    window.C2B.userId = session.user.id;
+    window.C2B.userName = session.user.email;
     db.from('profiles').select('role,full_name').eq('user_id', session.user.id).single().then(function (r) {
       window.C2B.role = (r.data && r.data.role) || 'sales';
-      if (r.data && r.data.full_name) $('whoami').textContent = r.data.full_name + ' · ' + roleLabel(window.C2B.role);
+      if (r.data && r.data.full_name) { window.C2B.userName = r.data.full_name; $('whoami').textContent = r.data.full_name + ' · ' + roleLabel(window.C2B.role); }
       applyRole(window.C2B.role); refreshBadges(); go('dashboard');
     });
   }
   var ROLE_LABELS = { admin: 'מנהל מערכת', sales: 'סוכן מכירות', files: 'מנהלת תיקים', accounting: 'מנהלת חשבונות' };
   function roleLabel(r) { return ROLE_LABELS[r] || r; }
   var ROLE_VIEWS = {
-    sales: ['dashboard', 'leads', 'files', 'cars', 'appointments', 'tasks'],
-    files: ['dashboard', 'files', 'leads', 'appointments', 'tasks'],
-    accounting: ['dashboard', 'accounting', 'reports']
+    sales: ['dashboard', 'leads', 'files', 'cars', 'appointments', 'tasks', 'activity'],
+    files: ['dashboard', 'files', 'leads', 'appointments', 'tasks', 'activity'],
+    accounting: ['dashboard', 'accounting', 'reports', 'activity']
   };
   function navAllowed(nav, role) {
     if (role === 'admin' || !role) return true;
@@ -117,6 +119,7 @@
     if (nav === 'leads') return window.C2B_renderLeads && window.C2B_renderLeads(opts.status);
     if (nav === 'files') return window.C2B_renderFiles && window.C2B_renderFiles();
     if (nav === 'accounting') return window.C2B_renderAccounting && window.C2B_renderAccounting();
+    if (nav === 'activity') return window.C2B_renderActivity && window.C2B_renderActivity();
     if (nav === 'cars') return renderCars();
     if (nav === 'appointments') return renderAppointments();
     if (nav === 'tasks') return renderTasks();

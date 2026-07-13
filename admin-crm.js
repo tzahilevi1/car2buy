@@ -49,7 +49,7 @@
   function initials(name) { return String(name || '?').trim().split(/\s+/).map(function (w) { return w.charAt(0); }).slice(0, 2).join('') || '?'; }
   function waIntl(phone) { var p = String(phone || '').replace(/\D/g, ''); if (p.charAt(0) === '0') p = '972' + p.slice(1); return p; }
   function waLink(phone) { var p = waIntl(phone); return p ? 'https://wa.me/' + p : null; }
-  function logActivity(id, type, body, meta) { return db.from('activities').insert({ lead_id: id, type: type, body: body || null, meta: meta || null }); }
+  function logActivity(id, type, body, meta) { return db.from('activities').insert({ lead_id: id, type: type, body: body || null, meta: meta || null, created_by: C.userId || null }); }
 
   // ---- reusable status menu (status changeable from anywhere) ----
   function closeStMenu() { var m = document.getElementById('stmenu'); if (m) m.remove(); }
@@ -65,11 +65,12 @@
     setTimeout(function () { document.addEventListener('click', closeStMenu, { once: true }); }, 0);
   }
   function changeStatus(leadId, to, lead, after) {
+    var from = lead && lead.status;
     var patch = { status: to, status_changed_at: new Date().toISOString() };
     if (to === 'in_progress' && (!lead || !lead.first_response_at)) patch.first_response_at = new Date().toISOString();
     db.from('leads').update(patch).eq('id', leadId).then(function (u) {
       if (u.error) return alert('שגיאה: ' + u.error.message);
-      logActivity(leadId, 'status_change', 'סטטוס שונה ל: ' + stDef(to).label).then(function () { if (after) after(); });
+      logActivity(leadId, 'status_change', from ? ('סטטוס: ' + stDef(from).label + ' → ' + stDef(to).label) : ('סטטוס שונה ל: ' + stDef(to).label)).then(function () { if (after) after(); });
     });
   }
 
@@ -119,7 +120,7 @@
     }).join('') || '<tr><td colspan="8" class="empty">אין לידים</td></tr>';
     C.$('ltbl').querySelectorAll('td[style]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openLeadCard(td.parentNode.dataset.lead); }); });
     C.$('ltbl').querySelectorAll('.tag.click').forEach(function (el) {
-      el.addEventListener('click', function (e) { e.stopPropagation(); openStatusMenu(el, el.dataset.cur, function (to) { changeStatus(el.dataset.stLead, to, null, function () { window.C2B_renderLeads(curFilter); }); }); });
+      el.addEventListener('click', function (e) { e.stopPropagation(); openStatusMenu(el, el.dataset.cur, function (to) { changeStatus(el.dataset.stLead, to, { status: el.dataset.cur }, function () { window.C2B_renderLeads(curFilter); }); }); });
     });
   }
 
@@ -131,10 +132,12 @@
       db.from('activities').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
       db.from('tasks').select('*').eq('lead_id', id).order('due_at', { ascending: true }),
       db.from('lead_documents').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
-      db.from('deals').select('*').eq('lead_id', id).order('created_at', { ascending: false })
+      db.from('deals').select('*').eq('lead_id', id).order('created_at', { ascending: false }),
+      db.from('profiles').select('user_id,full_name')
     ]).then(function (r) {
       if (r[0].error) return errBox(r[0].error.message);
       var lead = r[0].data, acts = r[1].data || [], tasks = r[2].data || [], docs = r[3].data || [], deals = (r[4] && r[4].data) || [];
+      if (r[5] && r[5].data) { profiles = {}; r[5].data.forEach(function (p) { profiles[p.user_id] = p.full_name; }); }
       curDeals = deals;
       var wa = waLink(lead.phone);
       var idx = orderIds.indexOf(id);
@@ -182,7 +185,28 @@
       return '<div class="st" style="background:' + bg + ';color:' + (state === 'gray' ? 'var(--muted)' : '#fff') + '">' + s.icon + '<br>' + esc(s.label) + '</div>';
     }).join('');
   }
-  function timeline(acts) { return acts.length ? acts.map(function (a) { return '<div class="ev"><div class="dot">' + (ACT_ICON[a.type] || '•') + '</div><div style="flex:1"><div class="tm">' + fmt(a.created_at) + '</div>' + (a.body ? '<div>' + esc(a.body) + '</div>' : '') + '</div></div>'; }).join('') : '<p class="empty">אין עדיין פעולות</p>'; }
+  function timeline(acts) { return acts.length ? acts.map(function (a) { var who = profiles[a.created_by]; return '<div class="ev"><div class="dot">' + (ACT_ICON[a.type] || '•') + '</div><div style="flex:1"><div class="tm">' + fmt(a.created_at) + (who ? ' · ' + esc(who) : '') + '</div>' + (a.body ? '<div>' + esc(a.body) + '</div>' : '') + '</div></div>'; }).join('') : '<p class="empty">אין עדיין פעולות</p>'; }
+  // ---------- ACTIVITY (global feed: who did what) ----------
+  window.C2B_renderActivity = function () {
+    loading();
+    Promise.all([
+      db.from('activities').select('*').order('created_at', { ascending: false }).limit(300),
+      db.from('leads').select('id,name'),
+      db.from('profiles').select('user_id,full_name')
+    ]).then(function (res) {
+      if (res[0].error) return errBox(res[0].error.message);
+      var acts = res[0].data || [], lmap = {}, pmap = {};
+      (res[1].data || []).forEach(function (l) { lmap[l.id] = l.name; });
+      (res[2].data || []).forEach(function (p) { pmap[p.user_id] = p.full_name; });
+      var rows = acts.map(function (a) {
+        var who = pmap[a.created_by] || 'מערכת';
+        var leadLink = a.lead_id ? ' · <a href="#" data-lead="' + a.lead_id + '">' + esc(lmap[a.lead_id] || 'ליד') + '</a>' : '';
+        return '<div class="ev"><div class="dot">' + (ACT_ICON[a.type] || '•') + '</div><div style="flex:1"><div class="tm">' + fmt(a.created_at) + ' · <b>' + esc(who) + '</b>' + leadLink + '</div>' + (a.body ? '<div>' + esc(a.body) + '</div>' : '') + '</div></div>';
+      }).join('');
+      view('<div class="card"><h3>מסך פעילות — כל הפעולות במערכת</h3><p class="muted" style="font-size:13px">מי ביצע · מתי · מה השתנה (300 האחרונות)</p><div class="tl">' + (rows || '<p class="empty">אין פעילות עדיין</p>') + '</div></div>');
+      C.$('view').querySelectorAll('a[data-lead]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); window.C2B_openLeadCard(a.dataset.lead); }); });
+    });
+  };
   function taskList(tasks) { return tasks.length ? tasks.map(function (t) { var over = !t.done && t.due_at && new Date(t.due_at) < new Date(); return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0"><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '><span style="flex:1' + (t.done ? ';text-decoration:line-through;color:var(--muted)' : '') + '">' + esc(t.title) + '</span>' + (t.due_at ? '<span style="font-size:12px;color:' + (over ? 'var(--danger)' : 'var(--muted)') + '">' + fmt(t.due_at) + '</span>' : '') + '</div>'; }).join('') : '<p class="muted" style="margin:6px 0">אין משימות</p>'; }
   function docList(docs) { return docs.length ? docs.map(function (d) { return '<div style="padding:4px 0"><a href="#" data-doc="' + esc(d.storage_path) + '">📎 ' + esc(d.name) + '</a></div>'; }).join('') : '<p class="muted" style="margin:6px 0">אין מסמכים</p>'; }
 
