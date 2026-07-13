@@ -23,7 +23,7 @@ begin
   perform net.http_post(
     url := 'https://api.resend.com/emails',
     headers := jsonb_build_object('Authorization', 'Bearer ' || k, 'Content-Type', 'application/json'),
-    body := jsonb_build_object('from', 'Car2Buy <onboarding@resend.dev>', 'to', p_to, 'subject', p_subject, 'html', p_html)
+    body := jsonb_build_object('from', 'Car2Buy <noreply@electric-group.co.il>', 'to', p_to, 'subject', p_subject, 'html', p_html)
   );
 end $$;
 
