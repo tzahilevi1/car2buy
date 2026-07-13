@@ -47,6 +47,12 @@ create table if not exists public.deals (
   spec          text,          -- מפרט רכב (טקסט חופשי)
   notes         text
 );
+-- client-file / financing workflow (added for the file-manager phase)
+alter table public.deals add column if not exists stage text not null default 'initial';   -- initial|screening|submitted|approved|rejected|signed|collection|ordered|delivered|cancelled
+alter table public.deals add column if not exists checklist jsonb;   -- {"התקבל הסכם":true,...}
+alter table public.deals add column if not exists financing jsonb;   -- {amount,num_payments,track,status,approved,...}
+alter table public.deals add column if not exists tradein jsonb;     -- trade-in details
+
 alter table public.deals enable row level security;
 
 drop policy if exists "auth read deals" on public.deals;

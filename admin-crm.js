@@ -22,6 +22,27 @@
   var FLOW = STATUSES.filter(function (s) { return s.flow; });
   function stDef(k) { for (var i = 0; i < STATUSES.length; i++) if (STATUSES[i].k === k) return STATUSES[i]; return STATUSES[0]; }
   var CLOSE_REASONS = ['רכש במקום אחר', 'לא מעוניין', 'מחיר גבוה', 'לא עומד בתנאים', 'טעות בפרטים', 'כפילות ליד', 'סיבה אחרת'];
+  var DEAL_STAGES = [
+    { k: 'initial', label: 'עסקה ראשונית', color: '#3b82f6' },
+    { k: 'screening', label: 'שיחת שיקוף', color: '#6366f1' },
+    { k: 'submitted', label: 'הוגש למימון', color: '#8b5cf6' },
+    { k: 'approved', label: 'אושר מימון', color: '#0ea5e9' },
+    { k: 'signed', label: 'נחתם מימון', color: '#f5691e' },
+    { k: 'collection', label: 'שיחת גבייה', color: '#eab308' },
+    { k: 'ordered', label: 'הזמנת רכב', color: '#14b8a6' },
+    { k: 'delivered', label: 'רכב נמסר', color: '#16a34a' }
+  ];
+  function stageDef(k) { for (var i = 0; i < DEAL_STAGES.length; i++) if (DEAL_STAGES[i].k === k) return DEAL_STAGES[i]; return DEAL_STAGES[0]; }
+  var CHECKLIST_ITEMS = ['התקבל הסכם', 'התקבלה ת"ז', 'התקבל רישיון נהיגה', 'התקבלו תלושי שכר', 'התקבלו דפי בנק', 'נבדקו מסמכים', 'נשלח למימון', 'התקבל אישור מימון', 'נשלחה פוליסה', 'הוזמן רכב', 'תואמה מסירה'];
+  function stageBar(cur) {
+    var idx = DEAL_STAGES.map(function (s) { return s.k; }).indexOf(cur);
+    return DEAL_STAGES.map(function (s, i) {
+      var state = i < idx ? 'green' : i === idx ? 'cur' : 'gray';
+      var bg = { gray: 'var(--surface-2)', cur: s.color, green: '#16a34a' }[state];
+      return '<div class="st" data-stage="' + s.k + '" style="cursor:pointer;background:' + bg + ';color:' + (state === 'gray' ? 'var(--muted)' : '#fff') + '">' + esc(s.label) + '</div>';
+    }).join('');
+  }
+  function stageBadge(k) { var s = stageDef(k); return '<span class="tag" style="border-color:' + s.color + ';color:' + s.color + ';background:' + s.color + '18">' + esc(s.label) + '</span>'; }
   var ACT_ICON = { note: '🗒️', call: '📞', whatsapp: '💬', email: '📧', sms: '✉️', status_change: '🔄', task: '✔️', meeting: '📅', document: '📎', quote: '📄', contract: '✍️', car: '🚗', system: '⚙️' };
 
   function badge(k, clickable, leadId) { var s = stDef(k); return '<span class="tag' + (clickable ? ' click" data-st-lead="' + leadId + '" data-cur="' + k : '') + '" style="border-color:' + s.color + ';color:' + s.color + ';background:' + s.color + '18">' + s.icon + ' ' + esc(s.label) + (clickable ? ' ▾' : '') + '</span>'; }
@@ -255,12 +276,15 @@
   }
   function dealForm(lead, deal) {
     deal = deal || {}; var ad = deal.addons || {};
+    var curStage = deal.stage || 'initial';
+    var checklist = {}; CHECKLIST_ITEMS.forEach(function (it) { checklist[it] = !!(deal.checklist || {})[it]; });
     var G = function (label, name, val, type) { return '<div class="field" style="margin:0"><label>' + label + '</label><input class="inp" id="dl_' + name + '" type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '" style="width:100%"></div>'; };
     var grid = function (inner) { return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' + inner + '</div>'; };
     var statusSel = '<div class="field" style="margin:0"><label>סטטוס הזמנה</label><select class="inp" id="dl_status" style="width:100%">' + [['quote', 'הצעת מחיר'], ['ordered', 'הזמנה'], ['cancelled', 'בוטל']].map(function (s) { return '<option value="' + s[0] + '"' + ((deal.status || 'quote') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></div>';
     view(
       '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">→ לכרטיס</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
-        '<div><button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
+        '<div><button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
+      '<div class="card" style="padding:12px"><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' +
       '<div class="grid2">' +
         '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', deal.form_type || 'חוזה קאר פלוס') + statusSel + G('מנהל מכירות', 'salesperson', deal.salesperson || '')) + '</div>' +
         '<div class="card"><h3>פרטי לקוח</h3>' + grid(G('שם לקוח', 'client_name', deal.client_name || lead.name) + G('טלפון נייד', 'client_phone', deal.client_phone || lead.phone) + G('דוא"ל', 'client_email', deal.client_email || lead.email) + G('כתובת', 'client_address', deal.client_address || lead.city) + G('ת.ז / ח.פ', 'client_id', deal.client_id) + G('שם לחשבונית', 'invoice_name', deal.invoice_name || lead.name)) + '</div>' +
@@ -276,6 +300,10 @@
           '<div class="field" style="margin-top:6px"><label>סכום תוספות ₪</label><input class="inp" id="dl_addons_amount" type="number" value="' + esc(ad.addons_amount == null ? '' : ad.addons_amount) + '" style="width:100%"></div></div>' +
       '</div>' +
       '<div class="grid2">' +
+        '<div class="card"><h3>צ\'קליסט תיק</h3><div id="dlChecklist">' + CHECKLIST_ITEMS.map(function (it) { return '<label style="display:flex;gap:8px;align-items:center;padding:4px 0"><input type="checkbox" data-chk="' + esc(it) + '"' + (checklist[it] ? ' checked' : '') + '> ' + esc(it) + '</label>'; }).join('') + '</div></div>' +
+        '<div class="card"><h3>מקטע מימון</h3>' + grid(G('גובה מימון מבוקש ₪', 'fin_amount', (deal.financing || {}).amount, 'number') + G('מספר תשלומים', 'fin_payments', (deal.financing || {}).payments, 'number') + G('מסלול מימון', 'fin_track', (deal.financing || {}).track) + G('סטטוס מימון', 'fin_status', (deal.financing || {}).status)) + '</div>' +
+      '</div>' +
+      '<div class="grid2">' +
         '<div class="card"><h3>סיכום הזמנה</h3>' + grid(G('הנחה (%)', 'discount_pct', deal.discount_pct, 'number') + G('הנחה (סכום) ₪', 'discount_amt', deal.discount_amt, 'number') + G('שולם ₪', 'paid', deal.paid, 'number')) +
           '<label style="display:flex;gap:8px;align-items:center;padding:8px 0"><input type="checkbox" id="dl_vat"' + (deal.vat_included !== false ? ' checked' : '') + '> כולל מע"מ</label>' +
           '<div id="dlSummary" style="margin-top:8px"></div></div>' +
@@ -284,6 +312,23 @@
     );
     var $ = C.$;
     $('dlBack').addEventListener('click', function () { window.C2B_openLeadCard(lead.id); });
+    // stage bar
+    $('dlStageBar').addEventListener('click', function (e) { var st = e.target.closest('[data-stage]'); if (!st) return; curStage = st.dataset.stage; $('dlStageBar').innerHTML = stageBar(curStage); if (deal.id) { db.from('deals').update({ stage: curStage }).eq('id', deal.id); logActivity(lead.id, 'system', 'שלב עסקה: ' + stageDef(curStage).label); } });
+    // checklist
+    $('dlChecklist').addEventListener('change', function (e) { var cb = e.target.closest('input[data-chk]'); if (!cb) return; checklist[cb.dataset.chk] = cb.checked; if (deal.id) db.from('deals').update({ checklist: checklist }).eq('id', deal.id); });
+    // submit to financing (validation)
+    $('dlSubmitFin').addEventListener('click', function () {
+      var miss = [];
+      if (!$('dl_client_id').value.trim()) miss.push('ת.ז לקוח');
+      if (!$('dl_car_make').value.trim()) miss.push('רכב');
+      if (!num('dl_car_price')) miss.push('מחיר רכב');
+      if (!checklist['התקבל הסכם']) miss.push('הסכם חתום');
+      if (!checklist['התקבלה ת"ז']) miss.push('צילום ת"ז');
+      if (miss.length) { alert('לא ניתן להגיש למימון — חסר:\n• ' + miss.join('\n• ')); return; }
+      curStage = 'submitted'; $('dlStageBar').innerHTML = stageBar(curStage);
+      logActivity(lead.id, 'system', 'התיק הוגש למימון');
+      $('dlSave').click();
+    });
     function num(id) { var v = parseFloat(($(id) && $(id).value) || ''); return isNaN(v) ? 0 : v; }
     function compute() {
       var price = num('dl_car_price'), addons = num('dl_addons_amount');
@@ -319,7 +364,8 @@
         car_make: $('dl_car_make').value, car_model: $('dl_car_model').value, car_year: num('dl_car_year') || null, car_trim: $('dl_car_trim').value, car_engine: $('dl_car_engine').value, car_gearbox: $('dl_car_gearbox').value, car_color: $('dl_car_color').value,
         car_price: num('dl_car_price'), down_total: num('dl_down_total'), down_initial: num('dl_down_initial'), down_balance: c.downBal, monthly: num('dl_monthly'), delivery_days: num('dl_delivery_days') || null, balance_to_pay: c.balPay,
         addons: { charging: $('dl_charging').checked, armor: $('dl_armor').checked, accessories: $('dl_accessories').checked, addons_amount: num('dl_addons_amount') },
-        vat_included: $('dl_vat').checked, discount_pct: num('dl_discount_pct') || null, discount_amt: c.disc, total: c.total, paid: num('dl_paid') || null, spec: $('dl_spec').value
+        vat_included: $('dl_vat').checked, discount_pct: num('dl_discount_pct') || null, discount_amt: c.disc, total: c.total, paid: num('dl_paid') || null, spec: $('dl_spec').value,
+        stage: curStage, checklist: checklist, financing: { amount: num('dl_fin_amount') || null, payments: num('dl_fin_payments') || null, track: $('dl_fin_track').value, status: $('dl_fin_status').value }
       };
       var q = deal.id ? db.from('deals').update(payload).eq('id', deal.id) : db.from('deals').insert(payload);
       q.then(function (r) {
@@ -330,6 +376,28 @@
       });
     });
   }
+
+  // ---------- FILES (client file manager) ----------
+  window.C2B_renderFiles = function (stageFilter) {
+    loading();
+    db.from('deals').select('*').order('created_at', { ascending: false }).then(function (r) {
+      if (r.error) return errBox(r.error.message);
+      var deals = r.data || [];
+      var counts = { all: deals.length }; DEAL_STAGES.forEach(function (s) { counts[s.k] = 0; });
+      deals.forEach(function (d) { var st = d.stage || 'initial'; counts[st] = (counts[st] || 0) + 1; });
+      var f = stageFilter || 'all';
+      var lst = f === 'all' ? deals : deals.filter(function (d) { return (d.stage || 'initial') === f; });
+      function tab(k, label, n) { return '<button data-fstage="' + k + '"' + (f === k ? ' class="active"' : '') + '>' + label + ' (' + n + ')</button>'; }
+      var rows = lst.map(function (d) {
+        var chk = d.checklist || {}, done = CHECKLIST_ITEMS.filter(function (k) { return chk[k]; }).length, tot = CHECKLIST_ITEMS.length;
+        return '<tr' + (d.lead_id ? ' data-lead="' + d.lead_id + '" style="cursor:pointer"' : '') + '><td><b>#' + esc(d.order_no) + '</b></td><td>' + esc(d.client_name) + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(d.total) + '</td><td>' + stageBadge(d.stage || 'initial') + '</td><td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td></tr>';
+      }).join('');
+      view('<div class="card"><h3>תיקי לקוחות</h3><nav class="tabs" id="fTabs" style="margin-bottom:12px;flex-wrap:wrap">' + tab('all', 'הכל', counts.all) + DEAL_STAGES.map(function (s) { return tab(s.k, s.label, counts[s.k] || 0); }).join('') + '</nav>' +
+        '<div class="table-scroll"><table><thead><tr><th>#</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>שלב</th><th>צ\'קליסט</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6" class="empty">אין תיקים</td></tr>') + '</tbody></table></div></div>');
+      C.$('fTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-fstage]'); if (b) window.C2B_renderFiles(b.dataset.fstage === 'all' ? null : b.dataset.fstage); });
+      C.$('view').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openLeadCard(tr.dataset.lead); }); });
+    });
+  };
 
   // ---------- DASHBOARD ----------
   window.C2B_renderDashboard = function () {
