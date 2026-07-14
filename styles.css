@@ -4,6 +4,9 @@
    ============================================================ */
 
 :root {
+  /* fixed two-tier header height (nav-top 72px + nav-bar 50px). Content offset = --nav-off */
+  --nav-h:   122px;
+  --nav-off: 132px;
   /* light surfaces (brand base: white / very light gray) */
   --bg:        #FFFFFF;
   --bg-1:      #F7F7F7;
@@ -221,7 +224,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; l
 .burger span { width: 24px; height: 2px; background: currentColor; transition: 0.3s; }
 
 /* ---------- hero ---------- */
-.hero { position: relative; min-height: 100vh; display: flex; align-items: center; padding-top: 80px; overflow: hidden; }
+.hero { position: relative; min-height: 100vh; display: flex; align-items: center; padding-top: var(--nav-off); overflow: hidden; }
 .hero-bg {
   position: absolute; inset: 0; z-index: 0;
   background:
@@ -756,6 +759,8 @@ image-slot { display: block; }
   radial-gradient(120% 80% at 18% 60%, rgba(var(--gold-rgb)/0.10), transparent 55%),
   linear-gradient(0deg, var(--bg) 4%, transparent 52%); }
 .mh-content { max-width: 600px; padding-block: clamp(40px, 8vh, 90px); }
+/* keep the home hero content (eyebrow/title) clear of the two-tier fixed header */
+.media-hero.home .mh-content { padding-top: max(var(--nav-off), clamp(40px, 8vh, 90px)); }
 .media-hero.home .mh-content.hero-cols { max-width: 1140px; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
 .media-hero.home .hero-search-wrap { margin-top: 0; max-width: none; }
 @media (max-width: 900px) {
@@ -1490,6 +1495,8 @@ td.cmp-best { background: color-mix(in oklab, var(--gold) 9%, transparent); colo
   .filter-toggle { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px; background: var(--bg-2); border: 1px solid var(--line); color: var(--ink); padding: 11px 22px; border-radius: var(--btn-radius); font-weight: 600; font-family: var(--body); font-size: 14.5px; cursor: pointer; }
 }
 @media (max-width: 1040px) {
+  /* header collapses to a single 66px tier here — shrink the content offset to match */
+  :root { --nav-h: 66px; --nav-off: 82px; }
   .nav-search { display: none; }
   .nav-bar { border-top: 0; background: transparent; }
   .nav-bar-inner { height: 0; }
