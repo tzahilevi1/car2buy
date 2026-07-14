@@ -353,6 +353,7 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius
 .plate-input:focus { outline: none; }
 
 .wiz-loading { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 26px; color: var(--ink-soft); font-size: 15px; }
+.wiz-loading[hidden], .wiz-details[hidden] { display: none; }
 .wiz-spin { width: 22px; height: 22px; border: 2px solid var(--line); border-top-color: var(--gold); border-radius: 50%; animation: wizSpin 0.8s linear infinite; }
 @keyframes wizSpin { to { transform: rotate(360deg); } }
 
