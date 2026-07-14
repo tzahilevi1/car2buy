@@ -955,6 +955,9 @@
   if (wizard && window.Car2Buy) {
     const { MODELS, IMG } = window.Car2Buy;
     const $ = (id) => document.getElementById(id);
+    // toggle visibility via inline style so it can't be overridden by a cached CSS `display` rule
+    const setVis = (id, on, disp) => { const e = $(id); if (!e) return; e.hidden = !on; e.style.display = on ? (disp || 'block') : 'none'; };
+    setVis('wizLoading', false); setVis('wizDetails', false);   // hidden until the user submits
     const COLORS = ['שחור מטאלי', 'לבן פנינה', 'אפור גרפיט', 'כסף מטאלי', 'כחול כהה', 'אדום יין'];
     const TRIMS = ['Executive', 'Luxury', 'Sport', 'Premium', 'Dynamic', 'GT-Line'];
 
@@ -1022,10 +1025,10 @@
       if (digits.length < 6) { $('wizPlate').style.borderColor = '#e25555'; return; }
       $('wizPlate').style.borderColor = '';
       $('wizFetch').hidden = true;
-      $('wizLoading').hidden = false;
-      $('wizDetails').hidden = true;
+      setVis('wizLoading', true, 'flex');
+      setVis('wizDetails', false);
       realLookup(plate, (v) => {
-        $('wizLoading').hidden = true;
+        setVis('wizLoading', false);
         if (!v) {
           $('wizFetch').hidden = false;
           $('wizPlate').style.borderColor = '#e25555';
@@ -1046,12 +1049,12 @@
         const metaEl = document.createElement('span'); metaEl.textContent = meta;
         info.append(nameEl, metaEl);
         $('wizCar').replaceChildren(img, info);
-        $('wizDetails').hidden = false;
+        setVis('wizDetails', true);
       });
     });
 
     $('wizReset').addEventListener('click', () => {
-      $('wizDetails').hidden = true;
+      setVis('wizDetails', false);
       $('wizFetch').hidden = false;
       $('wizPlate').value = '';
       $('wizPlate').focus();
