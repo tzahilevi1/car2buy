@@ -761,15 +761,19 @@
       if ($('dlDocUp')) $('dlDocUp').addEventListener('change', function () {
         var files = Array.prototype.slice.call(this.files); if (!files.length) return;
         $('dlDocs').innerHTML = '<p class="muted">מעלה ' + files.length + ' קבצים…</p>';
-        var done = 0;
+        var done = 0, ok = 0, errs = [];
+        function finish() { if (++done === files.length) { if (ok) logActivity(lead.id, 'document', 'הועלו ' + ok + ' מסמכים'); if (errs.length) alert('חלק מהקבצים נכשלו:\n• ' + errs.join('\n• ')); loadDocs(); } }
         files.forEach(function (file) {
           var path = safeStoragePath(lead.id, file.name);
-          db.storage.from('lead-docs').upload(path, file).then(function (u) {
-            if (!u.error) db.from('lead_documents').insert({ lead_id: lead.id, name: file.name, storage_path: path });
-            if (u.error) alert('העלאה נכשלה (' + file.name + '): ' + u.error.message);
-            if (++done === files.length) { logActivity(lead.id, 'document', 'הועלו ' + files.length + ' מסמכים'); setTimeout(loadDocs, 400); }
-          });
+          db.storage.from('lead-docs').upload(path, file, { contentType: file.type || undefined, upsert: false }).then(function (u) {
+            if (u.error) { errs.push(file.name + ': ' + u.error.message); finish(); return; }
+            db.from('lead_documents').insert({ lead_id: lead.id, name: file.name, storage_path: path }).then(function (ir) {
+              if (ir.error) errs.push(file.name + ' (רשומה): ' + ir.error.message); else ok++;
+              finish();
+            });
+          }).catch(function (e) { errs.push(file.name + ': ' + (e.message || e)); finish(); });
         });
+        this.value = '';
       });
     }
     // checklist
