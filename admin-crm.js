@@ -942,7 +942,7 @@
 
     function bindPanel() {
       var P = C.$('acctPanel');
-      P.querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function (e) { if (e.target.closest('select,button,a,input')) return; if (tr.dataset.lead) window.C2B_openLeadCard(tr.dataset.lead); }); });
+      P.querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function (e) { if (e.target.closest('select,button,a,input')) return; if (tr.dataset.lead) openAcctLeadView(tr.dataset.lead); }); });
       P.querySelectorAll('.acct-st').forEach(function (s) { s.addEventListener('change', function () { db.from('deals').update({ acct_status: s.value }).eq('id', s.dataset.acct); }); });
       // bulk selection + status change
       function ids() { return Object.keys(selectedAcct).filter(function (k) { return selectedAcct[k]; }); }
@@ -958,7 +958,21 @@
   }
 
   // accounting manager's dedicated per-lead view (only what's critical for her)
-  function acctPayList(ps) { var KIND = { payment: 'תשלום', receipt: 'קבלה', invoice: 'חשבונית' }; return ps.length ? ps.map(function (p) { return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>' + (KIND[p.kind] || p.kind) + (p.method ? ' · ' + esc(p.method) : '') + (p.ref_no ? ' · ' + esc(p.ref_no) : '') + ' <span class="muted" style="font-size:11px">' + fmt(p.created_at) + '</span></span><b>' + nis(p.amount) + '</b></div>'; }).join('') : '<p class="muted" style="margin:4px 0">אין תשלומים</p>'; }
+  var PAY_PURPOSES = [
+    { k: 'deposit1', label: 'מקדמה ראשונית' },
+    { k: 'deposit2', label: 'השלמת מקדמה' },
+    { k: 'purchase', label: 'תשלום רכישת הרכב' },
+    { k: 'other', label: 'אחר / התאמה' }
+  ];
+  function purposeLabel(k) { for (var i = 0; i < PAY_PURPOSES.length; i++) if (PAY_PURPOSES[i].k === k) return PAY_PURPOSES[i].label; return 'תשלום'; }
+  var PKIND = { payment: 'תשלום', receipt: 'קבלה', invoice: 'חשבונית' };
+  function acctPayList(ps) {
+    return ps.length ? ps.map(function (p) {
+      var head = p.purpose ? esc(purposeLabel(p.purpose)) : (PKIND[p.kind] || p.kind);
+      var doc = (p.kind && p.kind !== 'payment') ? ' <span class="tag" style="font-size:10px">' + esc(PKIND[p.kind] || p.kind) + '</span>' : '';
+      return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line)"><span>' + head + doc + (p.method ? ' · ' + esc(p.method) : '') + (p.ref_no ? ' · ' + esc(p.ref_no) : '') + ' <span class="muted" style="font-size:11px">' + fmt(p.created_at) + '</span></span><b>' + nis(p.amount) + '</b></div>';
+    }).join('') : '<p class="muted" style="margin:4px 0">אין תשלומים</p>';
+  }
   function openAcctLeadView(id) {
     loading();
     Promise.all([
@@ -974,17 +988,46 @@
         var urls = {}; ((sr && sr.data) || []).forEach(function (s) { if (s && s.signedUrl) urls[s.path] = s.signedUrl; });
         var paidByDeal = {}; pays.forEach(function (p) { if (p.kind !== 'invoice') paidByDeal[p.deal_id] = (paidByDeal[p.deal_id] || 0) + (+p.amount || 0); });
         function lf2(k, v) { return '<div class="lf"><span class="k">' + k + '</span><span class="v">' + (v == null || v === '' ? '—' : v) + '</span></div>'; }
+        function fld(lbl, name, val, ph) { return '<label class="lf" style="align-items:center"><span class="k">' + lbl + '</span><input class="inp" name="' + name + '" value="' + esc(val || '') + '" placeholder="' + (ph || '') + '" style="max-width:190px"></label>'; }
+
         var dealCards = deals.length ? deals.map(function (d) {
+          var dp = pays.filter(function (p) { return p.deal_id === d.id; });
           var tot = +d.total || 0, paid = paidByDeal[d.id] || 0, bal = tot - paid;
+          var charge = (d.charge_amount != null && d.charge_amount !== '') ? +d.charge_amount : bal;
+          // הפרדת תשלומים לפי שלב (ללא חשבוניות)
+          var byPurpose = {}; dp.forEach(function (p) { if (p.kind === 'invoice') return; var k = p.purpose || 'other'; byPurpose[k] = (byPurpose[k] || 0) + (+p.amount || 0); });
+          var breakdown = PAY_PURPOSES.map(function (pp) { var v = byPurpose[pp.k] || 0; return '<div class="lf"><span class="k">' + pp.label + '</span><span class="v"><b style="color:' + (v > 0 ? 'var(--ok)' : 'var(--muted)') + '">' + nis(v) + '</b></span></div>'; }).join('');
+
           return '<div class="card"><div class="row-between"><h3 style="margin:0">עסקה #' + esc(d.order_no) + (d.signature ? ' <span class="tag" style="border-color:var(--ok);color:var(--ok)">✅ נחתם</span>' : '') + '</h3>' + acctStatusSel(d.id, d.acct_status) + '</div>' +
-            '<div class="grid2"><div class="lead-fields">' +
-              lf2('קבלה על שם', esc(d.invoice_name || d.client_name)) + lf2('ת.ז / ח.פ', esc(d.client_id)) + lf2('טלפון', esc(d.client_phone)) + lf2('דוא"ל', esc(d.client_email)) + lf2('מה נקנה', esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim())) +
-            '</div><div class="lead-fields">' +
-              lf2('סכום כולל', '<b>' + nis(tot) + '</b>') + lf2('שולם', nis(paid)) + lf2('יתרה לתשלום', '<b style="color:' + (bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(bal) + '</b>') + lf2('עמלת סוכן (מוקפאת)', '<b style="color:var(--ok)">' + nis(d.commission) + '</b>') + lf2('סוכן', esc(d.salesperson)) +
-            '</div></div>' +
+            '<div class="grid2">' +
+              // פרטי חשבונית מרוכזים — ניתנים לעריכה ע"י הנה"ח
+              '<form class="aef lead-fields" data-deal="' + d.id + '"><div class="muted" style="font-size:12px;font-weight:700;margin-bottom:4px">🧾 פרטים לחשבונית / קבלה</div>' +
+                fld('שם על החשבונית', 'invoice_name', d.invoice_name || d.client_name, 'שם מלא / חברה') +
+                fld('ת.ז / ח.פ', 'client_id', d.client_id, 'מספר מזהה') +
+                fld('טלפון', 'client_phone', d.client_phone || lead.phone) +
+                fld('דוא"ל', 'client_email', d.client_email || lead.email) +
+                fld('כתובת לחיוב', 'client_address', d.client_address, 'רחוב, עיר') +
+                fld('סכום לחיוב ₪', 'charge_amount', (d.charge_amount != null ? d.charge_amount : ''), 'ברירת מחדל: היתרה') +
+                '<button class="btn btn-sm" style="margin-top:6px">💾 שמור פרטי חשבונית</button></form>' +
+              // סיכום כספי
+              '<div class="lead-fields"><div class="muted" style="font-size:12px;font-weight:700;margin-bottom:4px">💰 סיכום כספי</div>' +
+                lf2('מה נקנה', esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim())) +
+                lf2('מחיר הרכב', nis(d.car_price)) +
+                lf2('מקדמה נדרשת', nis(d.down_total)) +
+                lf2('סכום העסקה', '<b>' + nis(tot) + '</b>') +
+                lf2('סכום לחיוב', '<b style="color:var(--brand)">' + nis(charge) + '</b>') +
+                lf2('שולם עד כה', '<b style="color:var(--ok)">' + nis(paid) + '</b>') +
+                lf2('יתרה לתשלום', '<b style="color:' + (bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(bal) + '</b>') +
+                lf2('עמלת סוכן (מוקפאת)', '<b style="color:var(--ok)">' + nis(d.commission) + '</b>') +
+                lf2('סוכן מכירות', esc(d.salesperson)) +
+              '</div></div>' +
             '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-receipt="' + d.id + '">📄 הפק קבלה</button><button class="btn btn-ghost" data-invoice="' + d.id + '">🧾 הפק חשבונית</button></div>' +
-            '<h3 style="margin:18px 0 8px">תשלומים / קבלות / חשבוניות</h3><div>' + acctPayList(pays.filter(function (p) { return p.deal_id === d.id; })) + '</div>' +
-            '<form class="apf" data-deal="' + d.id + '" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><select class="inp" name="kind"><option value="payment">תשלום</option><option value="receipt">קבלה</option><option value="invoice">חשבונית</option></select><input class="inp" name="amount" type="number" placeholder="סכום ₪" style="width:120px"><input class="inp" name="method" placeholder="אמצעי (מזומן/אשראי)" style="width:150px"><input class="inp" name="ref" placeholder="אסמכתא" style="width:120px"><button class="btn btn-sm">+ רשום תשלום</button></form>' +
+            '<h3 style="margin:18px 0 8px">📊 פירוט תשלומים לפי שלב</h3><div class="lead-fields">' + breakdown + '</div>' +
+            '<h3 style="margin:18px 0 8px">רישום תשלומים / קבלות</h3><div>' + acctPayList(dp) + '</div>' +
+            '<form class="apf" data-deal="' + d.id + '" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">' +
+              '<select class="inp" name="purpose" style="min-width:150px">' + PAY_PURPOSES.map(function (pp) { return '<option value="' + pp.k + '">' + esc(pp.label) + '</option>'; }).join('') + '</select>' +
+              '<select class="inp" name="kind"><option value="payment">תשלום</option><option value="receipt">קבלה</option><option value="invoice">חשבונית</option></select>' +
+              '<input class="inp" name="amount" type="number" placeholder="סכום ₪" style="width:120px"><input class="inp" name="method" placeholder="אמצעי (מזומן/אשראי)" style="width:150px"><input class="inp" name="ref" placeholder="אסמכתא" style="width:120px"><button class="btn btn-sm">+ רשום</button></form>' +
           '</div>';
         }).join('') : '<div class="card"><p class="muted">אין עסקה/הצעה לליד זה עדיין.</p></div>';
         var docRows = docs.map(function (x) { var u = urls[x.storage_path], ic = /\.pdf$/i.test(x.name || '') ? '📄' : (/\.(png|jpe?g|gif|webp)$/i.test(x.name || '') ? '🖼️' : '📎'); return '<div style="padding:7px 0;border-bottom:1px solid var(--line)">' + (u ? '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + ic + ' ' + esc(x.name) + '</a>' : ic + ' ' + esc(x.name)) + ' <span class="muted" style="font-size:11px">· ' + fmt(x.created_at) + '</span></div>'; }).join('') || '<p class="muted">אין מסמכים</p>';
@@ -992,9 +1035,10 @@
         var $ = C.$;
         $('alBack').addEventListener('click', function () { window.C2B_renderAccounting(); });
         $('view').querySelectorAll('.acct-st').forEach(function (s) { s.addEventListener('change', function () { db.from('deals').update({ acct_status: s.value }).eq('id', s.dataset.acct); }); });
+        $('view').querySelectorAll('.aef').forEach(function (f) { f.addEventListener('submit', function (e) { e.preventDefault(); var upd = { invoice_name: this.invoice_name.value.trim() || null, client_id: this.client_id.value.trim() || null, client_phone: this.client_phone.value.trim() || null, client_email: this.client_email.value.trim() || null, client_address: this.client_address.value.trim() || null, charge_amount: this.charge_amount.value === '' ? null : (parseFloat(this.charge_amount.value) || 0) }; var btn = this.querySelector('button'); btn.textContent = 'שומר…'; db.from('deals').update(upd).eq('id', this.dataset.deal).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); btn.textContent = '💾 שמור פרטי חשבונית'; return; } btn.textContent = '✅ נשמר'; setTimeout(function () { btn.textContent = '💾 שמור פרטי חשבונית'; }, 1500); }); }); });
         $('view').querySelectorAll('[data-receipt]').forEach(function (b) { b.addEventListener('click', function () { db.from('deals').update({ acct_status: 'receipt' }).eq('id', b.dataset.receipt).then(function () { alert('סומן "הופקה קבלה". חיבור לחשבונית ירוקה יאפשר הפקה אוטומטית. 🧾'); openAcctLeadView(lead.id); }); }); });
         $('view').querySelectorAll('[data-invoice]').forEach(function (b) { b.addEventListener('click', function () { db.from('deals').update({ acct_status: 'invoice' }).eq('id', b.dataset.invoice).then(function () { alert('סומן "הופקה חשבונית". חיבור לחשבונית ירוקה יאפשר הפקה אוטומטית. 🧾'); openAcctLeadView(lead.id); }); }); });
-        $('view').querySelectorAll('.apf').forEach(function (f) { f.addEventListener('submit', function (e) { e.preventDefault(); var amt = parseFloat(this.amount.value) || 0; if (!amt) return; db.from('payments').insert({ deal_id: this.dataset.deal, lead_id: lead.id, kind: this.kind.value, amount: amt, method: this.method.value, ref_no: this.ref.value, paid_at: new Date().toISOString().slice(0, 10) }).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } openAcctLeadView(lead.id); }); }); });
+        $('view').querySelectorAll('.apf').forEach(function (f) { f.addEventListener('submit', function (e) { e.preventDefault(); var amt = parseFloat(this.amount.value) || 0; if (!amt) return; db.from('payments').insert({ deal_id: this.dataset.deal, lead_id: lead.id, kind: this.kind.value, purpose: this.purpose.value, amount: amt, method: this.method.value, ref_no: this.ref.value, paid_at: new Date().toISOString().slice(0, 10) }).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } logActivity(lead.id, 'system', 'נרשם ' + purposeLabel(f.purpose.value) + ': ' + nis(amt)); openAcctLeadView(lead.id); }); }); });
       });
     });
   }
