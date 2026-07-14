@@ -138,8 +138,8 @@
       { k: 'רמת גימור', t: function (s) { return s.trim; } },
       { k: 'קטגוריה', t: function (s) { return s.category; } },
       { k: 'מרכב', t: function (s) { return s.body; } },
-      { k: 'מספר דלתות', t: function (s) { return s.doors; } },
-      { k: 'מספר מושבים', t: function (s) { return s.seats; } },
+      { k: 'מספר דלתות', vkey: 'doors', t: function (s) { return s.doors; } },
+      { k: 'מספר מושבים', vkey: 'seats', t: function (s) { return s.seats; } },
       { k: 'קבוצת אגרת רישוי', t: function (s) { return s.licenseGroup; } },
       { k: 'מחיר אגרת רישוי', t: function (s) { return s.licenseFee; } }
     ] },
@@ -149,14 +149,14 @@
     ] },
     { title: 'מנוע וביצועים', rows: [
       { k: 'סוג מנוע', vkey: 'engineType', t: function (s) { return s.engineType; } },
-      { k: 'תאוצה 0-100', n: N(function (m) { return richSpecs(m).accel; }, 'שנ׳', 'min') },
-      { k: 'הספק מנוע', n: N(function (m) { return richSpecs(m).power; }, 'כ״ס', 'max') },
-      { k: 'קיבולת סוללה (kWh)', n: N(function (m) { return richSpecs(m).battery; }, 'קוט״ש', 'max') },
-      { k: 'טווח נסיעה', n: N(function (m) { return richSpecs(m).range; }, 'ק״מ', 'max') },
+      { k: 'תאוצה 0-100', vkey: 'accel', n: N(function (m) { return richSpecs(m).accel; }, 'שנ׳', 'min') },
+      { k: 'הספק מנוע', vkey: 'power', n: N(function (m) { return richSpecs(m).power; }, 'כ״ס', 'max') },
+      { k: 'קיבולת סוללה (kWh)', vkey: 'battery', n: N(function (m) { return richSpecs(m).battery; }, 'קוט״ש', 'max') },
+      { k: 'טווח נסיעה', vkey: 'range', n: N(function (m) { return richSpecs(m).range; }, 'ק״מ', 'max') },
       { k: 'נפח מנוע', n: N(function (m) { return richSpecs(m).engineCC; }, 'סמ״ק', null) },
-      { k: 'מהירות מרבית', n: N(function (m) { return richSpecs(m).topSpeed; }, 'קמ״ש', 'max') },
+      { k: 'מהירות מרבית', vkey: 'topSpeed', n: N(function (m) { return richSpecs(m).topSpeed; }, 'קמ״ש', 'max') },
       { k: 'סוג תיבת הילוכים', t: function (s) { return s.gearbox; } },
-      { k: 'הנעה', t: function (s) { return s.drive; } },
+      { k: 'הנעה', vkey: 'drive', t: function (s) { return s.drive; } },
       { k: 'סוג בלם יד', t: function (s) { return s.handbrake; } }
     ] },
     { title: 'מערכות בטיחות', rows: [
@@ -237,10 +237,13 @@
       return;
     }
     var cars = ids.map(byId).filter(Boolean);
-    // kick off live enrichment from the MoT registry (once per car)
+    // apply manually-verified specs (accurate manufacturer figures) — take precedence
+    var SPECS = window.C2B_SPECS || {};
+    cars.forEach(function (m) { if (SPECS[m.id] && !m._gov) { m._gov = SPECS[m.id]; m._govDirty = true; } });
+    // for models WITHOUT verified specs, fall back to live enrichment from the MoT registry
     if (window.Car2Buy.govLookup) {
       cars.forEach(function (m) {
-        if (m._govFetched) return;
+        if (m._govFetched || SPECS[m.id]) return;
         m._govFetched = true;
         window.Car2Buy.govLookup(m.brand, m.name, enModel(m.name)).then(function (ov) {
           if (ov && ov._verified && ov._verified.length) { m._gov = ov; m._govDirty = true; render(); }
@@ -295,8 +298,8 @@
     }).join('');
 
     var note = anyVerified
-      ? '<p class="cmp-src">✓ שדות מסומנים מאומתים ממאגר משרד התחבורה (data.gov.il). שאר הנתונים המורחבים מוערכים לפי קטגוריה ומחיר.</p>'
-      : '<p class="cmp-src">הנתונים המורחבים מוערכים לפי קטגוריה ומחיר ומיועדים להמחשה. מתבצע ניסיון למשוך נתונים מאומתים ממאגר משרד התחבורה.</p>';
+      ? '<p class="cmp-src">✓ שדות מסומנים הם מפרט מאומת של היצרן (כוח, תאוצה, מהירות מרבית, סוללה/טווח, מושבים). שאר הנתונים המורחבים מוערכים לפי קטגוריה ומחיר.</p>'
+      : '<p class="cmp-src">הנתונים המורחבים מוערכים לפי קטגוריה ומחיר ומיועדים להמחשה.</p>';
     wrap.innerHTML =
       '<div class="cmp-toolbar"><label class="cmp-diff"><input type="checkbox" id="cmpDiff"' + (diffOnly ? ' checked' : '') + '> הצג רק הבדלים</label>' +
       '<button class="cmp-clear" id="cmpClearAll">נקה הכל</button></div>' +
