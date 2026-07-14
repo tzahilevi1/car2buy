@@ -7,3 +7,8 @@ alter table public.appointments add column if not exists lead_id   uuid;        
 alter table public.appointments add column if not exists appt_mode text;         -- פרונטלי / טלפוני / וידאו / בסניף
 alter table public.appointments add column if not exists brand     text;         -- מותג שהלקוח מתעניין בו
 alter table public.tasks        add column if not exists notes     text;         -- notes / comments on a task
+
+-- staff can create appointments from the panel (RLS previously allowed only anon inserts)
+drop policy if exists "staff insert appointments" on public.appointments;
+create policy "staff insert appointments" on public.appointments for insert to authenticated
+  with check (public.is_admin() or public.is_staff());
