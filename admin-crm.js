@@ -697,6 +697,33 @@
     if (!deals.length) return '<p class="muted" style="margin:6px 0">אין עסקאות</p>';
     return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b>' + (d.brand ? ' <span class="tag" style="font-size:10px">' + esc(d.brand) + '</span>' : '') + ' · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + (d.signature ? '<div style="margin-top:6px;display:flex;align-items:center;gap:8px"><span style="color:var(--ok);font-weight:700">✅ נחתם</span><img src="' + d.signature + '" alt="חתימה" style="height:40px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px"></div>' : '') + '</div>'; }).join('');
   }
+  // Ministry of Transport open vehicle registry (data.gov.il, CORS-enabled) — lookup by plate number
+  function normalizeVehicle(r) {
+    return {
+      plate: r.mispar_rechev, make: String(r.tozeret_nm || '').replace(/\s+/g, ' ').trim(),
+      model: r.kinuy_mishari || r.degem_nm || '', trim: r.ramat_gimur || '', year: r.shnat_yitzur || '',
+      color: r.tzeva_rechev || '', fuel: r.sug_delek_nm || '', vin: r.misgeret || '', engine: r.degem_manoa || ''
+    };
+  }
+  var PLATE_DATASETS = [
+    '053cea08-09bc-40ec-8f7a-156f0677aff3', // רכב פרטי ומסחרי
+    '0866573c-40cd-4ca8-91d2-9dd2d7a492e5', // רכב שהוסר מהכביש (deregistered)
+    'bf9df4e2-d90d-4c0a-a400-19e15af8e95f'  // דו-גלגלי / אחר
+  ];
+  function plateLookup(plate, cb) {
+    var base = 'https://data.gov.il/api/3/action/datastore_search', i = 0;
+    (function tryOne() {
+      if (i >= PLATE_DATASETS.length) { cb(null, 'לא נמצא רכב עם מספר זה'); return; }
+      var url = base + '?resource_id=' + PLATE_DATASETS[i] + '&filters=' + encodeURIComponent(JSON.stringify({ mispar_rechev: +plate }));
+      fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+        var recs = (j && j.result && j.result.records) || [];
+        if (recs.length) { cb(normalizeVehicle(recs[0])); return; }
+        i++; tryOne();
+      }).catch(function () { i++; tryOne(); });
+    })();
+  }
+  window.C2B_plateLookup = plateLookup;
+
   function dealForm(lead, deal, fileMode) {
     deal = deal || {}; var ad = deal.addons || {};
     var curStage = deal.stage || 'initial';
@@ -724,7 +751,12 @@
       '<label style="display:flex;gap:8px;align-items:center;padding:8px 0"><input type="checkbox" id="dl_vat"' + (deal.vat_included !== false ? ' checked' : '') + '> כולל מע"מ</label><div id="dlSummary" style="margin-top:8px"></div></div>';
     var finCard = '<div class="card"><h3>🏦 מקטע מימון</h3>' + grid(G('גובה מימון מבוקש ₪', 'fin_amount', fin.amount, 'number') + G('מימון מאושר ₪', 'fin_approved', fin.approved, 'number') + G('מספר תשלומים', 'fin_payments', fin.payments, 'number') + G('החזר חודשי ₪', 'fin_monthly', fin.monthly, 'number') + G('מסלול / סוג עסקת מימון', 'fin_track', fin.track) + G('מספר הצעה', 'fin_offer', fin.offer) + G('יתרת בלון ₪', 'fin_balloon', fin.balloon, 'number') + G('סטטוס מימון', 'fin_status', fin.status)) +
       '<label style="display:flex;gap:8px;align-items:center;padding:8px 0"><input type="checkbox" id="dl_fin_transferred"' + (fin.transferred ? ' checked' : '') + '> עברו כספים מגוף המימון</label></div>';
-    var tradeCard = '<div class="card"><h3>🔁 מקטע טרייד-אין</h3>' + grid(G('יצרן טרייד-אין', 'ti_make', ti.make) + G('דגם', 'ti_model', ti.model) + G('רמת גימור', 'ti_trim', ti.trim) + G('שנת דגם', 'ti_year', ti.year, 'number') + G('יד', 'ti_hand', ti.hand) + G('מחיר מחירון ₪', 'ti_list', ti.list, 'number') + G('מחיר קנייה ₪', 'ti_buy', ti.buy, 'number') + G('סכום שעבוד ₪', 'ti_lien', ti.lien, 'number') + G('גורם משעבד', 'ti_holder', ti.holder) + G('תאריך מסירה בפועל', 'ti_delivery', ti.delivery, 'date')) +
+    var tradeCard = '<div class="card"><h3>🔁 מקטע טרייד-אין</h3>' +
+      '<div class="ac-box" style="box-shadow:none;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:14px;background:var(--brand-soft)">' +
+        '<label style="font-size:12px;font-weight:700;color:var(--brand);display:block;margin-bottom:6px">🔎 שליפת פרטי רכב לפי מספר רישוי (משרד התחבורה)</label>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input class="inp" id="dl_ti_plate" value="' + esc(ti.plate || '') + '" placeholder="מספר רכב (ספרות בלבד)" inputmode="numeric" style="max-width:200px"><button type="button" class="btn btn-sm" id="dlPlateLookup">שלוף פרטים</button><span id="dlPlateMsg" style="font-size:12.5px"></span></div>' +
+      '</div>' +
+      grid(G('יצרן טרייד-אין', 'ti_make', ti.make) + G('דגם', 'ti_model', ti.model) + G('רמת גימור', 'ti_trim', ti.trim) + G('שנת דגם', 'ti_year', ti.year, 'number') + G('יד', 'ti_hand', ti.hand) + G('צבע', 'ti_color', ti.color) + G('סוג דלק', 'ti_fuel', ti.fuel) + G('מספר שלדה (VIN)', 'ti_vin', ti.vin) + G('מחיר מחירון ₪', 'ti_list', ti.list, 'number') + G('מחיר קנייה ₪', 'ti_buy', ti.buy, 'number') + G('סכום שעבוד ₪', 'ti_lien', ti.lien, 'number') + G('גורם משעבד', 'ti_holder', ti.holder) + G('תאריך מסירה בפועל', 'ti_delivery', ti.delivery, 'date')) +
       '<label style="display:flex;gap:8px;align-items:center;padding:8px 0"><input type="checkbox" id="dl_ti_liened"' + (ti.liened ? ' checked' : '') + '> הרכב משועבד</label></div>';
     var chkItems = fileMode ? FILE_CHECKLIST_ITEMS : CHECKLIST_ITEMS;
     var checklistCard = '<div class="card"><h3>צ\'קליסט תיק</h3><div id="dlChecklist">' + chkItems.map(function (it) { return '<label style="display:flex;gap:8px;align-items:center;padding:4px 0"><input type="checkbox" data-chk="' + esc(it) + '"' + (checklist[it] ? ' checked' : '') + '> ' + esc(it) + '</label>'; }).join('') + '</div></div>';
@@ -852,7 +884,7 @@
         vat_included: $('dl_vat').checked, discount_pct: num('dl_discount_pct') || null, discount_amt: c.disc, total: c.total, paid: num('dl_paid') || null, spec: $('dl_spec').value,
         stage: curStage, checklist: checklist,
         financing: { amount: num('dl_fin_amount') || null, approved: num('dl_fin_approved') || null, payments: num('dl_fin_payments') || null, monthly: num('dl_fin_monthly') || null, track: $('dl_fin_track').value, offer: $('dl_fin_offer').value, balloon: num('dl_fin_balloon') || null, status: $('dl_fin_status').value, transferred: $('dl_fin_transferred').checked },
-        tradein: { make: $('dl_ti_make').value, model: $('dl_ti_model').value, trim: $('dl_ti_trim').value, year: num('dl_ti_year') || null, hand: $('dl_ti_hand').value, list: num('dl_ti_list') || null, buy: num('dl_ti_buy') || null, lien: num('dl_ti_lien') || null, holder: $('dl_ti_holder').value, delivery: $('dl_ti_delivery').value || null, liened: $('dl_ti_liened').checked }
+        tradein: { plate: $('dl_ti_plate') ? $('dl_ti_plate').value : null, make: $('dl_ti_make').value, model: $('dl_ti_model').value, trim: $('dl_ti_trim').value, year: num('dl_ti_year') || null, hand: $('dl_ti_hand').value, color: $('dl_ti_color') ? $('dl_ti_color').value : null, fuel: $('dl_ti_fuel') ? $('dl_ti_fuel').value : null, vin: $('dl_ti_vin') ? $('dl_ti_vin').value : null, list: num('dl_ti_list') || null, buy: num('dl_ti_buy') || null, lien: num('dl_ti_lien') || null, holder: $('dl_ti_holder').value, delivery: $('dl_ti_delivery').value || null, liened: $('dl_ti_liened').checked }
       };
     }
     $('dlSave').addEventListener('click', function () {
@@ -866,6 +898,25 @@
       });
     });
     $('dlContract').addEventListener('click', function () { contractView(lead, Object.assign({ id: deal.id, order_no: deal.order_no }, readForm())); });
+    // trade-in: pull vehicle details by plate number from the Ministry of Transport open dataset
+    if ($('dlPlateLookup')) $('dlPlateLookup').addEventListener('click', function () {
+      var plate = ($('dl_ti_plate').value || '').replace(/\D/g, ''); var msg = $('dlPlateMsg');
+      if (!plate) { msg.style.color = 'var(--danger)'; msg.textContent = 'הזינו מספר רכב'; return; }
+      msg.style.color = 'var(--muted)'; msg.textContent = 'מחפש…'; this.disabled = true;
+      var btn = this;
+      plateLookup(plate, function (v, err) {
+        btn.disabled = false;
+        if (err || !v) { msg.style.color = 'var(--danger)'; msg.textContent = err || 'לא נמצא רכב עם מספר זה'; return; }
+        if (v.make && $('dl_ti_make')) $('dl_ti_make').value = v.make;
+        if (v.model && $('dl_ti_model')) $('dl_ti_model').value = v.model;
+        if (v.trim && $('dl_ti_trim')) $('dl_ti_trim').value = v.trim;
+        if (v.year && $('dl_ti_year')) $('dl_ti_year').value = v.year;
+        if (v.color && $('dl_ti_color')) $('dl_ti_color').value = v.color;
+        if (v.fuel && $('dl_ti_fuel')) $('dl_ti_fuel').value = v.fuel;
+        if (v.vin && $('dl_ti_vin')) $('dl_ti_vin').value = v.vin;
+        msg.style.color = 'var(--ok)'; msg.textContent = '✅ ' + [v.make, v.model, v.year].filter(Boolean).join(' · ');
+      });
+    });
     // payments ledger
     if (deal.id) {
       var KIND = { payment: 'תשלום', receipt: 'קבלה', invoice: 'חשבונית' };
