@@ -79,7 +79,7 @@
   const BRAND_HE = Object.fromEntries(BRANDS_ALL.map((b) => [b.name, b.he]));
   const LOGO_SLUG = Object.fromEntries(BRANDS_ALL.map((b) => [b.name, b.slug]));
   // brands missing from the CDN logo dataset — served from our own transparent assets
-  const LOGO_LOCAL = { KGM: 'images/brands/kgm.svg', Jaecoo: 'images/brands/jaecoo.svg', Skywell: 'images/brands/skywell.png', Voyah: 'images/brands/voyah.png' };
+  const LOGO_LOCAL = { KGM: 'images/brands/kgm.png', Jaecoo: 'images/brands/jaecoo.svg', Skywell: 'images/brands/skywell.png', Voyah: 'images/brands/voyah.png' };
   const LOGO = (brand) => LOGO_LOCAL[brand] || `https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/${LOGO_SLUG[brand] || ''}.png`;
 
   const NIS = (n) => '₪' + n.toLocaleString('en-US');
