@@ -81,6 +81,14 @@
   // brands missing from the CDN logo dataset — served from our own transparent assets
   const LOGO_LOCAL = { KGM: 'images/brands/kgm.png', Jaecoo: 'images/brands/jaecoo.svg', Skywell: 'images/brands/skywell.png', Voyah: 'images/brands/voyah.png' };
   const LOGO = (brand) => LOGO_LOCAL[brand] || `https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/${LOGO_SLUG[brand] || ''}.png`;
+  // Hebrew inventory brand → logo URL (covers brands missing from BRANDS_ALL too).
+  // Normalize away apostrophes/geresh/dots/spaces so spelling variants still match.
+  const heNorm = (s) => String(s || '').replace(/['"׳״.׳״\s]/g, '');
+  const LOGO_ALIAS_HE = { 'וויה': 'Voyah', 'ואייה': 'Voyah', "קיי.ג'י.אם": 'KGM', 'קיי ג׳י אם': 'KGM', "ג'אקו": 'Jaecoo', 'סקיוואל': 'Skywell', 'סקייוול': 'Skywell', 'אומודה': 'Omoda', 'אווטר': 'Aiways', 'אוטאר': 'Aiways', 'ליפמוטור': 'Leapmotor', 'זיקר': 'Zeekr', "אמ.ג'י": 'MG', 'דונפנג': 'Dongfeng', 'דונגפנג': 'Dongfeng', 'ב.י.ד': 'BYD', 'ביד': 'BYD' };
+  const HE_TO_EN_N = {};
+  BRANDS_ALL.forEach((b) => { HE_TO_EN_N[heNorm(b.he)] = b.name; });
+  Object.keys(LOGO_ALIAS_HE).forEach((he) => { HE_TO_EN_N[heNorm(he)] = LOGO_ALIAS_HE[he]; });
+  const LOGO_HE = (he) => { const en = HE_TO_EN_N[heNorm(he)] || ''; return en ? LOGO(en) : ''; };
 
   const NIS = (n) => '₪' + n.toLocaleString('en-US');
 
@@ -243,7 +251,7 @@
   ];
 
   window.Car2Buy = {
-    IMG, MODELS, CATS, BRANDS, BRANDS_ALL, BRAND_HE, FUELS, USED, ARTICLES, PRESS, CUSTOMERS, NIS, LOGO,
+    IMG, MODELS, CATS, BRANDS, BRANDS_ALL, BRAND_HE, FUELS, USED, ARTICLES, PRESS, CUSTOMERS, NIS, LOGO, LOGO_HE,
     gallery,
     byId: (id) => MODELS.find((m) => m.id === id),
     card(m) {

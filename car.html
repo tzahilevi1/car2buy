@@ -119,6 +119,23 @@
   .cd-vbtn { display:inline-flex; align-items:center; gap:9px; cursor:pointer; border-radius:999px; font-weight:700; font-size:15px; padding:13px 24px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.34); color:#fff; transition:.22s; }
   .cd-vbtn:hover { background:rgba(255,255,255,.2); }
   .cd-vbtn svg { width:18px; height:18px; }
+  .cd-lead-cta { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+  .cd-lead-cta .btn { flex:1; min-width:190px; text-align:center; justify-content:center; }
+  /* leave-details modal */
+  .cdl-ov { position:fixed; inset:0; z-index:220; background:rgba(15,12,9,.72); backdrop-filter:blur(6px); display:grid; place-items:center; padding:20px; opacity:0; visibility:hidden; transition:opacity .3s, visibility .3s; }
+  .cdl-ov.open { opacity:1; visibility:visible; }
+  .cdl-card { background:var(--bg-card); border:1px solid var(--line-2); border-radius:22px; max-width:460px; width:100%; padding:clamp(24px,3vw,34px); box-shadow:0 40px 90px -40px rgba(0,0,0,.7); position:relative; max-height:92vh; overflow:auto; }
+  .cdl-x { position:absolute; inset-block-start:14px; inset-inline-end:16px; background:none; border:0; font-size:22px; color:var(--muted); cursor:pointer; line-height:1; }
+  .cdl-eyebrow { font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-deep); }
+  .cdl-card h3 { font-family:var(--display); font-size:clamp(22px,3vw,28px); margin:6px 0 4px; color:var(--ink); }
+  .cdl-car { display:flex; align-items:center; gap:12px; background:var(--bg-1); border:1px solid var(--line-2); border-radius:14px; padding:10px 12px; margin:14px 0 18px; }
+  .cdl-car img { width:74px; height:50px; object-fit:contain; flex:0 0 auto; }
+  .cdl-car b { display:block; font-size:15px; color:var(--ink); }
+  .cdl-car span { font-size:12.5px; color:var(--muted); }
+  .cdl-form { display:grid; gap:12px; }
+  .cdl-form input, .cdl-form select { width:100%; padding:13px 15px; border:1px solid var(--line-2); border-radius:12px; background:var(--bg-1); color:var(--ink); font-family:inherit; font-size:15px; }
+  .cdl-done { text-align:center; padding:20px 0; }
+  .cdl-done .ok { width:56px; height:56px; margin:0 auto 12px; border-radius:50%; background:linear-gradient(150deg,var(--gold-bright),var(--gold-deep)); color:#fff; display:grid; place-items:center; font-size:28px; }
 
   /* video popup */
   .cd-vmodal { position:fixed; inset:0; z-index:220; display:none; }
@@ -693,9 +710,10 @@
   var trimCount = (window.Car2Buy && window.Car2Buy.LOAN_CARS || []).filter(function (l) { return l.brand === car.brand && l.name === car.model; }).length || 1;
   var brandInit = (car.brand || '').replace(/[^\u05D0-\u05EAA-Za-z]/g, '').slice(0, 2) || '·';
   var LOGO_SLUG = { 'ב.י.ד':'byd', "צ'רי":'chery', 'יונדאי':'hyundai', 'טויוטה':'toyota', 'ב.מ.וו':'bmw', 'קיה':'kia', 'מאזדה':'mazda', 'מצדס':'mercedes-benz', 'אאודי':'audi', 'סקודה':'skoda', 'ניסאן':'nissan', 'סיאט':'seat', 'סובארו':'subaru', 'סיטרואן':'citroen', 'מיצובישי':'mitsubishi' };
-  var logoSlug = LOGO_SLUG[car.brand];
-  var badgeInner = logoSlug
-    ? '<img src="https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset/logos/optimized/' + logoSlug + '.png" alt="' + esc(car.brand) + '" onerror="this.parentNode.textContent=\'' + esc(brandInit) + '\'">'
+  var logoUrl = (window.Car2Buy && window.Car2Buy.LOGO_HE) ? window.Car2Buy.LOGO_HE(car.brand) : '';
+  if (!logoUrl) { var logoSlug = LOGO_SLUG[car.brand]; if (logoSlug) logoUrl = 'https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset/logos/optimized/' + logoSlug + '.png'; }
+  var badgeInner = logoUrl
+    ? '<img src="' + logoUrl + '" alt="' + esc(car.brand) + '" onerror="this.parentNode.textContent=\'' + esc(brandInit) + '\'">'
     : esc(brandInit);
   var facts = [
     ['מחיר מחירון', fmt(car.price)],
@@ -965,6 +983,10 @@
               (car.highlights || []).map(function (h) { return '<span class="cd-chip">' + check + esc(h) + '</span>'; }).join('') +
             '</div>' +
             '<button type="button" class="cd-vbtn cd-vbtn-wide" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפו בסרטון הרכב</button>' +
+            '<div class="cd-lead-cta">' +
+              '<button type="button" class="btn btn-gold btn-lg" data-open-lead>השאירו פרטים לרכב הזה</button>' +
+              '<a class="btn btn-ghost btn-lg" href="calculator.html">חשבו החזר חודשי</a>' +
+            '</div>' +
           '</div>' +
           '<div class="cd-article">' +
             '<div class="cd-dream-k">הגשמת חלום</div>' +
@@ -1149,6 +1171,50 @@
     else if (e.target.closest('[data-vclose]')) { closeVideo(); }
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeVideo(); });
+
+  // ---- "leave details for this car" modal (car auto-filled; user adds name / phone / email / source) ----
+  (function () {
+    var lead = document.createElement('div');
+    lead.className = 'cdl-ov';
+    var carThumb = car.img ? '<img src="' + esc(car.img) + '" alt="' + esc(fullName) + '">' : '';
+    lead.innerHTML =
+      '<div class="cdl-card" role="dialog" aria-modal="true" aria-label="השארת פרטים">' +
+        '<button type="button" class="cdl-x" data-cdl-close aria-label="סגור">✕</button>' +
+        '<div class="cdl-eyebrow">' + esc(brandDisp) + ' · ' + esc(car.type || '') + '</div>' +
+        '<h3>השאירו פרטים לרכב הזה</h3>' +
+        '<div class="cdl-car">' + carThumb + '<div><b>' + esc(fullName) + '</b><span>נציג יחזור אליכם עם הצעה אישית לרכב זה</span></div></div>' +
+        '<form class="cdl-form" id="cdlForm">' +
+          '<input type="text" id="cdlName" placeholder="שם מלא" autocomplete="name" required>' +
+          '<input type="tel" id="cdlPhone" placeholder="טלפון נייד" autocomplete="tel" required>' +
+          '<input type="email" id="cdlEmail" placeholder="דוא״ל" autocomplete="email">' +
+          '<select id="cdlSource" aria-label="מאיפה הגעתם אלינו">' +
+            '<option value="">מאיפה הגעתם אלינו?</option>' +
+            '<option>גוגל / חיפוש</option><option>פייסבוק</option><option>אינסטגרם</option><option>וואטסאפ</option><option>המלצה מחבר</option><option>אחר</option>' +
+          '</select>' +
+          '<button type="submit" class="btn btn-gold btn-lg">שליחת פרטים</button>' +
+        '</form>' +
+        '<div class="cdl-done" id="cdlDone" hidden><div class="ok">✓</div><b>תודה! קיבלנו את הפרטים ונחזור אליכם בהקדם.</b></div>' +
+      '</div>';
+    document.body.appendChild(lead);
+    function openLead() { lead.classList.add('open'); document.body.style.overflow = 'hidden'; var n = document.getElementById('cdlName'); if (n) setTimeout(function () { n.focus(); }, 60); }
+    function closeLead() { lead.classList.remove('open'); document.body.style.overflow = ''; }
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-open-lead]')) { e.preventDefault(); openLead(); }
+      else if (e.target.closest('[data-cdl-close]') || e.target === lead) { closeLead(); }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && lead.classList.contains('open')) closeLead(); });
+    document.getElementById('cdlForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var n = document.getElementById('cdlName'), p = document.getElementById('cdlPhone'), em = document.getElementById('cdlEmail'), s = document.getElementById('cdlSource'), ok = true;
+      [n, p].forEach(function (f) { if (!f.value.trim()) { f.style.borderColor = '#e25555'; ok = false; } else f.style.borderColor = ''; });
+      if (!ok) return;
+      if (window.submitLead) submitLead({ name: n.value.trim(), phone: p.value.trim(), email: em.value.trim(), car: fullName, source: s.value ? ('car_page · ' + s.value) : 'car_page' });
+      if (window.c2bTrack) window.c2bTrack('car_lead', { car: fullName });
+      document.getElementById('cdlForm').hidden = true;
+      document.getElementById('cdlDone').hidden = false;
+      setTimeout(closeLead, 2600);
+    });
+  })();
 
   // ---- sub-nav active state on scroll ----
   var snTabs = [].slice.call(document.querySelectorAll('.cd-sn-tabs a[href^="#"]'));
