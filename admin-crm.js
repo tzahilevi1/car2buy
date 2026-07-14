@@ -392,7 +392,7 @@
           '<div id="ldInfo">' + leadInfo(lead, deals, pays, feed.length ? feed[0].ts : null) +
             (lead.message ? '<div style="margin-top:10px;font-size:14px">🗒️ ' + esc(lead.message) + '</div>' : '') + '</div>' +
           '<div id="ldMkt" class="hidden">' + leadMkt(lead) + '</div>' + '</div>' +
-          '<div class="card"><div class="row-between"><h3 style="margin:0">הצעות / הסכמים לחתימה</h3>' + (role !== 'accounting' ? '<button class="btn btn-sm" id="lpNewDeal">+ הצעה</button>' : '') + '</div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
+          '<div class="card"><div class="row-between"><h3 style="margin:0">הצעות / הסכמים לחתימה</h3>' + (role !== 'accounting' ? '<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="lpBrandDeals">📄 הצעות לפי מותג</button><button class="btn btn-sm" id="lpNewDeal">+ הצעה</button></div>' : '') + '</div><div id="lpBrandPick"></div><div id="lpDeals">' + dealList(deals) + '</div></div>' +
         '</div>' +
         '<div>' +
           '<div class="card">' +
@@ -587,6 +587,24 @@
     if (ldt) ldt.addEventListener('click', function (e) { var b = e.target.closest('[data-ld]'); if (!b) return; ldt.querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); $('ldInfo').classList.toggle('hidden', b.dataset.ld !== 'info'); $('ldMkt').classList.toggle('hidden', b.dataset.ld !== 'mkt'); });
     // deals list
     if ($('lpNewDeal')) $('lpNewDeal').addEventListener('click', function () { dealForm(lead, null); });
+    // create one price-offer form per brand (from the managed brand list), each tagged with the brand name
+    if ($('lpBrandDeals')) $('lpBrandDeals').addEventListener('click', function () {
+      var brands = (C.lists && C.lists.brand) || [], pick = $('lpBrandPick');
+      if (!brands.length) { pick.innerHTML = '<p class="muted" style="font-size:12px;margin:8px 0">לא הוגדרו מותגים. הוסיפו אותם ב"הגדרות → רשימות שדות → מותג".</p>'; return; }
+      if (pick.dataset.open === '1') { pick.innerHTML = ''; pick.dataset.open = '0'; return; }
+      pick.dataset.open = '1';
+      pick.innerHTML = '<div class="card" style="box-shadow:none;border:1px solid var(--line);margin:8px 0"><p class="muted" style="font-size:12px;margin:0 0 8px">בחרו מותגים — לכל מותג ייווצר טופס הצעת מחיר נפרד עם שם המותג:</p><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">' + brands.map(function (b) { return '<label class="tag" style="cursor:pointer;display:inline-flex;gap:5px;align-items:center"><input type="checkbox" class="lpBrandCb" value="' + esc(b) + '"' + (lead.brand === b ? ' checked' : '') + '> ' + esc(b) + '</label>'; }).join('') + '</div><button class="btn btn-sm" id="lpBrandCreate">✍ צור הצעות לנבחרים</button></div>';
+      $('lpBrandCreate').addEventListener('click', function () {
+        var sel = Array.prototype.slice.call(pick.querySelectorAll('.lpBrandCb:checked')).map(function (c) { return c.value; });
+        if (!sel.length) { alert('בחרו לפחות מותג אחד'); return; }
+        this.disabled = true; this.textContent = 'יוצר…';
+        var rows = sel.map(function (b) { return { lead_id: lead.id, status: 'quote', brand: b, form_type: 'הצעת מחיר — ' + b, salesperson: '', client_name: lead.name || null, client_phone: lead.phone || null, client_email: lead.email || null, client_address: lead.city || null }; });
+        db.from('deals').insert(rows).then(function (r) {
+          if (r.error) { alert('שגיאה: ' + r.error.message); return; }
+          logActivity(lead.id, 'quote', 'נוצרו ' + sel.length + ' הצעות מחיר לפי מותג: ' + sel.join(', ')).then(function () { window.C2B_openLeadCard(lead.id); });
+        });
+      });
+    });
     $('lpDeals').querySelectorAll('[data-deal-id]').forEach(function (el) { el.addEventListener('click', function () { var dd = curDeals.filter(function (x) { return x.id === el.dataset.dealId; })[0]; dealForm(lead, dd); }); });
     // timeline interactions: task toggle, open deal, fallback doc link
     var tl = $('lpTimeline');
@@ -677,7 +695,7 @@
   function dealStatusLabel(s) { return { quote: 'הצעת מחיר', ordered: 'הזמנה', cancelled: 'בוטל' }[s] || s; }
   function dealList(deals) {
     if (!deals.length) return '<p class="muted" style="margin:6px 0">אין עסקאות</p>';
-    return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b> · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + (d.signature ? '<div style="margin-top:6px;display:flex;align-items:center;gap:8px"><span style="color:var(--ok);font-weight:700">✅ נחתם</span><img src="' + d.signature + '" alt="חתימה" style="height:40px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px"></div>' : '') + '</div>'; }).join('');
+    return deals.map(function (d) { return '<div data-deal-id="' + d.id + '" style="padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>#' + esc(d.order_no) + '</b>' + (d.brand ? ' <span class="tag" style="font-size:10px">' + esc(d.brand) + '</span>' : '') + ' · ' + esc(dealStatusLabel(d.status)) + ' · ' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + ' · ' + nis(d.total) + (d.signature ? '<div style="margin-top:6px;display:flex;align-items:center;gap:8px"><span style="color:var(--ok);font-weight:700">✅ נחתם</span><img src="' + d.signature + '" alt="חתימה" style="height:40px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px"></div>' : '') + '</div>'; }).join('');
   }
   function dealForm(lead, deal, fileMode) {
     deal = deal || {}; var ad = deal.addons || {};
@@ -690,7 +708,9 @@
     function gearboxSel(v) { return '<div class="field" style="margin:0"><label>תיבת הילוכים</label><select class="inp" id="dl_car_gearbox" style="width:100%"><option value="">— בחר —</option>' + ['אוטומט', 'ידני', 'רובוטית', 'טיפטרוניק'].map(function (g) { return '<option' + (v === g ? ' selected' : '') + '>' + g + '</option>'; }).join('') + '</select></div>'; }
     // --- cards (grouped into tabs matching the reference layout) ---
     var clientCard = '<div class="card"><h3>👤 פרטי הלקוח</h3>' + grid(G('שם לקוח', 'client_name', deal.client_name || lead.name) + G('טלפון נייד', 'client_phone', deal.client_phone || lead.phone) + G('דוא"ל', 'client_email', deal.client_email || lead.email) + G('כתובת', 'client_address', deal.client_address || lead.city) + G('ת.ז / ח.פ', 'client_id', deal.client_id) + G('שם לחשבונית', 'invoice_name', deal.invoice_name || lead.name)) + '</div>';
-    var formCard = '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', deal.form_type || 'חוזה קאר פלוס') + statusSel + G('מנהל מכירות / נציג משוייך', 'salesperson', deal.salesperson || '')) + '</div>';
+    var brandDl = ((C.lists && C.lists.brand) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+    var brandField = '<div class="field" style="margin:0"><label>מותג</label><input class="inp" id="dl_brand" list="dl_brandOpts" value="' + esc(deal.brand || lead.brand || '') + '" placeholder="שם המותג" style="width:100%"><datalist id="dl_brandOpts">' + brandDl + '</datalist></div>';
+    var formCard = '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', deal.form_type || 'חוזה קאר פלוס') + statusSel + brandField + G('מנהל מכירות / נציג משוייך', 'salesperson', deal.salesperson || '')) + '</div>';
     var carCard = '<div class="card ac-box"><h3>🚗 פרטי הרכב המוזמן</h3>' +
       '<input class="inp" id="dl_carSearch" placeholder="🔎 חפש רכב מהקטלוג (עברית/אנגלית) — ימלא אוטומטית" style="width:100%;margin-bottom:10px"><div class="ac-res hidden" id="dl_carRes"></div>' +
       grid(G('יצרן', 'car_make', deal.car_make) + G('דגם', 'car_model', deal.car_model) + G('שנת ייצור', 'car_year', deal.car_year || 2026, 'number') + G('רמת גימור', 'car_trim', deal.car_trim) + G('נפח מנוע', 'car_engine', deal.car_engine) + gearboxSel(deal.car_gearbox) + G('צבע מבוקש', 'car_color', deal.car_color) + G('מחיר הרכב ₪', 'car_price', deal.car_price, 'number') + '<div class="field" style="margin:0"><label>עמלת סוכן ₪ (אוטומטי · קריאה בלבד)</label><input class="inp" id="dl_commission" type="number" value="' + esc(deal.commission == null ? '' : deal.commission) + '" readonly tabindex="-1" style="width:100%;background:var(--surface-2);cursor:not-allowed;color:var(--muted)"></div>') + '</div>';
@@ -824,7 +844,7 @@
     function readForm() {
       var c = compute();
       return {
-        lead_id: lead.id, form_type: $('dl_form_type').value, status: $('dl_status').value, salesperson: $('dl_salesperson').value,
+        lead_id: lead.id, form_type: $('dl_form_type').value, status: $('dl_status').value, salesperson: $('dl_salesperson').value, brand: $('dl_brand') ? $('dl_brand').value : null,
         client_name: $('dl_client_name').value, client_phone: $('dl_client_phone').value, client_email: $('dl_client_email').value, client_address: $('dl_client_address').value, client_id: $('dl_client_id').value, invoice_name: $('dl_invoice_name').value,
         car_make: $('dl_car_make').value, car_model: $('dl_car_model').value, car_year: num('dl_car_year') || null, car_trim: $('dl_car_trim').value, car_engine: $('dl_car_engine').value, car_gearbox: $('dl_car_gearbox').value, car_color: $('dl_car_color').value,
         car_price: num('dl_car_price'), commission: num('dl_commission') || null, down_total: num('dl_down_total'), down_initial: num('dl_down_initial'), down_balance: c.downBal, monthly: num('dl_monthly'), delivery_days: num('dl_delivery_days') || null, balance_to_pay: c.balPay,
@@ -1047,7 +1067,8 @@
     var today = new Date().toLocaleDateString('he-IL');
     function tr(k, v) { return '<tr><td style="padding:6px;border-bottom:1px solid #eee">' + k + '</td><td style="padding:6px;border-bottom:1px solid #eee;text-align:left"><b>' + v + '</b></td></tr>'; }
     return '<div style="font-family:Arial,sans-serif;line-height:1.7;max-width:720px;margin:auto;color:#111">' +
-      '<h2 style="text-align:center;color:#F5691E;margin:0">הסכם הזמנת רכב — Car2Buy</h2>' +
+      '<h2 style="text-align:center;color:#F5691E;margin:0">הסכם הזמנת רכב' + (d.brand ? ' — ' + esc(d.brand) : '') + '</h2>' +
+      '<p style="text-align:center;color:#888;margin:2px 0 6px;font-size:13px">מוגש באמצעות Car2Buy</p>' +
       '<p style="text-align:center;color:#555">מספר הזמנה: ' + esc(d.order_no || '—') + ' · תאריך: ' + today + '</p><hr>' +
       '<h3 style="color:#F5691E">פרטי הלקוח</h3><p>שם: <b>' + esc(d.client_name) + '</b> · ת.ז: ' + esc(d.client_id) + '<br>טלפון: ' + esc(d.client_phone) + ' · דוא"ל: ' + esc(d.client_email) + '<br>כתובת: ' + esc(d.client_address) + '</p>' +
       '<h3 style="color:#F5691E">פרטי הרכב</h3><p>יצרן/דגם: <b>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</b> ' + esc(d.car_trim || '') + '<br>שנה: ' + esc(d.car_year || '') + ' · צבע: ' + esc(d.car_color || '') + ' · מנוע: ' + esc(d.car_engine || '') + ' · גיר: ' + esc(d.car_gearbox || '') + '</p>' +
@@ -1069,7 +1090,7 @@
     }
     var signed = !!deal.signature;
     view(
-      '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם — ' + esc(deal.client_name || '') + (signed ? ' <span class="tag" style="border-color:var(--ok);color:var(--ok);background:rgba(22,163,74,.1)">✅ נחתם</span>' : '') + '</h3>' +
+      '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם' + (deal.brand ? ' · ' + esc(deal.brand) : '') + ' — ' + esc(deal.client_name || '') + (signed ? ' <span class="tag" style="border-color:var(--ok);color:var(--ok);background:rgba(22,163,74,.1)">✅ נחתם</span>' : '') + '</h3>' +
         '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button>' + (signed ? ' <button class="btn btn-sm" id="cPdf">📄 הורד PDF חתום</button>' : ' <button class="btn btn-sm" id="cSend">💾 שמור הסכם</button>') + '</div></div>' +
       (signed ? '<div class="card" style="border:1px solid var(--ok);background:rgba(22,163,74,.06)"><b style="color:var(--ok)">✅ ההסכם נחתם על ידי הלקוח' + (deal.signed_at ? ' בתאריך ' + fmt(deal.signed_at) : '') + '</b><span class="muted"> — למטה ההסכם המלא עם חתימת הלקוח.</span></div>' : '') +
       '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal, deal.signature || null) + '</div>' +
