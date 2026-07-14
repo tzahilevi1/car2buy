@@ -823,6 +823,7 @@
         return diffBrand.concat(fill).slice(0, 3);
       })();
       const ytQuery = encodeURIComponent(`${m.brand} ${m.name} ${m.year} סרטון רשמי`);
+      const ytId = (window.C2B_VIDEOS || {})[m.id] || '';
       detailEl.innerHTML = `
       <section class="media-hero page detail-hero">
         <div class="mh-bg"><img src="${g[0]}" alt="${m.brand} ${m.name}"></div>
@@ -896,12 +897,18 @@
         <div class="wrap">
           <span class="eyebrow reveal">סרטון רשמי</span>
           <h2 class="h-sec reveal">${m.name} <span class="gold-text">במבחן דרכים</span></h2>
-          <p class="lead reveal">צפו בסרטון הרשמי של הדגם מהיבואן — עיצוב, פנים וביצועים.</p>
-          <a class="detail-video reveal" href="https://www.youtube.com/results?search_query=${ytQuery}" target="_blank" rel="noopener">
+          <p class="lead reveal">צפו בסרטון על הדגם — עיצוב, פנים וביצועים.</p>
+          ${ytId
+            ? `<div class="detail-video reveal" data-yt="${ytId}" role="button" tabindex="0" aria-label="נגן סרטון של ${m.brand} ${m.name}">
             <img src="${g[0]}" alt="${m.brand} ${m.name}">
             <span class="dv-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg></span>
-            <span class="dv-label">צפייה בסרטון הרשמי של ${m.brand} ${m.name}</span>
-          </a>
+            <span class="dv-label">צפייה בסרטון של ${m.brand} ${m.name}</span>
+          </div>`
+            : `<a class="detail-video reveal" href="https://www.youtube.com/results?search_query=${ytQuery}" target="_blank" rel="noopener">
+            <img src="${g[0]}" alt="${m.brand} ${m.name}">
+            <span class="dv-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg></span>
+            <span class="dv-label">צפייה בסרטון של ${m.brand} ${m.name}</span>
+          </a>`}
         </div>
       </section>
       <section class="section testi-section">
@@ -924,6 +931,23 @@
           detailEl.querySelectorAll('.thumb').forEach((x) => x.classList.toggle('active', x === t));
         });
       });
+      // lite YouTube embed: load the iframe only on click (fast page, no external player until wanted)
+      const vbox = detailEl.querySelector('.detail-video[data-yt]');
+      if (vbox) {
+        const play = () => {
+          const id = vbox.dataset.yt;
+          const f = document.createElement('iframe');
+          f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+          f.title = 'סרטון הרכב';
+          f.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
+          f.setAttribute('allowfullscreen', '');
+          f.className = 'dv-frame';
+          vbox.innerHTML = '';
+          vbox.appendChild(f);
+        };
+        vbox.addEventListener('click', play);
+        vbox.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); } });
+      }
     }
   }
   /* ---------- trade-in wizard (plate → registry lookup → contact) ---------- */
