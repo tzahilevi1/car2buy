@@ -953,7 +953,7 @@
   /* ---------- trade-in wizard (plate → registry lookup → contact) ---------- */
   const wizard = document.getElementById('tradeWizard');
   if (wizard && window.Car2Buy) {
-    const { MODELS } = window.Car2Buy;
+    const { MODELS, IMG } = window.Car2Buy;
     const $ = (id) => document.getElementById(id);
     const COLORS = ['שחור מטאלי', 'לבן פנינה', 'אפור גרפיט', 'כסף מטאלי', 'כחול כהה', 'אדום יין'];
     const TRIMS = ['Executive', 'Luxury', 'Sport', 'Premium', 'Dynamic', 'GT-Line'];
@@ -967,15 +967,42 @@
       wizard.scrollIntoView({ block: 'start', behavior: 'smooth' });
     }
 
-    // deterministic "registry" lookup from plate digits
-    function lookup(plate) {
+    // REAL registry lookup — Ministry of Transport open data (data.gov.il, CORS-enabled)
+    const PLATE_DS = [
+      '053cea08-09bc-40ec-8f7a-156f0677aff3', // רכב פרטי ומסחרי
+      '0866573c-40cd-4ca8-91d2-9dd2d7a492e5', // רכב שהוסר מהכביש
+      'bf9df4e2-d90d-4c0a-a400-19e15af8e95f'  // דו-גלגלי / אחר
+    ];
+    function imgForBrand(brandHe) {
+      const b = String(brandHe || '').toLowerCase();
+      const map = { 'טסלה': 'teslaWhite', 'מרצדס': 'amgSilver', 'ב.מ.וו': 'bmwSedan', 'במוו': 'bmwSedan', 'אאודי': 'audiSilver', 'יונדאי': 'suvSilver', 'קיה': 'suvSilver', 'סובארו': 'suvSilver', 'מאזדה': 'suvSilver', 'פורד': 'mustang', 'שברולט': 'camaro', 'רנו': 'silverRoad', 'ג\'יפ': 'jeep', 'לנד': 'evoque', 'ריינג': 'evoque' };
+      for (const k in map) { if (b.indexOf(k) >= 0 && IMG[map[k]]) return IMG[map[k]]; }
+      return IMG.silverRoad || IMG.suvSilver || (MODELS[0] && MODELS[0].img);
+    }
+    function realLookup(plate, cb) {
       const digits = (plate.match(/\d/g) || []).join('');
-      const seed = digits.split('').reduce((a, d) => a + (+d), 0) + digits.length * 7;
-      const m = MODELS[seed % MODELS.length];
-      const year = 2015 + (seed % 9); // 2015–2023
-      const color = COLORS[seed % COLORS.length];
-      const trim = TRIMS[(seed >> 1) % TRIMS.length];
-      return { brand: m.brand, name: m.name, year, color, trim, img: m.img };
+      const base = 'https://data.gov.il/api/3/action/datastore_search';
+      let i = 0;
+      (function tryOne() {
+        if (i >= PLATE_DS.length) { cb(null); return; }
+        fetch(base + '?resource_id=' + PLATE_DS[i] + '&filters=' + encodeURIComponent(JSON.stringify({ mispar_rechev: +digits })))
+          .then((r) => r.json()).then((j) => {
+            const recs = (j && j.result && j.result.records) || [];
+            if (recs.length) {
+              const r = recs[0];
+              cb({
+                brand: String(r.tozeret_nm || '').replace(/\s+/g, ' ').trim()
+                  .replace(/\s+(סין|יפן|קוריאה|דרום קוריאה|טורקיה|גרמניה|ספרד|צ['׳]כיה|אנגליה|בריטניה|צרפת|ארה"ב|ארהב|רומניה|הודו|סלובקיה|הונגריה|בלגיה|איטליה|מקסיקו|תאילנד|אוסטריה|אוסט|פולין|ברזיל|הולנד|שבדיה|סלובניה|ארה״ב)$/, ''),
+                name: r.kinuy_mishari || r.degem_nm || '',
+                year: r.shnat_yitzur || '', color: r.tzeva_rechev || '',
+                trim: r.ramat_gimur || '', fuel: r.sug_delek_nm || '',
+                img: imgForBrand(r.tozeret_nm)
+              });
+              return;
+            }
+            i++; tryOne();
+          }).catch(() => { i++; tryOne(); });
+      })();
     }
 
     function fmtPlate(v) {
@@ -997,17 +1024,27 @@
       $('wizFetch').hidden = true;
       $('wizLoading').hidden = false;
       $('wizDetails').hidden = true;
-      setTimeout(() => {
-        fetched = lookup(plate);
+      realLookup(plate, (v) => {
         $('wizLoading').hidden = true;
+        if (!v) {
+          $('wizFetch').hidden = false;
+          $('wizPlate').style.borderColor = '#e25555';
+          let msg = document.getElementById('wizErr');
+          if (!msg) { msg = document.createElement('p'); msg.id = 'wizErr'; msg.style.cssText = 'color:#e25555;font-size:13.5px;text-align:center;margin-top:10px'; $('wizFetch').insertAdjacentElement('afterend', msg); }
+          msg.textContent = 'לא נמצא רכב עם מספר זה במאגר משרד התחבורה. בדקו את המספר ונסו שוב.';
+          return;
+        }
+        const e2 = document.getElementById('wizErr'); if (e2) e2.remove();
+        fetched = v;
+        const meta = ['שנת ' + v.year, v.trim, v.color, v.fuel].filter(Boolean).join(' · ');
         $('wizCar').innerHTML = `
-          <img class="wiz-car-img" src="${fetched.img}" alt="">
+          <img class="wiz-car-img" src="${v.img}" alt="">
           <div class="wiz-car-info">
-            <b>${fetched.brand} ${fetched.name}</b>
-            <span>שנת ${fetched.year} · ${fetched.trim} · ${fetched.color}</span>
+            <b>${v.brand} ${v.name}</b>
+            <span>${meta}</span>
           </div>`;
         $('wizDetails').hidden = false;
-      }, 1400);
+      });
     });
 
     $('wizReset').addEventListener('click', () => {
