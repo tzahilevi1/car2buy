@@ -1435,4 +1435,5 @@
   // expose the status model for admin.js (bell, reports)
   window.C2B_STATUSES = STATUSES;
   window.C2B_badge = badge;
+  window.C2B_stageDef = stageDef;
 })();
