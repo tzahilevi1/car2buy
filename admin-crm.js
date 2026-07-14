@@ -268,7 +268,6 @@
     { k: 'wa', icon: '💬', label: 'WhatsApp', roles: ['admin', 'sales', 'files'] },
     { k: 'mail', icon: '📧', label: 'מייל', roles: ['admin', 'sales', 'files', 'accounting'] },
     { k: 'note', icon: '📝', label: 'הערה', roles: ['admin', 'sales', 'files', 'accounting'] },
-    { k: 'call_log', icon: '📒', label: 'תיעוד שיחה', roles: ['admin', 'sales', 'files'] },
     { k: 'task', icon: '✅', label: 'משימה', roles: ['admin', 'sales', 'files', 'accounting'] },
     { k: 'doc', icon: '📎', label: 'מסמך', roles: ['admin', 'sales', 'files', 'accounting'] },
     { k: 'meeting', icon: '📅', label: 'קבע פגישה', roles: ['admin', 'sales', 'files'] },
@@ -1071,7 +1070,7 @@
     var signed = !!deal.signature;
     view(
       '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם — ' + esc(deal.client_name || '') + (signed ? ' <span class="tag" style="border-color:var(--ok);color:var(--ok);background:rgba(22,163,74,.1)">✅ נחתם</span>' : '') + '</h3>' +
-        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button>' + (signed ? ' <button class="btn btn-sm" id="cPdf">📄 הורד PDF חתום</button>' : ' <button class="btn btn-sm" id="cSend">📤 שלח ושמור PDF</button>') + '</div></div>' +
+        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button>' + (signed ? ' <button class="btn btn-sm" id="cPdf">📄 הורד PDF חתום</button>' : ' <button class="btn btn-sm" id="cSend">💾 שמור הסכם</button>') + '</div></div>' +
       (signed ? '<div class="card" style="border:1px solid var(--ok);background:rgba(22,163,74,.06)"><b style="color:var(--ok)">✅ ההסכם נחתם על ידי הלקוח' + (deal.signed_at ? ' בתאריך ' + fmt(deal.signed_at) : '') + '</b><span class="muted"> — למטה ההסכם המלא עם חתימת הלקוח.</span></div>' : '') +
       '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal, deal.signature || null) + '</div>' +
       (signed ? '' :
@@ -1079,7 +1078,7 @@
           (deal.id ? '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input class="inp" id="cLinkEmail" value="' + esc(deal.client_email || '') + '" placeholder="אימייל הלקוח" style="flex:1;min-width:170px"><button class="btn btn-sm" id="cSendMail">📧 שלח במייל</button></div>' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="cWa">💬 וואטסאפ</button><button class="btn btn-ghost btn-sm" id="cSms">✉️ SMS</button><button class="btn btn-ghost btn-sm" id="cCopy">🔗 העתק קישור</button></div>' +
             '<div id="cLinkMsg" style="font-size:13px;margin-top:10px"></div>'
-            : '<p class="muted">שמרו את העסקה תחילה (💾) כדי לשלוח לחתימה מרחוק.</p>') + '</div>')
+            : '<p class="muted">לחצו <b>💾 שמור הסכם</b> תחילה — לאחר השמירה יופיעו כאן דרכי השליחה ללקוח (מייל / וואטסאפ / SMS / העתקת קישור).</p>') + '</div>')
     );
     var $ = C.$;
     $('cBack').addEventListener('click', function () { dealForm(lead, deal); });
@@ -1127,7 +1126,20 @@
       $('cSms').addEventListener('click', function () { withUrl(function (u) { window.location.href = 'sms:' + (deal.client_phone || '') + '?body=' + encodeURIComponent('לחתימה על ההסכם: ' + u); }); });
       $('cCopy').addEventListener('click', function () { withUrl(function (u) { (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { linkMsg.style.color = 'var(--ok)'; linkMsg.textContent = '🔗 הקישור הועתק'; }).catch(function () { linkMsg.style.color = 'var(--txt)'; linkMsg.textContent = u; }); }); });
     }
-    $('cSend').addEventListener('click', function () { $('cSend').disabled = true; $('cSend').textContent = 'שומר…'; finishContract(lead, deal, $('cDoc'), 'נשלח הסכם ללקוח', 'הסכם שנשלח', false); });
+    // "שמור הסכם" — persist the deal (so it shows in "הצעות / הסכמים לחתימה"), then reload so the send options appear
+    if ($('cSend')) $('cSend').addEventListener('click', function () {
+      var btn = $('cSend'); btn.disabled = true; btn.textContent = 'שומר…';
+      var payload = Object.assign({}, deal);
+      ['id', 'order_no', 'created_at', 'updated_at', '_sigLoaded', 'signature', 'signed_at'].forEach(function (k) { delete payload[k]; });
+      var q = deal.id ? db.from('deals').update(payload).eq('id', deal.id).select().single() : db.from('deals').insert(payload).select().single();
+      q.then(function (r) {
+        if (r.error || !r.data) { alert('שמירה נכשלה: ' + ((r.error && r.error.message) || 'שגיאה')); btn.disabled = false; btn.textContent = '💾 שמור הסכם'; return; }
+        var wasNew = !deal.id, saved = r.data; saved._sigLoaded = true;
+        logActivity(lead.id, 'contract', (wasNew ? 'נוצר' : 'עודכן') + ' הסכם לחתימה' + (saved.order_no ? ' #' + saved.order_no : ''));
+        if (wasNew) changeStatus(lead.id, 'quote_sent', lead, function () { contractView(lead, saved); });
+        else contractView(lead, saved);
+      });
+    });
   }
   // Reliable contract → PDF (verified in a real browser): the capture element MUST be
   // in normal document flow (position:static — absolute/fixed → 0-height blank), and the
