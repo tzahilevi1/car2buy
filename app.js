@@ -1037,12 +1037,15 @@
         const e2 = document.getElementById('wizErr'); if (e2) e2.remove();
         fetched = v;
         const meta = ['שנת ' + v.year, v.trim, v.color, v.fuel].filter(Boolean).join(' · ');
-        $('wizCar').innerHTML = `
-          <img class="wiz-car-img" src="${v.img}" alt="">
-          <div class="wiz-car-info">
-            <b>${v.brand} ${v.name}</b>
-            <span>${meta}</span>
-          </div>`;
+        // build the DOM with textContent — never interpolate registry (API) fields into innerHTML
+        const img = document.createElement('img');
+        img.className = 'wiz-car-img'; img.alt = '';
+        img.src = /^https?:|^\//.test(String(v.img || '')) ? v.img : (IMG.silverRoad || '');
+        const info = document.createElement('div'); info.className = 'wiz-car-info';
+        const nameEl = document.createElement('b'); nameEl.textContent = (v.brand + ' ' + v.name).trim();
+        const metaEl = document.createElement('span'); metaEl.textContent = meta;
+        info.append(nameEl, metaEl);
+        $('wizCar').replaceChildren(img, info);
         $('wizDetails').hidden = false;
       });
     });
