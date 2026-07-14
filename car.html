@@ -468,6 +468,7 @@
 
 <script src="models-data.js"></script>
 <script src="cars-data.js"></script>
+<script src="car-videos.js"></script>
 <script src="loan-cars.js"></script>
 <script src="customers-data.js"></script>
 <script src="brand-content.js"></script>
@@ -1153,8 +1154,9 @@
   var vmodal = document.getElementById('cdVideo');
   var vbody = document.getElementById('cdVideoBody');
   function openVideo() {
-    if (car.yt) {
-      vbody.innerHTML = '<iframe src="https://www.youtube.com/embed/' + esc(car.yt) + '?autoplay=1&rel=0" title="' + esc(fullName) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    var ytId = car.yt || (window.C2B_CAR_VIDEOS && window.C2B_CAR_VIDEOS[slug]) || '';
+    if (ytId) {
+      vbody.innerHTML = '<iframe src="https://www.youtube.com/embed/' + esc(ytId) + '?autoplay=1&rel=0" title="' + esc(fullName) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
     } else {
       var q = encodeURIComponent(fullName + ' ' + (car.year || '') + ' סרטון רשמי');
       vbody.innerHTML = '<div class="cd-vmodal-fallback"><div style="font-size:34px;">▶</div>' +
