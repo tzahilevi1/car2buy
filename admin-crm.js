@@ -769,7 +769,7 @@
     function dPanel(k, active, inner) { return '<div class="dl-panel' + (active ? '' : ' hidden') + '" data-dpanel="' + k + '">' + inner + '</div>'; }
     view(
       '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">' + ((C.role || '') === 'files' ? '→ לרשימת התיקים' : '→ לכרטיס') + '</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
-        '<div><button class="btn btn-ghost btn-sm" id="dlContract">✍ הסכם לחתימה</button> <button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <button class="btn btn-sm" id="dlSave">💾 שמירה</button></div></div>' +
+        '<div style="display:flex;align-items:center;gap:10px"><button class="btn btn-ghost btn-sm" id="dlContract">✍ הסכם לחתימה</button> <button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <span id="dlSaveState" style="font-size:12.5px;color:var(--muted);white-space:nowrap">💾 נשמר אוטומטית</span></div></div>' +
       (fileMode ? '<div class="card" style="padding:12px"><h3 style="margin:0 0 8px;font-size:13px">שלב התיק (מנהלת תיקי לקוחות)</h3><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' : '') +
       '<nav class="tabs" id="dlTabs" style="margin-bottom:14px;flex-wrap:wrap">' +
         dTab('client', '👤 פרטי הלקוח', true) + dTab('deal', '📋 פרטי העסקה') + dTab('car', '🚗 פרטי הרכב המוזמן') + dTab('fin', '🏦 מקטע מימון') + dTab('trade', '🔁 מקטע טרייד-אין') + dTab('record', '🗂️ פרטי רשומה') +
@@ -844,7 +844,7 @@
       if (miss.length) { alert('לא ניתן להגיש למימון — חסר:\n• ' + miss.join('\n• ')); return; }
       curStage = 'submitted'; if ($('dlStageBar')) $('dlStageBar').innerHTML = stageBar(curStage); if ($('dlRecStage')) $('dlRecStage').innerHTML = stageBadge(curStage);
       logActivity(lead.id, 'system', 'התיק הוגש למימון');
-      $('dlSave').click();
+      doSave();
     });
     function num(id) { var v = parseFloat(($(id) && $(id).value) || ''); return isNaN(v) ? 0 : v; }
     function compute() {
@@ -869,7 +869,7 @@
         var m = cars.filter(function (c) { return ((c.brand || '') + ' ' + (c.name || '') + ' ' + (c.trim || '')).toLowerCase().indexOf(q) >= 0; }).slice(0, 12);
         res.innerHTML = m.map(function (c) { return '<div class="ai" data-i="' + cars.indexOf(c) + '">' + (c.img ? '<img src="' + esc(c.img) + '" style="width:40px;height:26px;object-fit:cover;border-radius:5px">' : '') + '<span><b>' + esc(c.brand) + ' ' + esc(c.name) + '</b> ' + esc(c.trim || '') + ' · ' + nis(c.p) + '</span></div>'; }).join('') || '<div class="ai muted">אין תוצאות</div>';
         res.classList.remove('hidden');
-        res.querySelectorAll('.ai[data-i]').forEach(function (el) { el.addEventListener('click', function () { var c = cars[+el.dataset.i]; $('dl_car_make').value = c.brand || ''; $('dl_car_model').value = c.name || ''; $('dl_car_trim').value = c.trim || ''; $('dl_car_engine').value = c.engine || ''; $('dl_car_color').value = c.colors || ''; $('dl_car_price').value = c.p || ''; $('dl_monthly').value = c.m || ''; if ($('dl_commission') && !deal.id) $('dl_commission').value = c.commission || ''; res.classList.add('hidden'); inp.value = ''; compute(); }); });
+        res.querySelectorAll('.ai[data-i]').forEach(function (el) { el.addEventListener('click', function () { var c = cars[+el.dataset.i]; $('dl_car_make').value = c.brand || ''; $('dl_car_model').value = c.name || ''; $('dl_car_trim').value = c.trim || ''; $('dl_car_engine').value = c.engine || ''; $('dl_car_color').value = c.colors || ''; $('dl_car_price').value = c.p || ''; $('dl_monthly').value = c.m || ''; if ($('dl_commission') && !deal.id) $('dl_commission').value = c.commission || ''; res.classList.add('hidden'); inp.value = ''; compute(); autoSave(); }); });
       });
     });
     // read the current form into a deal object (reused by save + contract)
@@ -887,16 +887,36 @@
         tradein: { plate: $('dl_ti_plate') ? $('dl_ti_plate').value : null, make: $('dl_ti_make').value, model: $('dl_ti_model').value, trim: $('dl_ti_trim').value, year: num('dl_ti_year') || null, hand: $('dl_ti_hand').value, color: $('dl_ti_color') ? $('dl_ti_color').value : null, fuel: $('dl_ti_fuel') ? $('dl_ti_fuel').value : null, vin: $('dl_ti_vin') ? $('dl_ti_vin').value : null, list: num('dl_ti_list') || null, buy: num('dl_ti_buy') || null, lien: num('dl_ti_lien') || null, holder: $('dl_ti_holder').value, delivery: $('dl_ti_delivery').value || null, liened: $('dl_ti_liened').checked }
       };
     }
-    $('dlSave').addEventListener('click', function () {
+    // ---- auto-save: persist every change (debounced), no button, no page refresh ----
+    var saveTimer = null, inFlight = false, dirtyAgain = false, dealLogged = !!deal.id, lastStatus = deal.status || 'quote';
+    function setState(txt) { var ind = $('dlSaveState'); if (ind) ind.textContent = txt; }
+    function doSave() {
+      if (inFlight) { dirtyAgain = true; return; }
+      inFlight = true; setState('💾 שומר…');
       var payload = readForm();
-      var q = deal.id ? db.from('deals').update(payload).eq('id', deal.id) : db.from('deals').insert(payload);
+      var q = deal.id ? db.from('deals').update(payload).eq('id', deal.id)
+                      : db.from('deals').insert(payload).select('id,order_no').single();
       q.then(function (r) {
-        if (r.error) return alert('שגיאה: ' + r.error.message);
-        var newStatus = payload.status === 'ordered' ? 'won' : (payload.status === 'cancelled' ? 'lost' : 'quote_sent');
-        logActivity(lead.id, 'quote', (deal.id ? 'עודכנה' : 'נוצרה') + ' עסקה: ' + (payload.car_make + ' ' + payload.car_model) + ' · ' + nis(payload.total));
-        changeStatus(lead.id, newStatus, lead, function () { window.C2B_openLeadCard(lead.id); });
+        inFlight = false;
+        if (r.error) { setState('⚠ שגיאת שמירה'); console.warn('[deal auto-save]', r.error); return; }
+        if (!deal.id && r.data) {
+          deal.id = r.data.id; deal.order_no = r.data.order_no;
+          var h = C.$('view') && C.$('view').querySelector('.lead-top h3'); if (h) h.textContent = 'עסקה #' + (deal.order_no || '');
+        }
+        if (!dealLogged) { dealLogged = true; logActivity(lead.id, 'quote', 'נוצרה עסקה: ' + (payload.car_make + ' ' + payload.car_model)); }
+        // keep the lead status in sync when the order status changes — silently, no re-render
+        if (payload.status !== lastStatus) {
+          lastStatus = payload.status;
+          var ns = payload.status === 'ordered' ? 'won' : (payload.status === 'cancelled' ? 'lost' : 'quote_sent');
+          db.from('leads').update({ status: ns }).eq('id', lead.id).then(function () { if (C.refreshBadges) C.refreshBadges(); });
+        }
+        setState('✓ נשמר');
+        if (dirtyAgain) { dirtyAgain = false; doSave(); }
       });
-    });
+    }
+    function autoSave() { clearTimeout(saveTimer); setState('…'); saveTimer = setTimeout(doSave, 700); }
+    C.$('view').addEventListener('input', function (e) { if (e.target.id && e.target.id.indexOf('dl_') === 0) autoSave(); });
+    C.$('view').addEventListener('change', function (e) { if (e.target.id && e.target.id.indexOf('dl_') === 0) autoSave(); });
     $('dlContract').addEventListener('click', function () { contractView(lead, Object.assign({ id: deal.id, order_no: deal.order_no }, readForm())); });
     // trade-in: pull vehicle details by plate number from the Ministry of Transport open dataset
     if ($('dlPlateLookup')) $('dlPlateLookup').addEventListener('click', function () {
