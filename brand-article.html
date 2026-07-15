@@ -464,7 +464,7 @@
             + '<input type="text" name="name" placeholder="שם מלא" required>'
             + '<input type="tel" name="phone" placeholder="מספר טלפון" required>'
             + '<input type="email" name="email" placeholder="אימייל">'
-            + '<label class="side-consent"><input type="checkbox" required> <span>אני מאשר/ת את <a href="#">מדיניות הפרטיות</a> ומסכים/ה לקבל מידע פרסומי מ-Car2Buy</span></label>'
+            + '<label class="side-consent"><input type="checkbox" checked required> <span>אני מאשר/ת את <a href="#">מדיניות הפרטיות</a> ומסכים/ה לקבל מידע פרסומי מ-Car2Buy</span></label>'
             + '<button type="submit" class="submit">צרו איתי קשר</button>'
           + '</form>'
           + '<div class="side-thanks" id="sideThanks">תודה! ניצור איתכם קשר בהקדם ✓</div>'
@@ -488,6 +488,7 @@
         + '<form id="infoForm">'
           + '<input type="text" name="name" placeholder="שם מלא" required>'
           + '<input type="tel" name="phone" placeholder="מספר טלפון" required>'
+          + (window.C2B_consentHTML ? window.C2B_consentHTML() : '')
           + '<button type="submit" class="submit">שליחה</button>'
         + '</form>'
       + '</div></div>';
@@ -506,7 +507,7 @@
   var sf = document.getElementById('sideForm');
   if (sf) sf.addEventListener('submit', function (e) { e.preventDefault(); if (window.submitLead) submitLead(window.collectForm ? collectForm(sf, { source: 'brand_article_side' }) : { source: 'brand_article_side' }); sf.style.display = 'none'; document.getElementById('sideThanks').style.display = 'block'; });
   var inf = document.getElementById('infoForm');
-  if (inf) inf.addEventListener('submit', function (e) { e.preventDefault(); if (window.submitLead) submitLead(window.collectForm ? collectForm(inf, { source: 'brand_article_info' }) : { source: 'brand_article_info' }); inf.innerHTML = '<p style="text-align:center;color:#1f8a4c;font-weight:700;padding:10px 0;">תודה! ניצור קשר בהקדם ✓</p>'; });
+  if (inf) inf.addEventListener('submit', function (e) { e.preventDefault(); if (window.C2B_consentOK && !window.C2B_consentOK(inf)) return; if (window.submitLead) submitLead(window.collectForm ? collectForm(inf, { source: 'brand_article_info' }) : { source: 'brand_article_info' }); inf.innerHTML = '<p style="text-align:center;color:#1f8a4c;font-weight:700;padding:10px 0;">תודה! ניצור קשר בהקדם ✓</p>'; });
 
   // ---- Google reviews popup ----
   (function () {

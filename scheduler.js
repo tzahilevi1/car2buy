@@ -83,6 +83,7 @@
           <textarea id="sNote" placeholder="הערה / רכב שמעניין אתכם (לא חובה)"></textarea>
         </div>
         <div class="sched-err" id="sErr"></div>
+        ${window.C2B_consentHTML ? window.C2B_consentHTML() : ''}
         <button type="submit" class="btn btn-gold sched-submit">אשרו ושלחו</button>
         <p class="sched-legal">בלחיצה על "אשרו ושלחו" יישלח אישור פגישה למייל שלכם וליועץ. ניתן לשנות או לבטל בכל עת.</p>
       </form>`;
@@ -150,6 +151,7 @@
       const email = root.querySelector('#sEmail').value.trim();
       if (!selDate || !selTime) { err.textContent = 'בחרו תאריך ושעה לפגישה.'; return; }
       if (!name || !phone || !email) { err.textContent = 'מלאו שם, טלפון ואימייל.'; return; }
+      if (window.C2B_consentOK && !window.C2B_consentOK(root.querySelector('#schedForm'))) { err.textContent = 'יש לאשר את מדיניות הפרטיות.'; return; }
       err.textContent = '';
       const carVal = (root.querySelector('#sCar') && root.querySelector('#sCar').value.trim()) || '';
       const data = { name, phone, email, car: carVal, type: root.querySelector('#sType').value, branch: root.querySelector('#sBranch').value, note: root.querySelector('#sNote').value.trim(), date: fmtDate(selDate), time: selTime };

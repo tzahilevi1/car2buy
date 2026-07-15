@@ -1193,6 +1193,14 @@ image-slot { display: block; }
 .art-toc a { color: var(--ink-soft); font-size: 15.5px; transition: color 0.2s; }
 .art-toc a:hover { color: var(--gold); }
 
+/* ===== phone inputs: force RTL alignment (Hebrew) across every form ===== */
+input[type="tel"] { direction: rtl; text-align: right; }
+
+/* ===== shared consent checkbox (pre-checked, required to submit) ===== */
+.c2b-consent { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; line-height: 1.5; color: var(--ink-soft, #57534e); margin: 6px 0 2px; cursor: pointer; text-align: right; direction: rtl; }
+.c2b-consent input { margin-top: 2px; flex: 0 0 auto; width: 16px; height: 16px; accent-color: var(--gold, #F5691E); cursor: pointer; }
+.c2b-consent a { color: var(--gold-deep, #c0551d); text-decoration: underline; }
+
 /* ===== article inline call-to-action banner ===== */
 .art-inline-cta { display: flex; align-items: center; justify-content: space-between; gap: 22px; flex-wrap: wrap; margin: 38px 0; padding: 24px 28px; border-radius: 18px; background: linear-gradient(120deg, color-mix(in oklab, var(--gold) 14%, var(--bg-card)), var(--bg-card)); border: 1px solid var(--gold-line); box-shadow: 0 18px 40px -28px rgba(0,0,0,0.5); }
 .art-inline-cta .art-cta-txt { display: grid; gap: 4px; }

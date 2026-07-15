@@ -14,6 +14,20 @@
     }
   } catch (e) {}
 })();
+// shared consent checkbox — pre-checked by default; leads can't be sent while unchecked.
+window.C2B_consentHTML = function () {
+  return '<label class="c2b-consent"><input type="checkbox" class="c2b-consent-cb" checked>' +
+    '<span>אני מאשר/ת יצירת קשר וקבלת מידע מ-Car2Buy בהתאם ל<a href="privacy.html" target="_blank" rel="noopener noreferrer">מדיניות הפרטיות</a></span></label>';
+};
+window.C2B_consentOK = function (scope) {
+  var cb = (scope && scope.querySelector) ? scope.querySelector('.c2b-consent-cb') : null;
+  if (cb && !cb.checked) {
+    var l = cb.closest('.c2b-consent'); if (l) { l.style.color = '#d24b4b'; setTimeout(function () { l.style.color = ''; }, 2200); }
+    return false;
+  }
+  return true;
+};
+
 (function () {
   const PAGES = [
     { id: 'models',   href: 'models.html',       label: 'דגמים' },
@@ -23,6 +37,7 @@
     { id: 'compare',  href: 'compare.html',      label: 'השוואה' },
     { id: 'calc',     href: 'calculator.html',   label: 'מחשבון' },
     { id: 'finance',  href: 'financing.html',    label: 'השיטה שלנו' },
+    { id: 'customers', href: 'customers.html',   label: 'לקוחות' },
     { id: 'magazine', href: 'magazine.html',     label: 'מגזין' },
     { id: 'contact',  href: 'contact.html',      label: 'צור קשר' },
   ];

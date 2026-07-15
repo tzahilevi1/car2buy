@@ -25,6 +25,7 @@
           <form class="exit-form" id="exitForm" novalidate>
             <input type="text" id="exitName" placeholder="שם מלא" required>
             <input type="tel" id="exitPhone" placeholder="טלפון" required>
+            ${window.C2B_consentHTML ? window.C2B_consentHTML() : ''}
             <button type="submit" class="btn btn-gold">קבלו הצעה</button>
             <div class="exit-err" id="exitErr"></div>
           </form>
@@ -97,6 +98,7 @@
     const phone = el.querySelector('#exitPhone');
     const err = el.querySelector('#exitErr');
     if (!name.value.trim() || !phone.value.trim()) { err.textContent = 'מלאו שם וטלפון.'; return; }
+    if (window.C2B_consentOK && !window.C2B_consentOK(el.querySelector('#exitForm'))) { err.textContent = 'יש לאשר את מדיניות הפרטיות.'; return; }
     err.textContent = '';
     if (window.submitLead) submitLead({ name: name.value.trim(), phone: phone.value.trim(), source: 'exit_popup' });
     if (window.c2bTrack) c2bTrack('lead_submit', { source: 'exit_popup' });

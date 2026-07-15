@@ -40,6 +40,8 @@
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (rows) {
       if (rows && rows.length) {
+        // keep the seed (loan-cars.js) inventory so pages still resolve the original cN ids
+        if (!C.LOAN_CARS_SEED) C.LOAN_CARS_SEED = C.LOAN_CARS;
         C.LOAN_CARS = rows.map(function (row, i) {
           // real per-car photos from the sheet: Google-Drive share links -> direct image URLs
           var gallery = [row.imgL, row.imgB, row.imgR].map(driveUrl).filter(Boolean);

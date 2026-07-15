@@ -48,6 +48,7 @@
             '<label class="ql-field"><span>שם מלא</span><input type="text" id="qlName" required placeholder="השם שלכם"></label>' +
             '<label class="ql-field"><span>טלפון</span><input type="tel" id="qlPhone" required inputmode="tel" placeholder="050-0000000"></label>' +
           '</div>' +
+          (window.C2B_consentHTML ? window.C2B_consentHTML() : '') +
           '<button type="submit" class="ql-submit">שלחו לי הצעה אישית ←</button>' +
           '<div class="ql-note">🔒 הפרטים נשמרים בבטחה. אין התחייבות — רק הצעה שתשוו בעצמכם.</div>' +
         '</form>' +
@@ -67,6 +68,7 @@
     modal.addEventListener('click', function (e) { if (e.target.closest('[data-ql-close]')) close(); });
     els.form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (window.C2B_consentOK && !window.C2B_consentOK(els.form)) return;
       var nm = els.name.value.trim(), ph = els.phone.value.trim();
       if (!nm) { els.name.focus(); return; }
       if (ph.replace(/\D/g, '').length < 8) { els.phone.focus(); return; }
