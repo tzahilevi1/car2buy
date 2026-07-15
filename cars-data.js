@@ -35,7 +35,7 @@
       brand: "צ'רי", model: 'טיגו 8 פרו', trim: 'PHEV Noble',
       type: 'פנאי-שטח 7 מקומות', cat: 'suv',
       img: 'https://www.icar.co.il/_media/images/models/bgremoval/chery-tiggo-8-pro-new.jpg',
-      imaginMake: 'chery', imaginModel: 'tiggo 8',
+      imaginMake: 'chery', imaginModel: 'tiggo8',
       price: 202712, monthly60: 2074, year: 2026,
       hero: 'linear-gradient(135deg,#3a1f1f,#7a3a2c)',
       tagline: 'שבעה מקומות, נוכחות גדולה, החזר חכם',

@@ -816,40 +816,30 @@
     ];
   })();
 
-  // ----- media gallery images (real ICAR hero + imagin.studio angle renders) -----
+  // ----- media gallery: real listing photo + imagin.studio multi-angle renders (every side of the car) -----
+  var USED_MAKE = { 'BMW':'bmw', 'Audi':'audi', 'Tesla':'tesla', 'Lexus':'lexus', 'Toyota':'toyota', 'Volkswagen':'volkswagen', 'Kia':'kia', 'Mazda':'mazda', 'Genesis':'genesis', 'Mercedes-AMG':'mercedes-benz', 'Mercedes':'mercedes-benz', 'Porsche':'porsche' };
+  var USED_MODEL = { '320i M-Sport':'3-series', 'X3 xDrive':'x3', '430i Coupé':'4-series', 'A5 Sportback':'a5', 'Q5 quattro':'q5', 'A3 Sedan':'a3', 'Model 3 LR':'model3', 'Model Y':'modely', 'NX 300h':'nx', 'ES 300h':'es', 'Corolla Hybrid':'corolla', 'RAV4 Hybrid':'rav4', 'C-HR':'c-hr', 'Golf GTI':'golf', 'Tiguan':'tiguan', 'Sportage GT':'sportage', 'Niro EV':'niro', '6 Signature':'6', 'CX-5':'cx-5', 'G70':'g70', 'C 200 Coupé':'c-class', 'Macan':'macan' };
+  var imgMake = car.imaginMake || USED_MAKE[car.brand] || '';
+  var imgModel = car.imaginModel || USED_MODEL[car.model] || '';
   function imaginUrl(a) {
-    return 'https://cdn.imagin.studio/getImage?customer=hrjavascript-mastery&make=' +
-      encodeURIComponent(car.imaginMake) + '&modelFamily=' + encodeURIComponent(car.imaginModel) +
+    return 'https://cdn.imagin.studio/getimage?customer=img&make=' +
+      encodeURIComponent(imgMake) + '&modelFamily=' + encodeURIComponent(imgModel) +
       '&angle=' + a + '&width=1000';
   }
+  var GALLERY_ANGLES = ['23', '29', '05', '09', '13', '17', '21', '01'];
   var custImgs = [];
-  var galleryImgs = (car.gallery && car.gallery.length)
-    ? car.gallery.map(function (sx) { return { src: sx, contain: false }; })
-    : (car.img ? [{ src: car.img, contain: true }] : []);
+  var galleryImgs = [];
+  if (car.gallery && car.gallery.length) {
+    galleryImgs = car.gallery.map(function (sx) { return { src: sx, contain: false }; });
+  } else {
+    if (car.img) galleryImgs.push({ src: car.img, contain: false });
+    if (imgMake && imgModel) GALLERY_ANGLES.forEach(function (a) { galleryImgs.push({ src: imaginUrl(a), contain: true }); });
+  }
   var galleryHtml = galleryImgs.length
-    ? (function () {
-        var src = galleryImgs[0].src, contain = galleryImgs[0].contain;
-        // if the car has a real multi-image gallery, use it; else frame the one studio shot as detail crops
-        if (galleryImgs.length >= 4) {
-          return '<div class="cd-mgrid">' +
-            '<div class="gcell tall" data-lb="0"><img loading="lazy" src="' + esc(galleryImgs[0].src) + '" alt="' + esc(fullName) + '"></div>' +
-            '<div class="gcell" data-lb="1"><img loading="lazy" src="' + esc(galleryImgs[1].src) + '" alt="' + esc(fullName) + '"></div>' +
-            '<div class="gcell" data-lb="2"><img loading="lazy" src="' + esc(galleryImgs[2].src) + '" alt="' + esc(fullName) + '"></div>' +
-            '<div class="gcell tall" data-lb="3"><img loading="lazy" src="' + esc(galleryImgs[3].src) + '" alt="' + esc(fullName) + '"></div>' +
-          '</div>';
-        }
-        var frames = [
-          { cls: 'tall', pos: 'center center', zoom: 1 },
-          { cls: '', pos: '75% 55%', zoom: 1.7 },
-          { cls: '', pos: '30% 70%', zoom: 1.9 },
-          { cls: 'tall', pos: '40% 45%', zoom: 1.35 }
-        ];
-        return '<div class="cd-mgrid">' + frames.map(function (f, i) {
-          return '<div class="gcell ' + f.cls + '" data-lb="0">' +
-            '<img loading="lazy" src="' + esc(src) + '" alt="' + esc(fullName) + '" style="object-fit:cover;object-position:' + f.pos + ';transform:scale(' + f.zoom + ')">' +
-          '</div>';
-        }).join('') + '</div>';
-      })()
+    ? '<div class="cd-mgrid">' + galleryImgs.map(function (g, i) {
+        return '<div class="gcell' + (i % 4 === 0 ? ' tall' : '') + '" data-lb="' + i + '">' +
+          '<img loading="lazy" src="' + esc(g.src) + '" alt="' + esc(fullName) + ' — תמונה ' + (i + 1) + '" onerror="this.closest(\'.gcell\').style.display=\'none\'"></div>';
+      }).join('') + '</div>'
     : '';
   var trimCount = (window.Car2Buy && window.Car2Buy.LOAN_CARS || []).filter(function (l) { return l.brand === car.brand && l.name === car.model; }).length || 1;
   var brandInit = (car.brand || '').replace(/[^\u05D0-\u05EAA-Za-z]/g, '').slice(0, 2) || '·';

@@ -491,6 +491,27 @@
     if (/חשמלי|\bEV\b/i.test(t)) return 'חשמלי';
     return 'בנזין';
   }
+  // Hebrew brand/model -> imagin.studio slugs (validated against the CDN) for multi-angle studio renders
+  var IMAGIN_MAKE = {
+    'ב.י.ד':'byd', "ג'אקו":'jaecoo', "צ'רי":'chery', "אמ.ג'י":'mg', "קיי.ג'י.אם":'kgm',
+    'אאודי':'audi', 'אווטר':'avatr', 'אומודה':'omoda', 'ב.מ.וו':'bmw', 'וויה':'voyah', 'זיקר':'zeekr',
+    'טויוטה':'toyota', 'יונדאי':'hyundai', 'ליפמוטור':'leapmotor', 'מאזדה':'mazda', 'מיצובישי':'mitsubishi',
+    'מרצדס':'mercedes-benz', 'ניסאן':'nissan', 'סובארו':'subaru', 'סיאט':'seat', 'סיטרואן':'citroen',
+    'סמארט':'smart', 'סקודה':'skoda', 'קיה':'kia', 'שברולט':'chevrolet', 'GMC':'gmc'
+  };
+  var IMAGIN_MODEL = {
+    'אטו 2':'atto2', 'סיל 5 DM-i':'seal', 'סיל U':'sealu', 'סיליון 5':'sealion5',
+    '216':'2-series', '420i':'4-series', '530e':'5-series', 'X1':'x1', 'X2':'x2', 'X4':'x4', 'X5':'x5', 'iX1':'ix1',
+    'A3 ספורטבק':'a3', 'Q3 ספורטבק':'q3', 'אווטר 11':'11', 'אומודה 7':'7', 'Free':'free',
+    'זיקר 001':'001', 'זיקר 7X':'7x', 'זיקר X':'x', 'C-HR':'c-hr', 'יאריס':'yaris', 'יאריס קרוס':'yaris-cross',
+    'אלנטרה':'elantra', 'וניו':'venue', 'טוסון':'tucson', 'סונטה':'sonata', 'קונה':'kona', 'C10':'c10', 'CX-5':'cx-5',
+    'אאוטלנדר':'outlander', 'אקליפס קרוס':'eclipse-cross', 'CLA 200':'cla', 'GLA 200':'gla', 'GLC 200':'glc', 'GLC 300 קופה':'glc',
+    'קשקאי':'qashqai', "ג'וק":'juke', 'קרוסטרק':'crosstrek', 'ארונה':'arona', 'ברלינגו':'berlingo', 'סמארט #5':'#5',
+    'אוקטביה':'octavia', 'סופרב':'superb', 'קאמיק':'kamiq', 'נירו':'niro', 'סלטוס':'seltos', 'פיקנטו':'picanto', 'סילברדו EV':'silverado',
+    'FX EV':'fx', 'FX':'fx', 'טיגו 4':'tiggo4', 'טיגו 7 פרו':'tiggo7', 'טיגו 8 פרו':'tiggo8', 'טיגו 9 לקשרי':'tiggo9', 'טיגו 9 פרו נובל':'tiggo9',
+    'EHS':'ehs', 'HS':'hs', 'MG 3':'3', 'S9':'s9', 'ZS':'zs',
+    "ג'אקו 8":'8', "ג'אקו 7":'7', "ג'אקו 5":'5', "ג'אקו 5 חשמלי":'5', 'רקסטון':'rexton', 'GMC':'sierra'
+  };
   function buildFromLoan(l) {
     var t = (l.type || '') + ' ' + (l.trim || '');
     var evBrands = ['זיקר', 'אווטר', 'ליפמוטור', 'וויה', 'סקיוואל', 'סמארט'];
@@ -500,6 +521,7 @@
     var typeLabel = l.type || (ev ? 'רכב חשמלי' : phev ? 'רכב היברידי נטען' : hev ? 'רכב היברידי' : 'רכב חדש');
     return {
       brand: l.brand, model: l.name, trim: l.trim, type: typeLabel, cat: l.cat || '',
+      imaginMake: IMAGIN_MAKE[l.brand] || '', imaginModel: IMAGIN_MODEL[l.name] || '',
       price: l.p, monthly60: l.m, year: 2026, img: l.img,
       tagline: l.name + ' — דגם חדש בתנאי מימון משתלמים.',
       dream: 'החלום ששמו ' + l.name,
@@ -674,40 +696,26 @@
     ];
   })();
 
-  // ----- media gallery images (real ICAR hero + imagin.studio angle renders) -----
+  // ----- media gallery: real multi-angle studio renders (imagin.studio) so users see the car from every side -----
   function imaginUrl(a) {
-    return 'https://cdn.imagin.studio/getImage?customer=hrjavascript-mastery&make=' +
-      encodeURIComponent(car.imaginMake) + '&modelFamily=' + encodeURIComponent(car.imaginModel) +
+    return 'https://cdn.imagin.studio/getimage?customer=img&make=' +
+      encodeURIComponent(car.imaginMake || '') + '&modelFamily=' + encodeURIComponent(car.imaginModel || '') +
       '&angle=' + a + '&width=1000';
   }
+  var GALLERY_ANGLES = ['23', '29', '05', '09', '13', '17', '21', '01'];   // front-3/4, front, side, rear-3/4, rear, high, side, rear-3/4
   var custImgs = [];
-  var galleryImgs = (car.gallery && car.gallery.length)
-    ? car.gallery.map(function (sx) { return { src: sx, contain: false }; })
-    : (car.img ? [{ src: car.img, contain: true }] : []);
+  var galleryImgs = [];
+  if (car.gallery && car.gallery.length) {
+    galleryImgs = car.gallery.map(function (sx) { return { src: sx, contain: false }; });
+  } else {
+    if (car.img) galleryImgs.push({ src: car.img, contain: true });
+    if (car.imaginMake && car.imaginModel) GALLERY_ANGLES.forEach(function (a) { galleryImgs.push({ src: imaginUrl(a), contain: true }); });
+  }
   var galleryHtml = galleryImgs.length
-    ? (function () {
-        var src = galleryImgs[0].src, contain = galleryImgs[0].contain;
-        // if the car has a real multi-image gallery, use it; else frame the one studio shot as detail crops
-        if (galleryImgs.length >= 4) {
-          return '<div class="cd-mgrid">' +
-            '<div class="gcell tall" data-lb="0"><img loading="lazy" src="' + esc(galleryImgs[0].src) + '" alt="' + esc(fullName) + '"></div>' +
-            '<div class="gcell" data-lb="1"><img loading="lazy" src="' + esc(galleryImgs[1].src) + '" alt="' + esc(fullName) + '"></div>' +
-            '<div class="gcell" data-lb="2"><img loading="lazy" src="' + esc(galleryImgs[2].src) + '" alt="' + esc(fullName) + '"></div>' +
-            '<div class="gcell tall" data-lb="3"><img loading="lazy" src="' + esc(galleryImgs[3].src) + '" alt="' + esc(fullName) + '"></div>' +
-          '</div>';
-        }
-        var frames = [
-          { cls: 'tall', pos: 'center center', zoom: 1 },
-          { cls: '', pos: '75% 55%', zoom: 1.7 },
-          { cls: '', pos: '30% 70%', zoom: 1.9 },
-          { cls: 'tall', pos: '40% 45%', zoom: 1.35 }
-        ];
-        return '<div class="cd-mgrid">' + frames.map(function (f, i) {
-          return '<div class="gcell ' + f.cls + '" data-lb="0">' +
-            '<img loading="lazy" src="' + esc(src) + '" alt="' + esc(fullName) + '" style="object-fit:cover;object-position:' + f.pos + ';transform:scale(' + f.zoom + ')">' +
-          '</div>';
-        }).join('') + '</div>';
-      })()
+    ? '<div class="cd-mgrid">' + galleryImgs.map(function (g, i) {
+        return '<div class="gcell' + (i % 4 === 0 ? ' tall' : '') + '" data-lb="' + i + '">' +
+          '<img loading="lazy" src="' + esc(g.src) + '" alt="' + esc(fullName) + ' — תמונה ' + (i + 1) + '" onerror="this.closest(\'.gcell\').style.display=\'none\'"></div>';
+      }).join('') + '</div>'
     : '';
   var trimCount = (window.Car2Buy && window.Car2Buy.LOAN_CARS || []).filter(function (l) { return l.brand === car.brand && l.name === car.model; }).length || 1;
   var brandInit = (car.brand || '').replace(/[^\u05D0-\u05EAA-Za-z]/g, '').slice(0, 2) || '·';
