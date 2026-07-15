@@ -2,6 +2,8 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://tdxhqpauuqawcoivjnnm.supabase.co wss://tdxhqpauuqawcoivjnnm.supabase.co https://data.gov.il https://api.ipify.org; frame-src https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>כרטיס רכב · Car2Buy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -714,7 +716,7 @@ function renderCarDetail() {
     var q = encodeURIComponent(fullName + ' ' + (car.year || '') + ' סרטון רשמי');
     videoBlock = '<div class="cd-video-ph"><div><div class="ic">' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + '</div>' +
       '<p>הסרטון הרשמי של היבואן יתווסף כאן.</p>' +
-      '<a class="btn btn-ghost" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=' + q + '">חיפוש הסרטון הרשמי ←</a></div></div>';
+      '<a class="btn btn-ghost" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=' + q + '">חיפוש הסרטון הרשמי ←</a></div></div>';
   }
 
   var dream = car.dream || ('החלום ששמו ' + car.model);
@@ -1215,7 +1217,7 @@ function renderCarDetail() {
       var q = encodeURIComponent(fullName + ' ' + (car.year || '') + ' סרטון רשמי');
       vbody.innerHTML = '<div class="cd-vmodal-fallback"><div style="font-size:34px;">▶</div>' +
         '<p>הסרטון הרשמי של היבואן יתווסף כאן בקרוב.</p>' +
-        '<a class="btn btn-gold" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=' + q + '">חיפוש הסרטון ביוטיוב ←</a></div>';
+        '<a class="btn btn-gold" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=' + q + '">חיפוש הסרטון ביוטיוב ←</a></div>';
     }
     vmodal.classList.add('open'); vmodal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
   }

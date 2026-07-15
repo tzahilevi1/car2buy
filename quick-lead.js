@@ -39,6 +39,7 @@
           '<p class="ql-sub">משאירים פרטים ויועץ חוזר אליכם עם ההצעה הטובה ביותר — כולל טרייד־אין לרכב הישן.</p>' +
         '</div>' +
         '<form class="ql-form" id="qlForm" novalidate>' +
+          '<input type="text" id="qlHp" name="company_url" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;">' +
           '<label class="ql-field"><span>הרכב שמעניין אתכם</span>' +
             '<input type="text" id="qlCar" list="qlCarList" placeholder="הקלידו או בחרו דגם מהקטלוג" autocomplete="off">' +
             '<datalist id="qlCarList">' + opts + '</datalist>' +
@@ -69,8 +70,9 @@
       var nm = els.name.value.trim(), ph = els.phone.value.trim();
       if (!nm) { els.name.focus(); return; }
       if (ph.replace(/\D/g, '').length < 8) { els.phone.focus(); return; }
+      var hp = (modal.querySelector('#qlHp') || {}).value || '';
       if (window.submitLead) {
-        window.submitLead({ name: nm, phone: ph, car: els.car.value.trim(), source: modal._source || 'article_cta' });
+        window.submitLead({ name: nm, phone: ph, car: els.car.value.trim(), source: modal._source || 'article_cta', hp: hp });
       }
       els.form.style.display = 'none';
       els.ok.classList.add('show');

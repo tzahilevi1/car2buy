@@ -4,6 +4,17 @@
    nav item. Keeps nav/footer edits in one place.
    ============================================================ */
 (function () {
+  // anti-clickjacking: CSP frame-ancestors is ignored in <meta>, so break out of a
+  // cross-origin frame here (a same-origin embed is left intact).
+  try {
+    if (window.top !== window.self) {
+      var parentOrigin = null;
+      try { parentOrigin = window.top.location.origin; } catch (e) { parentOrigin = null; }
+      if (parentOrigin !== window.location.origin) { window.top.location = window.self.location.href; }
+    }
+  } catch (e) {}
+})();
+(function () {
   const PAGES = [
     { id: 'models',   href: 'models.html',       label: 'דגמים' },
     { id: 'recommended', href: 'recommended.html', label: 'רכבים מומלצים' },
