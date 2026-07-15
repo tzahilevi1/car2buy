@@ -985,7 +985,7 @@
             '</div>' +
             '<button type="button" class="cd-vbtn cd-vbtn-wide" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפו בסרטון הרכב</button>' +
             '<div class="cd-lead-cta">' +
-              '<button type="button" class="btn btn-gold btn-lg" data-open-lead>השאירו פרטים לרכב הזה</button>' +
+              '<button type="button" class="btn btn-gold btn-lg" data-open-lead>לרכישת ' + esc(fullName) + ' החדשה</button>' +
               '<a class="btn btn-ghost btn-lg" href="calculator.html">חשבו החזר חודשי</a>' +
             '</div>' +
           '</div>' +
@@ -1183,7 +1183,7 @@
       '<div class="cdl-card" role="dialog" aria-modal="true" aria-label="השארת פרטים">' +
         '<button type="button" class="cdl-x" data-cdl-close aria-label="סגור">✕</button>' +
         '<div class="cdl-eyebrow">' + esc(brandDisp) + ' · ' + esc(car.type || '') + '</div>' +
-        '<h3>השאירו פרטים לרכב הזה</h3>' +
+        '<h3>לרכישת ' + esc(fullName) + ' החדשה</h3>' +
         '<div class="cdl-car">' + carThumb + '<div><b>' + esc(fullName) + '</b><span>נציג יחזור אליכם עם הצעה אישית לרכב זה</span></div></div>' +
         '<form class="cdl-form" id="cdlForm">' +
           '<input type="text" id="cdlName" placeholder="שם מלא" autocomplete="name" required>' +
