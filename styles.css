@@ -1190,6 +1190,10 @@ image-slot { display: block; }
 .art-toc a { color: var(--ink-soft); font-size: 15.5px; transition: color 0.2s; }
 .art-toc a:hover { color: var(--gold); }
 
+/* ===== article internal links (organic cross-linking, highlighted) ===== */
+.article-body .art-ilink { color: var(--gold-deep); font-weight: 700; text-decoration: none; background-image: linear-gradient(var(--gold-line), var(--gold-line)); background-repeat: no-repeat; background-position: 0 100%; background-size: 100% 2px; padding-bottom: 1px; transition: background-size 0.25s var(--ease), color 0.2s; }
+.article-body .art-ilink:hover { color: var(--gold-bright); background-size: 100% 100%; background-image: linear-gradient(color-mix(in oklab, var(--gold) 16%, transparent), color-mix(in oklab, var(--gold) 16%, transparent)); border-radius: 4px; }
+
 /* ===== article rich media: figures, charts, video, tables ===== */
 .art-fig, .art-video, .art-chart { margin: 32px 0; }
 .art-fig img { width: 100%; height: auto; border-radius: var(--radius); display: block; border: 1px solid var(--line); }

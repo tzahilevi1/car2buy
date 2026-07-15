@@ -625,16 +625,50 @@
         return `<figure class="art-chart reveal">${c.title ? `<figcaption class="art-chart-title">${c.title}</figcaption>` : ''}` +
           `<div class="art-chart-bars">${rows}</div>${c.note ? `<div class="art-chart-note">${c.note}</div>` : ''}</figure>`;
       };
+      // ---- internal-link engine: promote key pages/models organically inside every post ----
+      // phrase (regex) -> destination. Highlighted links; each destination capped per article.
+      const LINK_MAP = [
+        { re: /טריי?ד[\s‑-]?אין/, href: 'trade-in.html' },
+        { re: /מחשבון(?:\s?ההחזר(?:\s?החודשי)?|\s?המימון)?/, href: 'calculator.html' },
+        { re: /קטלוג\s?הדגמים|קטלוג\s?הרכבים|הרכבים\s?החדשים|הדגמים\s?החדשים/, href: 'models.html' },
+        { re: /רכבים\s?חשמליים|רכב\s?חשמלי|דגמים\s?חשמליים/, href: 'models.html' },
+        { re: /להשוות|השוואת\s?רכבים|עמוד\s?ההשוואה|כלי\s?ההשוואה/, href: 'compare.html' },
+        { re: /יבוא\s?אישי/, href: 'personal-import.html' },
+        { re: /רכבי\s?יד\s?שנייה|יד\s?2(?!\d)|יד2/, href: 'yad2.html' },
+        { re: /הצעת\s?מימון|מסלול\s?מימון|תנאי\s?מימון|מימון\s?אישי/, href: 'car-loan.html' },
+        { re: /ליסינג\s?מימוני/, href: 'financing.html' },
+        { re: /החזר\s?חודשי/, href: 'calculator.html' },
+        { re: /דירוג\s?אשראי/, href: 'car-loan.html' },
+        { re: /רכב\s?משפחתי|רכבים\s?משפחתיים/, href: 'models.html' },
+        { re: /חוזה\s?ליסינג/, href: 'financing.html' },
+        { re: /היברידי|רכב\s?היברידי/, href: 'models.html' },
+        { re: /ליסינג/, href: 'financing.html' },
+        { re: /הרכב\s?הבא|הרכב\s?החדש|רכב\s?חדש/, href: 'models.html' }
+      ];
+      const linkCap = { 'models.html': 2, 'financing.html': 2, 'calculator.html': 2 };
+      const linkCount = {};
+      const linkify = (html) => {
+        if (typeof html !== 'string') return html;
+        LINK_MAP.forEach((e) => {
+          const cap = linkCap[e.href] || 1;
+          if ((linkCount[e.href] || 0) >= cap) return;
+          html = html.replace(e.re, (m) => {
+            linkCount[e.href] = (linkCount[e.href] || 0) + 1;
+            return `<a class="art-ilink" href="${e.href}">${m}</a>`;
+          });
+        });
+        return html;
+      };
       const blocks = a.body.map((b) => {
-        if (typeof b === 'string') return `<p class="reveal">${b}</p>`;
+        if (typeof b === 'string') return `<p class="reveal">${linkify(b)}</p>`;
         if (b.h2) return `<h2 class="art-h2 reveal">${b.h2}</h2>`;
-        if (b.ul) return `<ul class="art-ul reveal">${b.ul.map((li) => `<li>${li}</li>`).join('')}</ul>`;
+        if (b.ul) return `<ul class="art-ul reveal">${b.ul.map((li) => `<li>${linkify(li)}</li>`).join('')}</ul>`;
         if (b.quote) return `<blockquote class="art-quote reveal">${b.quote}</blockquote>`;
         if (b.img) return `<figure class="art-fig reveal"><img loading="lazy" src="${b.img}" alt="${(b.caption || a.title).replace(/"/g, '&quot;')}" onerror="this.closest('.art-fig').style.display='none'">${b.caption ? `<figcaption>${b.caption}</figcaption>` : ''}</figure>`;
         if (b.chart) return chartHtml(b.chart);
         if (b.video) return `<figure class="art-video reveal"><div class="art-video-frame"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/${b.video}" title="${(b.caption || a.title).replace(/"/g, '&quot;')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${b.caption ? `<figcaption>${b.caption}</figcaption>` : ''}</figure>`;
         if (b.table) return `<div class="art-table-wrap reveal"><table class="art-table">${b.table.head ? `<thead><tr>${b.table.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>` : ''}<tbody>${(b.table.rows || []).map((r) => `<tr>${r.map((cell, ci) => `<td${ci === 0 ? ' class="art-td-k"' : ''}>${cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-        if (b.p) return `<p class="reveal">${b.p}</p>`;
+        if (b.p) return `<p class="reveal">${linkify(b.p)}</p>`;
         return '';
       }).join('');
       // build a table of contents from h2 blocks
