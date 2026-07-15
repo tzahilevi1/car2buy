@@ -549,6 +549,7 @@
   var brandDisp = (window.Car2Buy && window.Car2Buy.dispBrand) ? window.Car2Buy.dispBrand(car.brand) : car.brand;
   var modelDisp = (window.Car2Buy && window.Car2Buy.enModel) ? window.Car2Buy.enModel(car.model) : car.model;
   var fullName = (window.Car2Buy && window.Car2Buy.enName) ? window.Car2Buy.enName({ brand: car.brand, name: car.model }) : (car.brand + ' ' + car.model);
+  try { window.__c2bCar = fullName; } catch (e) {}
 
   // ----- stat boxes -----
   var gearShort = /אוטומ|CVT|DCT|DHT/.test(s.gearbox || '') ? 'אוטומטית' : (s.gearbox || '—');

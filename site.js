@@ -120,9 +120,11 @@
         <a href="index.html" class="brand nav-logo" aria-label="Car2Buy"><img class="brand-img" src="logo.png" alt="Car2Buy — רכב חדש, קל ופשוט"></a>
         <div class="nav-cta">
           <a href="tel:+972584700706" class="nav-phone-pill">חייגו 054-470-0706</a>
+          <button type="button" class="nav-fav" id="navFav" aria-label="רכבים ששמרתי"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="nav-fav-badge" id="navFavBadge" hidden>0</span></button>
           <button type="button" class="btn nav-meeting" id="openScheduler">לתיאום פגישה</button>
           <button class="burger" id="burger" aria-label="תפריט"><span></span><span></span><span></span></button>
         </div>
+        <div class="fav-panel" id="favPanel" hidden></div>
       </div>
     </div>
     <div class="nav-bar">
@@ -198,6 +200,48 @@
   if (!document.getElementById('compareTray')) {
     document.body.insertAdjacentHTML('beforeend', '<div id="compareTray" class="compare-tray"></div>');
   }
+
+  // ---- favorites (saved cars): heart on cards + header badge + saved panel ----
+  (function () {
+    const KEY = 'c2b_favs';
+    const $ = (id) => document.getElementById(id);
+    const getF = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } };
+    const setF = (a) => { try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {} render(); };
+    const has = (id) => getF().some((f) => f.id === id);
+    const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    function carFrom(btn) {
+      const card = btn.closest('.ucard, .car, article'); if (!card) return null;
+      const link = card.querySelector('a.uc-hit, a.car-hit, a[href*="used-car.html"], a[href*="car.html"]');
+      const img = card.querySelector('img');
+      const pay = card.querySelector('.uc-pay, .ccard-pay');
+      const nm = card.dataset.name || (card.querySelector('.uc-name, .ccard-name') || {}).textContent || '';
+      const href = link ? link.getAttribute('href') : '';
+      return { id: href || nm, name: nm, href: href || '#', img: img ? img.getAttribute('src') : '', pay: pay ? pay.textContent.replace(/לחצו.*/, '').trim() : '' };
+    }
+    function updateButtons() { document.querySelectorAll('.uc-fav').forEach((b) => { const c = carFrom(b); if (c) b.classList.toggle('is-fav', has(c.id)); }); }
+    function badge() { const el = $('navFavBadge'); if (!el) return; const n = getF().length; el.textContent = n; el.hidden = n === 0; const f = $('navFav'); if (f) f.classList.toggle('has-favs', n > 0); }
+    function renderPanel() {
+      const p = $('favPanel'); if (!p || p.hidden) return;
+      const favs = getF();
+      p.innerHTML = '<div class="fav-panel-h">רכבים ששמרתי <span>(' + favs.length + ')</span></div>' +
+        (favs.length ? '<div class="fav-list">' + favs.map((f) => '<div class="fav-item"><a class="fav-item-link" href="' + esc(f.href) + '">' + (f.img ? '<img src="' + esc(f.img) + '" alt="">' : '') + '<span><b>' + esc(f.name) + '</b>' + (f.pay ? '<small>' + esc(f.pay) + '</small>' : '') + '</span></a><button type="button" class="fav-rm" data-rm="' + esc(f.id) + '" aria-label="הסר">✕</button></div>').join('') + '</div>'
+          : '<p class="fav-empty">עדיין לא שמרתם רכבים.<br>לחצו על ♥ "אהבתי" בכל רכב יד 2 כדי לשמור אותו כאן.</p>');
+    }
+    function togglePanel(force) { const p = $('favPanel'); if (!p) return; const open = force != null ? force : p.hidden; p.hidden = !open; if (open) renderPanel(); }
+    function render() { updateButtons(); badge(); renderPanel(); }
+    document.addEventListener('click', (e) => {
+      const favBtn = e.target.closest('.uc-fav');
+      if (favBtn) { e.preventDefault(); const c = carFrom(favBtn); if (!c || !c.id) return; const add = !has(c.id); favBtn.classList.toggle('is-fav', add); const list = add ? [c].concat(getF()) : getF().filter((f) => f.id !== c.id); setF(list); return; }
+      if (e.target.closest('#navFav')) { e.preventDefault(); togglePanel(); return; }
+      const rm = e.target.closest('[data-rm]');
+      if (rm) { e.preventDefault(); setF(getF().filter((f) => f.id !== rm.getAttribute('data-rm'))); return; }
+      const p = $('favPanel'); if (p && !p.hidden && !e.target.closest('#favPanel, #navFav')) togglePanel(false);
+    });
+    badge(); updateButtons();
+    window.addEventListener('load', updateButtons);
+    document.addEventListener('c2b:cars-updated', updateButtons);
+    window.C2B_updateFavButtons = updateButtons;
+  })();
 
   // WhatsApp float
   if (!document.getElementById('waFloat')) {

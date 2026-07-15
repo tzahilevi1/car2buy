@@ -691,6 +691,7 @@
   var s = car.specs || {};
   var brandDisp = (window.Car2Buy && window.Car2Buy.dispBrand) ? window.Car2Buy.dispBrand(car.brand) : car.brand;
   var fullName = car.brand + ' ' + car.model;
+  try { window.__c2bCar = fullName; } catch (e) {}
 
   // ----- stat boxes -----
   var gearShort = /אוטומ|CVT|DCT|DHT/.test(s.gearbox || '') ? 'אוטומטית' : (s.gearbox || '—');
@@ -902,7 +903,7 @@
   var optCards = [
     ['לקבלת עד 100% מימון לרכב', 'red', 'button', 'data-open-loan', ''],
     ['לתהליך טרייד אין מהיר ופשוט', 'red', 'button', 'data-open-tradein', ''],
-    ['לתיאום פגישה בסניף הקרוב', 'dark', 'a', '', 'contact.html'],
+    ['לתיאום פגישה בסניף הקרוב', 'dark', 'button', 'data-open-scheduler data-car="' + esc(fullName) + '"', ''],
     ['פנו ליועצים שלנו בוואטסאפ', 'wa', 'a', 'target="_blank" rel="noopener"', 'https://wa.me/972584700706?text=' + waMsgHero]
   ];
   var optCardsHtml = optCards.map(function (o) {

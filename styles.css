@@ -168,6 +168,27 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; l
 .nav-bar-inner { display: flex; align-items: center; justify-content: center; height: 50px; }
 .nav-phone-pill { display: inline-flex; align-items: center; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2); color: #ECE7DE; border-radius: 999px; padding: 9px 18px; font-family: var(--mono); font-size: 13.5px; letter-spacing: 0.03em; white-space: nowrap; }
 .nav-phone-pill:hover { color: var(--gold); border-color: var(--gold); }
+/* ---- favorites ---- */
+.nav-fav { position: relative; display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2); color: #ECE7DE; cursor: pointer; transition: 0.2s; }
+.nav-fav:hover { border-color: var(--gold); color: var(--gold); }
+.nav-fav.has-favs { color: var(--gold); }
+.nav-fav svg { width: 19px; height: 19px; }
+.nav-fav-badge { position: absolute; inset-block-start: -4px; inset-inline-end: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--gold); color: #1E1D1B; font-size: 11px; font-weight: 800; display: grid; place-items: center; line-height: 1; }
+.fav-panel { position: fixed; inset-block-start: 74px; inset-inline-end: clamp(12px,4vw,44px); width: min(360px, 92vw); max-height: 74vh; overflow-y: auto; background: #fff; color: var(--ink); border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; box-shadow: 0 40px 80px -30px rgba(0,0,0,0.5); z-index: 130; padding: 8px; }
+.fav-panel-h { font-family: var(--display); font-weight: 800; font-size: 16px; padding: 10px 12px; color: var(--ink); }
+.fav-panel-h span { color: var(--muted); font-weight: 600; font-size: 13px; }
+.fav-empty { padding: 18px 14px 22px; text-align: center; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.fav-item { display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 12px; }
+.fav-item:hover { background: var(--bg-2); }
+.fav-item-link { display: flex; align-items: center; gap: 11px; flex: 1; min-width: 0; color: var(--ink); text-decoration: none; }
+.fav-item-link img { width: 64px; height: 44px; object-fit: cover; border-radius: 8px; flex: 0 0 auto; }
+.fav-item-link b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fav-item-link small { color: var(--gold-deep); font-size: 12.5px; font-weight: 600; }
+.fav-rm { flex: 0 0 auto; background: none; border: 0; color: var(--muted); font-size: 16px; cursor: pointer; padding: 6px; border-radius: 8px; }
+.fav-rm:hover { background: var(--bg-1); color: var(--danger, #e25555); }
+.uc-fav.is-fav { background: var(--gold); border-color: var(--gold); color: #fff; }
+.uc-fav.is-fav svg { fill: #fff; }
+@media (max-width: 1040px) { .fav-panel { inset-block-start: 60px; } }
 .brand { display: inline-flex; direction: ltr; align-items: baseline; gap: 1px; font-family: var(--display); font-weight: 900; font-size: 25px; letter-spacing: -0.02em; }
 .brand b { color: var(--gold); font-weight: 900; }
 .brand .star { color: var(--gold); font-size: 0.7em; margin-inline-start: 3px; }

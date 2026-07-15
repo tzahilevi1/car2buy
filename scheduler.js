@@ -17,7 +17,8 @@
   const HE_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
   const HE_MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
-  let selDate = null, selTime = null;
+  let selDate = null, selTime = null, presetCar = '';
+  const escAttr = (s) => String(s == null ? '' : s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
   function fmtDate(d) { return `${HE_DAYS[d.getDay()]}, ${d.getDate()} ב${HE_MONTHS[d.getMonth()]} ${d.getFullYear()}`; }
 
@@ -72,6 +73,7 @@
           <input type="text" id="sName" placeholder="שם מלא" required>
           <input type="tel" id="sPhone" placeholder="טלפון" required>
           <input type="email" id="sEmail" placeholder="אימייל (לשליחת האישור)" required>
+          <input type="text" id="sCar" placeholder="הרכב שמעניין אתכם" value="${escAttr(presetCar)}">
           <select id="sType">
             <option value="פגישה בסניף">פגישה בסניף</option>
             <option value="שיחת טלפון">שיחת טלפון</option>
@@ -98,6 +100,7 @@
           <div class="sched-card-row"><span>מתי</span><b>${data.date} · ${data.time}</b></div>
           <div class="sched-card-row"><span>סוג פגישה</span><b>${data.type}</b></div>
           <div class="sched-card-row"><span>מיקום</span><b>${data.branch}</b></div>
+          ${data.car ? `<div class="sched-card-row"><span>רכב</span><b>${escAttr(data.car)}</b></div>` : ''}
           <div class="sched-card-row"><span>על שם</span><b>${data.name}</b></div>
         </div>
         <div class="sched-prep">
@@ -148,10 +151,11 @@
       if (!selDate || !selTime) { err.textContent = 'בחרו תאריך ושעה לפגישה.'; return; }
       if (!name || !phone || !email) { err.textContent = 'מלאו שם, טלפון ואימייל.'; return; }
       err.textContent = '';
-      const data = { name, phone, email, type: root.querySelector('#sType').value, branch: root.querySelector('#sBranch').value, note: root.querySelector('#sNote').value.trim(), date: fmtDate(selDate), time: selTime };
+      const carVal = (root.querySelector('#sCar') && root.querySelector('#sCar').value.trim()) || '';
+      const data = { name, phone, email, car: carVal, type: root.querySelector('#sType').value, branch: root.querySelector('#sBranch').value, note: root.querySelector('#sNote').value.trim(), date: fmtDate(selDate), time: selTime };
       try { const _ap = new Date(selDate); const _t = String(selTime).split(':'); _ap.setHours(+_t[0] || 0, +_t[1] || 0, 0, 0); data.appt_at = _ap.toISOString(); } catch (e) {}
       if (window.c2bTrack) c2bTrack('meeting_scheduled', { date: data.date, time: data.time, type: data.type });
-      if (window.submitLead) submitLead({ name: data.name, phone: data.phone, email: data.email, message: data.note, car: data.type, source: 'scheduler', meta: { branch: data.branch, date: data.date, time: data.time, type: data.type } });
+      if (window.submitLead) submitLead({ name: data.name, phone: data.phone, email: data.email, message: data.note, car: data.car || data.type, source: 'scheduler', meta: { branch: data.branch, date: data.date, time: data.time, type: data.type, car: data.car } });
       // persist the appointment (triggers the email-notification webhook server-side)
       if (window.submitAppointment) submitAppointment(data);
       renderSuccess(data);
@@ -164,8 +168,9 @@
     }));
   }
 
-  function open() {
+  function open(car) {
     selDate = null; selTime = null;
+    presetCar = car || window.__c2bCar || '';
     root.innerHTML = shell('');
     renderForm();
     root.classList.add('open'); root.setAttribute('aria-hidden', 'false');
@@ -180,7 +185,8 @@
 
   // open triggers: header button + any [data-open-scheduler] / ?meeting handled elsewhere
   document.addEventListener('click', (e) => {
-    if (e.target.closest('#openScheduler, [data-open-scheduler]')) { e.preventDefault(); open(); }
+    const t = e.target.closest('#openScheduler, [data-open-scheduler]');
+    if (t) { e.preventDefault(); open(t.getAttribute('data-car') || ''); }
   });
   window.c2bOpenScheduler = open;
 })();
