@@ -133,7 +133,10 @@
   .cdl-car b { display:block; font-size:15px; color:var(--ink); }
   .cdl-car span { font-size:12.5px; color:var(--muted); }
   .cdl-form { display:grid; gap:12px; }
-  .cdl-form input, .cdl-form select { width:100%; padding:13px 15px; border:1px solid var(--line-2); border-radius:12px; background:var(--bg-1); color:var(--ink); font-family:inherit; font-size:15px; }
+  .cdl-form input, .cdl-form select { width:100%; padding:13px 15px; border:1px solid var(--line-2); border-radius:12px; background:var(--bg-1); color:var(--ink); font-family:inherit; font-size:15px; text-align:right; direction:rtl; }
+  .cdl-form input::placeholder { text-align:right; }
+  .cdl-lbl { font-size:13px; font-weight:600; color:var(--ink-soft); margin-bottom:-4px; }
+  #cdlCar { border-color:var(--gold-line); background:color-mix(in oklab, var(--gold) 6%, var(--bg-1)); font-weight:600; }
   .cdl-done { text-align:center; padding:20px 0; }
   .cdl-done .ok { width:56px; height:56px; margin:0 auto 12px; border-radius:50%; background:linear-gradient(150deg,var(--gold-bright),var(--gold-deep)); color:#fff; display:grid; place-items:center; font-size:28px; }
 
@@ -360,27 +363,29 @@
   .ti-x:hover { background:var(--bg-2); }
   .ti-modal .wizard { border:0; box-shadow:none; padding:0; margin:0; background:none; max-width:none; }
 
-  /* ===== idle popup ===== */
+  /* ===== idle popup — full-width bottom bar ===== */
   .idle-pop { position:fixed; inset:0; z-index:230; display:none; }
   .idle-pop.open { display:block; animation:none; }
   .idle-ov { position:absolute; inset:0; background:rgba(10,10,12,.5); backdrop-filter:blur(2px); }
-  .idle-card { position:absolute; left:50%; bottom:24px; transform:translateX(-50%); width:min(680px,calc(100vw - 24px)); background:#fff; border-radius:20px; box-shadow:0 40px 90px -30px rgba(0,0,0,.6); overflow:hidden; animation:idleUp .4s cubic-bezier(.2,.8,.2,1); }
-  @keyframes idleUp { from { opacity:0; transform:translate(-50%,24px); } to { opacity:1; transform:translate(-50%,0); } }
-  .idle-x { position:absolute; inset-inline-end:12px; top:12px; z-index:3; width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:14px; cursor:pointer; }
+  .idle-card { position:absolute; left:0; right:0; bottom:0; width:100%; background:#fff; border-radius:22px 22px 0 0; box-shadow:0 -24px 70px -24px rgba(0,0,0,.55); overflow:hidden; animation:idleUp .4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes idleUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+  .idle-x { position:absolute; inset-inline-end:14px; top:12px; z-index:3; width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:14px; cursor:pointer; }
   .idle-x:hover { background:var(--bg-2); }
-  .idle-inner { display:grid; grid-template-columns:1.15fr .85fr; align-items:stretch; }
-  .idle-text { padding:clamp(22px,3vw,30px); }
-  .idle-eyebrow { font-family:var(--mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-deep); }
-  .idle-text h3 { font-size:clamp(20px,2.6vw,26px); color:var(--ink); margin-top:8px; }
-  .idle-text p { color:var(--muted); font-size:14.5px; line-height:1.6; margin-top:8px; }
-  .idle-form { display:grid; gap:10px; margin-top:16px; }
-  .idle-form input { width:100%; padding:13px 15px; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:15px; text-align:right; }
-  .idle-form input:focus { outline:none; border-color:var(--gold); }
-  .idle-done { margin-top:16px; font-weight:700; color:var(--gold-deep); display:flex; align-items:center; gap:8px; }
+  .idle-bar { display:flex; align-items:center; gap:clamp(16px,2.4vw,32px); padding:16px clamp(20px,4vw,52px); max-width:1500px; margin:0 auto; }
+  .idle-img { flex:0 0 auto; width:clamp(120px,13vw,180px); height:clamp(80px,8vw,104px); border-radius:14px; overflow:hidden; }
+  .idle-img img { width:100%; height:100%; object-fit:cover; display:block; }
+  .idle-copy { flex:0 1 auto; min-width:0; }
+  .idle-eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-deep); }
+  .idle-copy h3 { font-size:clamp(17px,1.9vw,23px); color:var(--ink); margin-top:3px; line-height:1.2; }
+  .idle-copy p { display:none; }
+  .idle-form { display:flex; align-items:center; gap:12px; flex:1 1 auto; }
+  .idle-form input { flex:1 1 0; min-width:130px; padding:14px 16px; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:15px; text-align:right; }
+  .idle-form input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px color-mix(in oklab, var(--gold) 18%, transparent); }
+  .idle-form .btn { flex:0 0 auto; white-space:nowrap; }
+  .idle-done { font-weight:700; color:var(--gold-deep); display:flex; align-items:center; gap:8px; flex:1 1 auto; justify-content:center; }
   .idle-check { width:26px; height:26px; border-radius:50%; background:linear-gradient(150deg,var(--gold-bright),var(--gold-deep)); color:#fff; display:grid; place-items:center; font-size:14px; }
-  .idle-img { position:relative; background:var(--bg-1); }
-  .idle-img img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-  @media (max-width:600px){ .idle-inner { grid-template-columns:1fr; } .idle-img { display:none; } .idle-card { bottom:0; border-radius:20px 20px 0 0; } }
+  @media (max-width:900px){ .idle-bar { flex-wrap:wrap; } .idle-copy { flex:1 1 100%; } .idle-form { flex:1 1 100%; } }
+  @media (max-width:560px){ .idle-img { display:none; } .idle-form { flex-wrap:wrap; } .idle-form input, .idle-form .btn { flex:1 1 100%; } }
 </style>
 </head>
 <body data-page="models">
@@ -1228,20 +1233,29 @@ function renderCarDetail() {
     var lead = document.createElement('div');
     lead.className = 'cdl-ov';
     var carThumb = car.img ? '<img src="' + esc(car.img) + '" alt="' + esc(fullName) + '">' : '';
+    // catalog options so visitors can change the car they're interested in
+    var catOpts = '';
+    (function () {
+      var seen = {}, CC = window.Car2Buy || {};
+      var L = (CC.MODELS && CC.MODELS.length) ? CC.MODELS : (CC.LOAN_CARS || []);
+      L.forEach(function (m) {
+        var nm = ((CC.enName ? CC.enName(m) : ((m.brand || '') + ' ' + (m.name || ''))) || '').trim();
+        if (nm && !seen[nm]) { seen[nm] = 1; catOpts += '<option value="' + esc(nm) + '"></option>'; }
+      });
+    })();
     lead.innerHTML =
       '<div class="cdl-card" role="dialog" aria-modal="true" aria-label="השארת פרטים">' +
         '<button type="button" class="cdl-x" data-cdl-close aria-label="סגור">✕</button>' +
         '<div class="cdl-eyebrow">' + esc(brandDisp) + ' · ' + esc(car.type || '') + '</div>' +
         '<h3>לרכישת ' + esc(fullName) + ' החדשה</h3>' +
-        '<div class="cdl-car">' + carThumb + '<div><b>' + esc(fullName) + '</b><span>נציג יחזור אליכם עם הצעה אישית לרכב זה</span></div></div>' +
+        '<div class="cdl-car">' + carThumb + '<div><b>' + esc(fullName) + '</b><span>נציג יחזור אליכם עם הצעה אישית — ניתן לשנות את הרכב למטה</span></div></div>' +
         '<form class="cdl-form" id="cdlForm">' +
+          '<label class="cdl-lbl" for="cdlCar">הרכב שמעניין אתכם</label>' +
+          '<input type="text" id="cdlCar" list="cdlCarList" value="' + esc(fullName) + '" placeholder="בחרו או הקלידו דגם" autocomplete="off">' +
+          '<datalist id="cdlCarList">' + catOpts + '</datalist>' +
           '<input type="text" id="cdlName" placeholder="שם מלא" autocomplete="name" required>' +
-          '<input type="tel" id="cdlPhone" placeholder="טלפון נייד" autocomplete="tel" required>' +
+          '<input type="tel" id="cdlPhone" placeholder="טלפון נייד" autocomplete="tel" dir="rtl" required>' +
           '<input type="email" id="cdlEmail" placeholder="דוא״ל" autocomplete="email">' +
-          '<select id="cdlSource" aria-label="מאיפה הגעתם אלינו">' +
-            '<option value="">מאיפה הגעתם אלינו?</option>' +
-            '<option>גוגל / חיפוש</option><option>פייסבוק</option><option>אינסטגרם</option><option>וואטסאפ</option><option>המלצה מחבר</option><option>אחר</option>' +
-          '</select>' +
           '<button type="submit" class="btn btn-gold btn-lg">שליחת פרטים</button>' +
         '</form>' +
         '<div class="cdl-done" id="cdlDone" hidden><div class="ok">✓</div><b>תודה! קיבלנו את הפרטים ונחזור אליכם בהקדם.</b></div>' +
@@ -1256,10 +1270,10 @@ function renderCarDetail() {
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && lead.classList.contains('open')) closeLead(); });
     document.getElementById('cdlForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      var n = document.getElementById('cdlName'), p = document.getElementById('cdlPhone'), em = document.getElementById('cdlEmail'), s = document.getElementById('cdlSource'), ok = true;
+      var n = document.getElementById('cdlName'), p = document.getElementById('cdlPhone'), em = document.getElementById('cdlEmail'), cc = document.getElementById('cdlCar'), ok = true;
       [n, p].forEach(function (f) { if (!f.value.trim()) { f.style.borderColor = '#e25555'; ok = false; } else f.style.borderColor = ''; });
       if (!ok) return;
-      if (window.submitLead) submitLead({ name: n.value.trim(), phone: p.value.trim(), email: em.value.trim(), car: fullName, source: s.value ? ('car_page · ' + s.value) : 'car_page' });
+      if (window.submitLead) submitLead({ name: n.value.trim(), phone: p.value.trim(), email: em.value.trim(), car: (cc && cc.value.trim()) || fullName, source: 'car_page' });
       if (window.c2bTrack) window.c2bTrack('car_lead', { car: fullName });
       document.getElementById('cdlForm').hidden = true;
       document.getElementById('cdlDone').hidden = false;
@@ -1435,19 +1449,18 @@ function renderCarDetail() {
       '<div class="idle-ov" data-idle-close></div>' +
       '<div class="idle-card" role="dialog" aria-modal="true" aria-label="פנייה מהירה">' +
         '<button type="button" class="idle-x" data-idle-close aria-label="סגור">✕</button>' +
-        '<div class="idle-inner">' +
-          '<div class="idle-text">' +
+        '<div class="idle-bar">' +
+          img +
+          '<div class="idle-copy">' +
             '<div class="idle-eyebrow">' + esc(brandDisp) + ' · ' + esc(car.type || '') + '</div>' +
             '<h3>מתעניינים ב' + esc(car.model) + ' החדשה?</h3>' +
-            '<p>השאירו פרטים ונציג יחזור אליכם עם הצעת מימון אישית — בהקדם האפשרי.</p>' +
-            '<form class="idle-form" id="idleForm">' +
-              '<input type="text" id="idleName" placeholder="שם מלא" autocomplete="name">' +
-              '<input type="tel" id="idlePhone" placeholder="טלפון נייד" autocomplete="tel">' +
-              '<button type="submit" class="btn btn-gold btn-lg">צרו איתי קשר</button>' +
-            '</form>' +
-            '<div class="idle-done" id="idleDone" hidden><span class="idle-check">✓</span> תודה! נחזור אליכם בהקדם.</div>' +
           '</div>' +
-          img +
+          '<form class="idle-form" id="idleForm">' +
+            '<input type="text" id="idleName" placeholder="שם מלא" autocomplete="name">' +
+            '<input type="tel" id="idlePhone" placeholder="טלפון נייד" autocomplete="tel" dir="rtl">' +
+            '<button type="submit" class="btn btn-gold btn-lg">צרו איתי קשר</button>' +
+          '</form>' +
+          '<div class="idle-done" id="idleDone" hidden><span class="idle-check">✓</span> תודה! נחזור אליכם בהקדם.</div>' +
         '</div>' +
       '</div>';
     document.body.appendChild(pop);
