@@ -284,6 +284,7 @@
 <script src="brand-articles.js"></script>
 <script src="site.js"></script>
 <script src="app.js"></script>
+<script src="quick-lead.js"></script>
 
 <script>
 (function () {
@@ -341,13 +342,20 @@
   var today = new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
   var shareUrl = encodeURIComponent(location.href);
   var enBrand = C.enBrand ? C.enBrand(brand) : brand;
+  var leadCar = (models && models[0]) ? (C.enName ? C.enName(models[0]) : ((models[0].brand || brand) + ' ' + (models[0].name || ''))) : brand;
 
   // ---- intersperse model images between H2 sections ----
   var imgs = models.map(function (m) { return m.img; }).filter(Boolean);
   var bodyParts = art.bodyHtml.split('<h2>');
   var bodyHtml = bodyParts[0];
   var imgN = 0;
+  var ctaAt = Math.max(2, Math.ceil((bodyParts.length - 1) / 2));
   for (var i = 1; i < bodyParts.length; i++) {
+    if (i === ctaAt) {
+      bodyHtml += '<div class="art-inline-cta reveal"><div class="art-cta-txt"><strong>מתעניינים ב' + esc(enBrand) + '? קבלו הצעה אישית</strong>'
+        + '<span>ההחזר החודשי הכי נמוך בישראל — כולל טרייד־אין לרכב הישן. בלי התחייבות.</span></div>'
+        + '<button type="button" class="btn btn-gold art-cta-btn" data-open-lead data-car="' + esc(leadCar) + '" data-source="brand_article">קבלו הצעה אישית</button></div>';
+    }
     if (i > 1 && imgs.length) {
       bodyHtml += '<figure class="mag-fig reveal"><img loading="lazy" src="' + esc(imgs[imgN % imgs.length]) + '" alt="' + esc(enBrand) + '" onerror="this.closest(\'.mag-fig\').style.display=\'none\'"></figure>';
       imgN++;
@@ -412,7 +420,7 @@
       + '</div>'
     + '</section>'
 
-    + '<div class="art-cta"><button class="mag-info-btn" data-open-info>' + ic('<polyline points="6 9 12 15 18 9"/>') + ' אני רוצה לקבל מידע נוסף</button></div>'
+    + '<div class="art-cta"><button class="mag-info-btn" data-open-lead data-car="' + esc(leadCar) + '" data-source="brand_article">' + ic('<polyline points="6 9 12 15 18 9"/>') + ' אני רוצה לקבל מידע נוסף</button></div>'
 
     + '<div class="mag">'
       // ---- main ----

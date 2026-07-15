@@ -670,12 +670,17 @@
         if (b.table) return `<div class="art-table-wrap reveal"><table class="art-table">${b.table.head ? `<thead><tr>${b.table.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>` : ''}<tbody>${(b.table.rows || []).map((r) => `<tr>${r.map((cell, ci) => `<td${ci === 0 ? ' class="art-td-k"' : ''}>${cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
         if (b.p) return `<p class="reveal">${linkify(b.p)}</p>`;
         return '';
-      }).join('');
+      });
+      // beautiful mid-article CTA that opens the quick-lead popup (car auto-filled on car pages, else pick from catalog)
+      const inlineCta = `<div class="art-inline-cta reveal"><div class="art-cta-txt"><strong>רוצים לדעת כמה זה יעלה לכם בחודש?</strong><span>השאירו פרטים ויועץ יחזור עם ההחזר החודשי המשתלם ביותר — כולל טרייד־אין לרכב הישן.</span></div><button type="button" class="btn btn-gold art-cta-btn" data-open-lead data-source="article_inline">קבלו הצעה אישית</button></div>`;
+      const midIdx = Math.max(3, Math.round(blocks.length * 0.5));
+      if (blocks.length >= 5) blocks.splice(midIdx, 0, inlineCta);
+      const blocksHtml = blocks.join('');
       // build a table of contents from h2 blocks
       const heads = a.body.filter((b) => typeof b === 'object' && b.h2).map((b) => b.h2);
       const toc = heads.length >= 3 ? `<nav class="art-toc reveal"><div class="art-toc-h">בכתבה זו</div><ol>${heads.map((h, i) => `<li><a href="#h${i}">${h}</a></li>`).join('')}</ol></nav>` : '';
       let hIdx = -1;
-      const blocksWithIds = blocks.replace(/<h2 class="art-h2 reveal">/g, () => { hIdx++; return `<h2 id="h${hIdx}" class="art-h2 reveal">`; });
+      const blocksWithIds = blocksHtml.replace(/<h2 class="art-h2 reveal">/g, () => { hIdx++; return `<h2 id="h${hIdx}" class="art-h2 reveal">`; });
       artView.innerHTML = `
         <section class="media-hero page article-hero">
           <div class="mh-bg"><img src="${a.img}" alt="${a.title}"></div>
@@ -690,7 +695,7 @@
           ${a.excerpt ? `<p class="art-lead reveal">${a.excerpt}</p>` : ''}
           ${toc}
           ${blocksWithIds}
-          <div class="article-cta reveal"><h3>מוכנים לרכב הבא שלכם?</h3><div class="mh-actions" style="justify-content:center;margin-top:20px;"><a href="models.html" class="btn btn-gold btn-lg">לקטלוג הדגמים</a><a href="contact.html" class="btn btn-ghost btn-lg">השארת פרטים</a></div></div>
+          <div class="article-cta reveal"><h3>מוכנים לרכב הבא שלכם?</h3><p class="article-cta-sub">קבלו הצעה אישית עם ההחזר החודשי הכי נמוך בישראל — בלי התחייבות.</p><div class="mh-actions" style="justify-content:center;margin-top:20px;"><button type="button" class="btn btn-gold btn-lg" data-open-lead data-source="article_end">קבלו הצעה אישית</button><a href="models.html" class="btn btn-ghost btn-lg">לקטלוג הדגמים</a></div></div>
         </div></section>
         <section class="section testi-section"><div class="wrap">
           <span class="eyebrow reveal">עוד במגזין</span>

@@ -120,8 +120,8 @@
         <a href="index.html" class="brand nav-logo" aria-label="Car2Buy"><img class="brand-img" src="logo.png" alt="Car2Buy — רכב חדש, קל ופשוט"></a>
         <div class="nav-cta">
           <a href="tel:+972584700706" class="nav-phone-pill">חייגו 054-470-0706</a>
-          <button type="button" class="nav-fav" id="navFav" aria-label="רכבים ששמרתי"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="nav-fav-badge" id="navFavBadge" hidden>0</span></button>
           <button type="button" class="btn nav-meeting" id="openScheduler">לתיאום פגישה</button>
+          <button type="button" class="nav-fav" id="navFav" aria-label="רכבים ששמרתי"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="nav-fav-badge" id="navFavBadge" hidden>0</span></button>
           <button class="burger" id="burger" aria-label="תפריט"><span></span><span></span><span></span></button>
         </div>
         <div class="fav-panel" id="favPanel" hidden></div>
