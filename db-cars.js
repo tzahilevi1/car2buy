@@ -26,6 +26,14 @@
     catch (e) { return ''; }
   }
   function int(v) { var n = parseInt(v, 10); return isNaN(n) ? 0 : n; }
+  // Google-Drive share link -> embeddable direct image URL; plain image URLs pass through
+  function driveUrl(u) {
+    var s = String(u || '').trim();
+    if (!s) return '';
+    var m = s.match(/\/d\/([A-Za-z0-9_-]{20,})/) || s.match(/[?&]id=([A-Za-z0-9_-]{20,})/);
+    if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+    return /^https?:\/\//i.test(s) ? cleanImg(s) : '';
+  }
 
   // cache-bust lightly so edits show within the CDN cache window
   fetch('cars.json', { cache: 'no-cache' })
@@ -33,9 +41,13 @@
     .then(function (rows) {
       if (rows && rows.length) {
         C.LOAN_CARS = rows.map(function (row, i) {
+          // real per-car photos from the sheet: Google-Drive share links -> direct image URLs
+          var gallery = [row.imgL, row.imgB, row.imgR].map(driveUrl).filter(Boolean);
           return {
             brand: clean(row.brand), name: clean(row.name), trim: clean(row.trim),
-            m: int(row.m), p: int(row.p), img: cleanImg(row.img),
+            m: int(row.m), p: int(row.p),
+            img: cleanImg(row.img) || gallery[0] || '',
+            gallery: gallery,
             id: 'sheet' + i
           };
         }).filter(function (c) { return c.brand && c.name; });

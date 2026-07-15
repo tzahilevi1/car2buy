@@ -526,6 +526,7 @@ function renderCarDetail() {
     return {
       brand: l.brand, model: l.name, trim: l.trim, type: typeLabel, cat: l.cat || '',
       imaginMake: IMAGIN_MAKE[l.brand] || '', imaginModel: IMAGIN_MODEL[l.name] || '',
+      gallery: (l.gallery && l.gallery.length) ? l.gallery : null,
       price: l.p, monthly60: l.m, year: 2026, img: l.img,
       tagline: l.name + ' — דגם חדש בתנאי מימון משתלמים.',
       dream: 'החלום ששמו ' + l.name,
@@ -1115,7 +1116,7 @@ function renderCarDetail() {
               '</div>' +
             '</div>' +
           '</div>' +
-          '<div class="cd-buy-img"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80&auto=format&fit=crop" alt="' + esc(fullName) + ' — פנים הרכב" loading="lazy"></div>' +
+          '<div class="cd-buy-img"><img src="' + esc((galleryImgs[1] && galleryImgs[1].src) || (galleryImgs[0] && galleryImgs[0].src) || car.img) + '" alt="' + esc(fullName) + '" loading="lazy" onerror="this.closest(\'.cd-buy-img\').style.display=\'none\'"></div>' +
         '</div>' +
       '</div>' +
     '</section>' +
