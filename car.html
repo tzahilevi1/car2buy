@@ -470,6 +470,9 @@
 <script src="cars-data.js"></script>
 <script src="car-videos.js"></script>
 <script src="loan-cars.js"></script>
+<script src="model-specs.js"></script>
+<script src="gov-data.js"></script>
+<script src="car-specs.js"></script>
 <script src="customers-data.js"></script>
 <script src="brand-content.js"></script>
 <script src="brand-articles.js"></script>
@@ -573,6 +576,19 @@
   var fullName = (window.Car2Buy && window.Car2Buy.enName) ? window.Car2Buy.enName({ brand: car.brand, name: car.model }) : (car.brand + ' ' + car.model);
   try { window.__c2bCar = fullName; } catch (e) {}
 
+  // ----- full technical spec (identical source & values to the comparison page) -----
+  var C2B = window.Car2Buy || {};
+  var modelEntry = (C2B.MODELS || []).filter(function (m) { return m.id === slug; })[0];
+  var mForSpec = modelEntry || {
+    id: slug, brand: car.brand, name: car.model, trim: car.trim, type: car.type, cat: car.cat,
+    power: s.power || 0, accel: s.accel || 0, fuel: s.fuel || '', drive: s.drive || '',
+    seats: s.seats || 5, list: car.price || 0, monthly: car.monthly60 || 0
+  };
+  var rs = (C2B.richSpecs ? C2B.richSpecs(mForSpec) : {});
+  // pull manufacturer/registry-verified values back onto the summary object so hero stats fill too
+  if (rs.power && !s.power) s.power = rs.power;
+  if (rs.accel && !s.accel) s.accel = rs.accel;
+
   // ----- stat boxes -----
   var gearShort = /אוטומ|CVT|DCT|DHT/.test(s.gearbox || '') ? 'אוטומטית' : (s.gearbox || '—');
   var fuelShort = /נטען|PHEV/i.test(s.fuel || '') ? 'היבר\' נטען'
@@ -596,61 +612,81 @@
       return '<div class="cd-row"><span class="rk">' + esc(r[0]) + '</span><span class="rv">' + esc(r[1]) + '</span></div>';
     }).join('') + '</div>';
   }
-  function boolHtml(arr) {
-    return '<div class="cd-rows">' + arr.map(function (it) {
-      var on = it[1] !== false;
-      return '<div class="cd-row"><span class="rk">' + esc(it[0]) + '</span><span class="' + (on ? 'yes' : 'no') + '">' + (on ? '✓' : '✗') + '</span></div>';
+  // render a spec row: ✓/✗ get colored marks, other values shown as text; empties are dropped
+  function specGroup(arr) {
+    return '<div class="cd-rows">' + arr.map(function (r) {
+      var v = r[1];
+      if (v == null || v === '' || v === '—') return '';
+      var cls = 'rv', disp = String(v);
+      if (v === '✓') { cls = 'yes'; disp = '✓'; }
+      else if (v === '✗') { cls = 'no'; disp = '✗'; }
+      return '<div class="cd-row"><span class="rk">' + esc(r[0]) + '</span><span class="' + cls + '">' + esc(disp) + '</span></div>';
     }).join('') + '</div>';
   }
+  var mm = function (n) { return (n || n === 0) ? Number(n).toLocaleString('en-US') + ' מ"מ' : ''; };
+  var kg = function (n) { return (n || n === 0) ? Number(n).toLocaleString('en-US') + ' ק"ג' : ''; };
 
   var gGeneral = [
     ['שם מסחרי', fullName],
-    ['רמת גימור', car.trim],
-    ['קטגוריה', car.type],
-    ['מרכב', s.bodyType],
-    ['מספר מושבים', s.seats],
-    ['מספר דלתות', s.doors],
+    ['רמת גימור', car.trim || rs.trim],
+    ['קטגוריה', car.type || rs.category],
+    ['סוג מרכב', rs.body],
+    ['מספר דלתות', rs.doors],
+    ['מספר מושבים', rs.seats || s.seats],
     ['שנת דגם', car.year],
+    ['אגרת רישוי שנתית', rs.licenseFee],
     ['מחיר מחירון', fmt(car.price)]
   ];
   var gEngine = [
-    ['סוג מנוע', s.engine],
-    ['הספק', s.power ? s.power + ' כ"ס' : ''],
-    ['נפח מנוע', s.displacement],
-    ['תאוצה 0–100', s.accel],
-    ['תיבת הילוכים', s.gearbox],
-    ['הנעה', s.drive],
-    ['סוג דלק / הנעה', s.fuel],
-    ['טווח חשמלי', s.range],
-    ['צריכת דלק משולבת', s.consumption]
+    ['סוג הנעה / דלק', rs.engineType || s.fuel],
+    ['הספק מרבי', rs.power ? rs.power + ' כ"ס' : ''],
+    ['נפח מנוע', rs.engineCC ? Number(rs.engineCC).toLocaleString('en-US') + ' סמ"ק' : ''],
+    ['תיבת הילוכים', rs.gearbox || s.gearbox],
+    ['הנעה', rs.drive],
+    ['תאוצה 0–100 קמ"ש', rs.accel ? rs.accel + ' שנ׳' : ''],
+    ['מהירות מרבית', rs.topSpeed ? rs.topSpeed + ' קמ"ש' : ''],
+    ['קיבולת סוללה', rs.battery ? rs.battery + ' קוט"ש' : ''],
+    ['טווח חשמלי', rs.range ? rs.range + ' ק"מ' : '']
   ];
   var gDims = [
-    ['אורך', s.length],
-    ['רוחב', s.width],
-    ['גובה', s.height],
-    ['נפח תא מטען', s.trunk],
-    ['משקל עצמי', s.weight]
+    ['אורך', mm(rs.length)],
+    ['רוחב', mm(rs.width)],
+    ['גובה', mm(rs.height)],
+    ['בסיס גלגלים', mm(rs.wheelbase)],
+    ['מרווח גחון', mm(rs.clearance)],
+    ['נפח תא מטען', rs.trunk ? rs.trunk + ' ליטר' : ''],
+    ['תא מטען (מושבים מקופלים)', rs.trunkFolded ? rs.trunkFolded + ' ליטר' : ''],
+    ['משקל עצמי', kg(rs.curb)],
+    ['משקל כולל מותר', kg(rs.gross)],
+    ['קוטר חישוקים', rs.wheel ? rs.wheel + '″' : '']
   ];
   var safety = [
-    ['מערכת ABS ובלמי דיסק', true], ['כריות אוויר רב-כיווניות', true],
-    ['בקרת יציבות אלקטרונית (ESP)', true], ['בלימת חירום אוטונומית', true],
-    ['התרעת סטייה מנתיב', true], ['בקרת שיוט אדפטיבית', true],
-    ['זיהוי הולכי רגל ורוכבי אופניים', true], ['מצלמת רוורס וחיישני חניה', true],
-    ['ניטור שטח מת', true], ['עיגון איזופיקס למושבי בטיחות', true]
+    ['בלמי ABS', rs.abs], ['בקרת יציבות ESP', rs.esp], ['ניטור לחץ אוויר בצמיגים', rs.tpms],
+    ['התרעת התנגשות קדמית', rs.fcw], ['בלימת חירום אוטונומית (AEB)', rs.aeb], ['התרעת סטייה מנתיב', rs.ldw],
+    ['זיהוי תמרורים', rs.tsr], ['אור גבוה אוטומטי', rs.autoHigh], ['ניטור שטח מת', rs.blindSpot],
+    ['זיהוי עייפות נהג', rs.fatigue], ['זיהוי הולכי רגל ואופניים', rs.pedestrian], ['עיגוני איזופיקס', rs.isofix],
+    ['בקרת שיוט אדפטיבית', rs.adaptiveCruise], ['התרעת תנועה חוצה מאחור', rs.rearCross], ['בלימת חירום אחורית', rs.rearAeb],
+    ['תזכורת חגורות בטיחות', rs.seatbeltReminder], ['בקרת מהירות חכמה (ISA)', rs.speedAssist],
+    ['מספר כריות אוויר', rs.airbags], ['דירוג Euro NCAP', (rs.ncap && rs.ncap !== '—') ? rs.ncap + ' כוכבים' : ''],
+    ['רמת בטיחות (משרד התחבורה)', rs.safetyLevel]
   ];
   var comfort = [
-    ['מסך מולטימדיה מגע', true], ['Apple CarPlay / Android Auto', true],
-    ['Bluetooth ודיבורית', true], ['בקרת אקלים', true],
-    ['חיבורי USB קדמי ואחורי', true], ['הגה מולטי-פונקציונלי', true],
-    ['כניסה והתנעה ללא מפתח', true], ['חיישני אור וגשם', true]
+    ['מסך מולטימדיה', rs.screen ? rs.screen + '″' : ''], ['צג נהג דיגיטלי', rs.cluster ? rs.cluster + '″' : ''],
+    ['Apple CarPlay / Android Auto', (rs.phone && rs.phone !== '—') ? rs.phone : '✗'],
+    ['Bluetooth ודיבורית', rs.bluetooth], ['חיבורי USB', rs.usb], ['טעינה אלחוטית לנייד', rs.wireless],
+    ['מיזוג אוויר', rs.ac], ['מושבים חשמליים', rs.elecSeat], ['ריפוד', rs.upholstery],
+    ['גג שמש נפתח', rs.sunroof], ['מצלמות חניה', rs.camera], ['חיישני חניה', rs.parkSensors],
+    ['כניסה והתנעה', rs.keyless], ['פנסים קדמיים', rs.headlight], ['פנסים אחוריים', rs.taillight],
+    ['פנסים אוטומטיים', rs.autoLights], ['תאורת אווירה', rs.ambient], ['קיפול מראות חשמלי', rs.mirrorFold],
+    ['חיישן גשם', rs.rainSensor]
   ];
 
   var accHtml =
-    grp('מפרט כללי', rowsHtml(gGeneral), true) +
-    grp('מנוע וביצועים', rowsHtml(gEngine), false) +
-    grp('מידות ומשקל', rowsHtml(gDims), false) +
-    grp('בטיחות ובקרה', boolHtml(safety), false) +
-    grp('נוחות ומולטימדיה', boolHtml(comfort), false);
+    grp('מפרט כללי', specGroup(gGeneral), true) +
+    grp('מנוע וביצועים', specGroup(gEngine), false) +
+    grp('מידות ומשקל', specGroup(gDims), false) +
+    grp('בטיחות ובקרה', specGroup(safety), false) +
+    grp('נוחות ומולטימדיה', specGroup(comfort), false);
 
   function grp(title, inner, open) {
     return '<details class="cd-grp"' + (open ? ' open' : '') + '><summary>' + esc(title) +
