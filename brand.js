@@ -111,7 +111,14 @@
   var content = window.C2B_BRAND_CONTENT ? window.C2B_BRAND_CONTENT(brand, models, { NIS: NIS, esc: esc, fuelOf: fuelOf }) : '';
 
   // ---------- video band ----------
+  // pick a REAL, verified Hebrew review video of one of this brand's models (not a random YouTube search)
+  var VID = window.C2B_CAR_VIDEOS || {};
+  var brandVideo = '';
+  for (var vi = 0; vi < models.length && !brandVideo; vi++) brandVideo = VID[models[vi].slug] || '';
+  if (!brandVideo) for (var vj = 0; vj < inv.length && !brandVideo; vj++) brandVideo = VID[inv[vj].id] || '';
   var ytQuery = encodeURIComponent(brand + ' רכב מבחן דרכים 2026');
+  var bvPoster = brandVideo ? 'https://img.youtube.com/vi/' + brandVideo + '/maxresdefault.jpg'
+    : (models[0] && models[0].img) || '';
 
   // ---------- articles (3 per model) ----------
   // ---------- articles (3 original SEO articles per brand) ----------
@@ -149,7 +156,7 @@
     + '</div></section>'
 
     + '<section class="brand-video" id="video">'
-    + '<div class="bv-bg"></div><div class="bv-ov"></div>'
+    + '<div class="bv-bg"' + (bvPoster ? ' style="background-image:url(\'' + bvPoster + '\');background-size:cover;background-position:center;"' : '') + '></div><div class="bv-ov"></div>'
     + '<div class="wrap bv-inner">'
     + '<div class="bv-k">וידאו</div>'
     + '<h2 class="bv-title">' + esc(brandDisp) + ' בתנועה</h2>'
@@ -172,7 +179,10 @@
   var pop = document.getElementById('bvPop');
   var frame = document.getElementById('bvFrame');
   function openVid() {
-    frame.innerHTML = '<iframe width="100%" height="100%" src="https://www.youtube.com/embed?listType=search&list=' + ytQuery + '&autoplay=1" title="' + esc(brand) + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    var src = brandVideo
+      ? 'https://www.youtube.com/embed/' + brandVideo + '?autoplay=1&rel=0'
+      : 'https://www.youtube.com/embed?listType=search&list=' + ytQuery + '&autoplay=1';
+    frame.innerHTML = '<iframe width="100%" height="100%" src="' + src + '" title="' + esc(brandDisp) + ' — מבחן דרכים" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
     pop.classList.add('open'); pop.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
   }
   function closeVid() { frame.innerHTML = ''; pop.classList.remove('open'); pop.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }

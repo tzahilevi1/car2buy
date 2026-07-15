@@ -102,6 +102,9 @@ button { font-family: inherit; cursor: pointer; }
 h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; letter-spacing: -0.01em; }
 .h-sec { font-size: clamp(32px, 4.6vw, 58px); margin-top: 20px; text-wrap: balance; }
 .lead { color: var(--ink-soft); font-size: clamp(16px, 1.5vw, 19px); max-width: 56ch; margin-top: 20px; line-height: 1.7; }
+.hero-value { margin-top: 22px; max-width: 60ch; font-size: clamp(17px, 1.75vw, 22px); line-height: 1.65; color: #fff; font-weight: 500; padding: 16px 22px; border-inline-start: 4px solid var(--gold); border-radius: 12px; background: linear-gradient(90deg, rgba(var(--gold-rgb)/0.16), rgba(var(--gold-rgb)/0.03)); backdrop-filter: blur(4px); }
+.hero-value b { color: var(--gold); font-weight: 800; }
+.center .hero-value { margin-inline: auto; }
 .gold-text { color: var(--gold); font-style: normal; }
 .center { text-align: center; }
 .center .eyebrow::before { display: none; }
