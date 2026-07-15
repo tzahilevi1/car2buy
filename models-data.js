@@ -89,6 +89,8 @@
   BRANDS_ALL.forEach((b) => { HE_TO_EN_N[heNorm(b.he)] = b.name; });
   Object.keys(LOGO_ALIAS_HE).forEach((he) => { HE_TO_EN_N[heNorm(he)] = LOGO_ALIAS_HE[he]; });
   const LOGO_HE = (he) => { const en = HE_TO_EN_N[heNorm(he)] || ''; return en ? LOGO(en) : ''; };
+  // canonical English name for any Hebrew/variant brand string (for matching across sources)
+  const brandEn = (he) => HE_TO_EN_N[heNorm(he)] || '';
 
   const NIS = (n) => '₪' + n.toLocaleString('en-US');
 
@@ -251,7 +253,7 @@
   ];
 
   window.Car2Buy = {
-    IMG, MODELS, CATS, BRANDS, BRANDS_ALL, BRAND_HE, FUELS, USED, ARTICLES, PRESS, CUSTOMERS, NIS, LOGO, LOGO_HE,
+    IMG, MODELS, CATS, BRANDS, BRANDS_ALL, BRAND_HE, FUELS, USED, ARTICLES, PRESS, CUSTOMERS, NIS, LOGO, LOGO_HE, brandEn,
     gallery,
     byId: (id) => MODELS.find((m) => m.id === id),
     card(m) {
@@ -342,7 +344,7 @@
     dirCard(b) {
       const mono = (b.he || b.name).replace(/[^A-Za-z\u0590-\u05FF]/g, '').charAt(0) || '•';
       const img = b.slug ? `<img loading="lazy" src="${LOGO(b.name)}" alt="${b.name}" onerror="this.remove()">` : '';
-      return `<a class="dir-item" href="models.html?brand=${encodeURIComponent(b.name)}">
+      return `<a class="dir-item" href="brand.html?brand=${encodeURIComponent(b.he || b.name)}">
         <span class="dir-name">${b.he || b.name}</span>
         <span class="dir-logo">${img}<b class="dir-mono">${mono}</b></span>
       </a>`;

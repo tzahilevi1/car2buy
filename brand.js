@@ -19,17 +19,17 @@
     'שברולט': 'chevrolet', 'GMC': 'gmc', "אמ.ג'י": 'mg', 'סמארט': 'smart'
   };
 
-  var inv = (C.LOAN_CARS || []).filter(function (l) { return l.brand === brand; });
+  // match inventory rows for this brand — direct, or via canonical English name (handles spelling variants)
+  var enOf = C.brandEn || function () { return ''; };
+  var wantEn = enOf(brand);
+  var inv = (C.LOAN_CARS || []).filter(function (l) { return l.brand === brand || (wantEn && enOf(l.brand) === wantEn); });
+  // if the incoming brand resolves to a stocked brand, use the exact inventory spelling for display/logo
+  if (inv.length && inv[0].brand && inv[0].brand !== brand) brand = inv[0].brand;
+  var brandDisp2 = C.dispBrand ? C.dispBrand(brand) : brand;
+  brandDisp = brandDisp2;
   var wrap = root;
 
-  if (!brand || !inv.length) {
-    wrap.innerHTML = '<section class="section"><div class="wrap" style="text-align:center;padding:100px 0;">'
-      + '<h1 style="font-size:34px;">היצרן לא נמצא</h1>'
-      + '<p style="color:var(--muted);margin-top:12px;">לא מצאנו רכבים ליצרן המבוקש בקטלוג.</p>'
-      + '<a href="models.html" class="btn btn-gold" style="margin-top:22px;">חזרה לקטלוג</a>'
-      + '</div></section>';
-    return;
-  }
+  if (!brand) { location.href = 'models.html'; return; }
 
   document.title = brandDisp + ' · קטלוג רכבים · Car2Buy';
   try { window.C2B_setMeta && C2B_setMeta({ description: brandDisp + ' — כל הדגמים, המחירים וההחזר החודשי של ' + brandDisp + ' ב-Car2Buy. מצאו את הרכב המתאים לכם בליסינג מימוני.' }); } catch (e) {}
@@ -71,10 +71,27 @@
   });
   var models = [...map.values()].sort(function (a, b) { return a.minM - b.minM; });
 
-  var logoSlug = LOGO_SLUG[brand];
+  var logoUrl = (C.LOGO_HE && C.LOGO_HE(brand)) || (LOGO_SLUG[brand] ? 'https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset/logos/optimized/' + LOGO_SLUG[brand] + '.png' : '');
+  if (!models.length) {
+    var binfo = (window.C2B_BRAND_INFO || {})[brand];
+    var intro0 = (binfo && binfo.intro) || (brandDisp + ' היא יצרנית רכב מבוקשת, ו-Car2Buy יכולה להשיג עבורכם כל דגם שלה בעסקת מימון עם החזר חודשי נוח. אנחנו עובדים מול כל היבואנים ומתחייבים לתנאים ולריביות הטובים ביותר בשוק.');
+    wrap.innerHTML =
+      '<section class="brand-hero"><div class="wrap">'
+      + '<nav class="brand-crumb"><a href="index.html">ראשי</a> <span>›</span> <a href="models.html">קטלוג רכבים</a> <span>›</span> <b>' + esc(brandDisp) + '</b></nav>'
+      + '<div class="brand-head">' + (logoUrl ? '<div class="brand-logo-big"><img src="' + esc(logoUrl) + '" alt="' + esc(brand) + '" onerror="this.style.display=\'none\'"></div>' : '') + '<h1 class="brand-title">' + esc(brandDisp) + '</h1>'
+      + '<div class="brand-count">משיגים לכם כל דגם של ' + esc(brandDisp) + '</div></div></div></section>'
+      + '<section class="section brand-content-sec"><div class="wrap" style="max-width:860px;">'
+      + '<div class="cd-section-k">אודות היצרן</div><h2 class="brand-content-h">' + esc(brandDisp) + ' ב-Car2Buy</h2>'
+      + '<div class="brand-content"><p>' + esc(intro0) + '</p>'
+      + '<p>גם אם דגם מסוים אינו מופיע כרגע בקטלוג המלאי שלנו — אנחנו נאתר ונשיג אותו עבורכם, בליווי אישי מלא ובמסלול מימון של עד 100% בהחזר חודשי מותאם. יש לכם רכב קיים? עסקת טרייד-אין תקזז את שוויו ותקטין עוד יותר את ההחזר.</p></div>'
+      + '<div class="mh-actions" style="margin-top:26px;"><a href="contact.html" class="btn btn-gold btn-lg">השאירו פרטים לרכב ' + esc(brandDisp) + '</a> <a href="https://wa.me/972584700706" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">שיחה בוואטסאפ</a></div>'
+      + '</div></section>';
+    document.title = brandDisp + ' · Car2Buy';
+    return;
+  }
   var initials = (brand || '').replace(/[^\u05D0-\u05EAA-Za-z]/g, '').slice(0, 3) || '•';
-  var logoImg = logoSlug
-    ? '<img src="https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset/logos/optimized/' + logoSlug + '.png" alt="' + esc(brand) + '" onerror="this.style.display=\'none\'">'
+  var logoImg = logoUrl
+    ? '<img src="' + esc(logoUrl) + '" alt="' + esc(brand) + '" onerror="this.style.display=\'none\'">'
     : '';
 
   // ---------- models grid ----------
