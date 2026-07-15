@@ -152,6 +152,13 @@
       if (/דולפין סרף|טוראנו|MPV|קרניבל|טוראן/i.test(n)) return 'MPV';
       return 'רכב פנאי';
     };
+    // map an inventory car to one catalog category id (suv / sedan / sport / ev)
+    const loanCat = (c) => {
+      const body = (c.type || '') + ' ' + loanBody(c) + ' ' + (c.trim || '') + ' ' + (c.name || '');
+      if (/קופה|coupe|\bGT\b|ספורט/i.test(body)) return 'sport';
+      if (/סדאן|saloon|sedan|ספורטבק/i.test(body)) return 'sedan';
+      return 'suv';   // רכבי פנאי / קרוסאובר / סופרמיני / MPV — leisure catch-all
+    };
 
     // group inventory rows into per-model cards (count trims, cheapest monthly)
     const GROUPS = (() => {
@@ -161,7 +168,7 @@
         if (!map.has(key)) {
           map.set(key, { brand: c.brand, name: c.name, type: c.type || '', cat: c.cat || '',
             img: c.img, hero: c.hero, fuel: loanFuel(c), year: c.year || 2026,
-            minM: c.m, minP: c.p, trims: 0, slug: FLAG[key] || c.id });
+            minM: c.m, minP: c.p, trims: 0, slug: FLAG[key] || c.id, cat: c.cat || loanCat(c) });
         }
         const g = map.get(key);
         g.trims++;
@@ -247,7 +254,7 @@
         const q = (search.value || '').trim().toLowerCase();
         let shown = 0;
         cards.forEach((c) => {
-          const ok = (!cats.length || cats.includes(c.dataset.cat))
+          const ok = (!cats.length || cats.some((cat) => cat === c.dataset.cat || (cat === 'ev' && /חשמלי/.test(c.dataset.fuel || ''))))
             && (!effBrands.length || effBrands.includes(c.dataset.brand))
             && (!fuels.length || fuels.includes(c.dataset.fuel))
             && (+c.dataset.monthly <= maxPrice)
@@ -324,7 +331,7 @@
         if (!btn) return;
         filterBar.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
         const cat = btn.dataset.cat;
-        cards.forEach((c) => { c.style.display = (cat === 'all' || c.dataset.cat === cat) ? '' : 'none'; });
+        cards.forEach((c) => { const m = cat === 'all' || c.dataset.cat === cat || (cat === 'ev' && /חשמלי/.test(c.dataset.fuel || '')); c.style.display = m ? '' : 'none'; });
       });
     }
   }
