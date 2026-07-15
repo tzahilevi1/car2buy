@@ -1190,6 +1190,33 @@ image-slot { display: block; }
 .art-toc a { color: var(--ink-soft); font-size: 15.5px; transition: color 0.2s; }
 .art-toc a:hover { color: var(--gold); }
 
+/* ===== article rich media: figures, charts, video, tables ===== */
+.art-fig, .art-video, .art-chart { margin: 32px 0; }
+.art-fig img { width: 100%; height: auto; border-radius: var(--radius); display: block; border: 1px solid var(--line); }
+.art-fig figcaption, .art-video figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); text-align: center; font-style: italic; }
+.art-video-frame { position: relative; width: 100%; padding-top: 56.25%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: #000; }
+.art-video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.art-chart { background: var(--bg-card); border: 1px solid var(--gold-line); border-radius: var(--radius); padding: 24px 26px; }
+.art-chart-title { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--ink); margin-bottom: 18px; }
+.art-chart-bars { display: grid; gap: 13px; }
+.art-bar-row { display: grid; grid-template-columns: minmax(120px, 34%) 1fr auto; align-items: center; gap: 12px; }
+.art-bar-lab { font-size: 14.5px; color: var(--ink-soft); }
+.art-bar-track { position: relative; height: 12px; background: var(--bg-1); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+.art-bar-fill { position: absolute; inset-block: 0; inset-inline-start: 0; border-radius: 999px; background: linear-gradient(90deg, var(--gold-deep), var(--gold-bright)); animation: artBarGrow 0.9s var(--ease) both; }
+@keyframes artBarGrow { from { width: 0 !important; } }
+.art-bar-row.hl .art-bar-fill { background: linear-gradient(90deg, #1f8a4c, #34c36e); }
+.art-bar-row.hl .art-bar-lab { color: var(--ink); font-weight: 700; }
+.art-bar-val { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--gold-deep); min-width: 44px; text-align: start; }
+.art-chart-note { margin-top: 16px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.art-table-wrap { margin: 30px 0; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.art-table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 420px; }
+.art-table th { background: var(--bg-1); color: var(--gold-deep); font-weight: 700; text-align: start; padding: 13px 16px; border-bottom: 2px solid var(--gold-line); white-space: nowrap; }
+.art-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+.art-table tr:last-child td { border-bottom: 0; }
+.art-table .art-td-k { color: var(--ink); font-weight: 600; }
+.art-table tbody tr:nth-child(even) td { background: color-mix(in oklab, var(--bg-1) 45%, transparent); }
+@media (max-width: 560px) { .art-bar-row { grid-template-columns: minmax(90px, 40%) 1fr auto; gap: 8px; } .art-bar-lab { font-size: 13px; } }
+
 /* ===== compare: card button ===== */
 .car-compare { position: absolute; inset-block-end: 12px; inset-inline-start: 12px; z-index: 3; background: color-mix(in oklab, var(--bg) 66%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); color: var(--ink-soft); font-family: var(--body); font-size: 12.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: 0.25s; }
 .car-compare:hover { border-color: var(--gold-line); color: var(--gold); }

@@ -612,11 +612,28 @@
       const more = ARTICLES.filter((x) => x.id !== a.id && x.cat === a.cat).concat(ARTICLES.filter((x) => x.id !== a.id && x.cat !== a.cat)).slice(0, 3);
       const words = a.body.map((b) => typeof b === 'string' ? b : (b.p || b.h2 || (b.ul ? b.ul.join(' ') : ''))).join(' ').replace(/<[^>]+>/g, ' ').split(/\s+/).length;
       const readMin = Math.max(3, Math.round(words / 220));
+      // inline chart (CSS bars — CSP-safe, theme-aware, responsive)
+      const chartHtml = (c) => {
+        const bars = c.bars || [];
+        const max = c.max || Math.max.apply(null, bars.map((x) => x.value).concat([1]));
+        const rows = bars.map((x) => {
+          const pct = Math.max(2, Math.round((x.value / max) * 100));
+          return `<div class="art-bar-row${x.hl ? ' hl' : ''}"><span class="art-bar-lab">${x.label}</span>` +
+            `<span class="art-bar-track"><span class="art-bar-fill" style="width:${pct}%"></span></span>` +
+            `<span class="art-bar-val">${x.value}${c.unit || ''}</span></div>`;
+        }).join('');
+        return `<figure class="art-chart reveal">${c.title ? `<figcaption class="art-chart-title">${c.title}</figcaption>` : ''}` +
+          `<div class="art-chart-bars">${rows}</div>${c.note ? `<div class="art-chart-note">${c.note}</div>` : ''}</figure>`;
+      };
       const blocks = a.body.map((b) => {
         if (typeof b === 'string') return `<p class="reveal">${b}</p>`;
         if (b.h2) return `<h2 class="art-h2 reveal">${b.h2}</h2>`;
         if (b.ul) return `<ul class="art-ul reveal">${b.ul.map((li) => `<li>${li}</li>`).join('')}</ul>`;
         if (b.quote) return `<blockquote class="art-quote reveal">${b.quote}</blockquote>`;
+        if (b.img) return `<figure class="art-fig reveal"><img loading="lazy" src="${b.img}" alt="${(b.caption || a.title).replace(/"/g, '&quot;')}" onerror="this.closest('.art-fig').style.display='none'">${b.caption ? `<figcaption>${b.caption}</figcaption>` : ''}</figure>`;
+        if (b.chart) return chartHtml(b.chart);
+        if (b.video) return `<figure class="art-video reveal"><div class="art-video-frame"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/${b.video}" title="${(b.caption || a.title).replace(/"/g, '&quot;')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${b.caption ? `<figcaption>${b.caption}</figcaption>` : ''}</figure>`;
+        if (b.table) return `<div class="art-table-wrap reveal"><table class="art-table">${b.table.head ? `<thead><tr>${b.table.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>` : ''}<tbody>${(b.table.rows || []).map((r) => `<tr>${r.map((cell, ci) => `<td${ci === 0 ? ' class="art-td-k"' : ''}>${cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
         if (b.p) return `<p class="reveal">${b.p}</p>`;
         return '';
       }).join('');
