@@ -136,28 +136,51 @@
     const LOAN = window.Car2Buy.LOAN_CARS || [];
     const FLAG = {};
     (window.Car2Buy.CARS || []).forEach((c) => { FLAG[c.brand + '|' + c.model] = c.slug; });
+    const EV_BRANDS = ['זיקר', 'אווטר', 'ליפמוטור', 'וויה', 'סקיוואל', 'טסלה'];
+    // accurate drive type — prefer the sheet 'engine' field, fall back to name/trim/brand
     const loanFuel = (c) => {
-      const t = (c.type || '') + ' ' + (c.trim || '');
-      if (/חשמלי|EV/i.test(t)) return 'חשמלי';
-      if (/נטען|PHEV/i.test(t)) return 'היברידי נטען';
-      if (/היבריד|HEV/i.test(t)) return 'היברידי';
+      const e = c.engine || '';
+      if (e) {
+        if (/mild/i.test(e)) return 'בנזין';
+        if (/פלאג|plug|phev/i.test(e)) return 'היברידי נטען';
+        if (/חשמל|electric|\bEV\b/i.test(e)) return 'חשמלי';
+        if (/היבריד|hybrid|hev/i.test(e)) return 'היברידי';
+        if (/דיזל|diesel/i.test(e)) return 'דיזל';
+        if (/בנזין|petrol|gasoline|טורבו/i.test(e)) return 'בנזין';
+      }
+      const t = (c.name || '') + ' ' + (c.trim || '') + ' ' + (c.type || '');
+      if (/נטען|PHEV|DM-?i/i.test(t)) return 'היברידי נטען';
+      if (EV_BRANDS.indexOf(c.brand) >= 0 || /חשמלי|\bEV\b/i.test(t)) return 'חשמלי';
+      if (/היבריד|HEV|hybrid/i.test(t)) return 'היברידי';
       return 'בנזין';
     };
     const loanBody = (c) => {
-      if (c.type) return c.type;
-      const n = (c.name || '') + ' ' + (c.brand || '');
-      if (/סדאן|סאלון|סליון|ספורטבק|סיל 5|סיל 6|A3|E5\b/i.test(n)) return 'סדאן';
-      if (/קופה|קופיה|\bGT\b/i.test(n)) return 'קופה';
-      if (/דולפין|יאריס קרוס|קליאו|פולו|קורסה|אטו 2|פיקנטו|i10|i20/i.test(n)) return 'סופרמיני';
-      if (/דולפין סרף|טוראנו|MPV|קרניבל|טוראן/i.test(n)) return 'MPV';
+      const n = (c.name || '') + ' ' + (c.brand || '') + ' ' + (c.trim || '') + ' ' + (c.type || '');
+      if (/קופה|coupe|\bGT\b/i.test(n)) return 'קופה';
+      if (/סדאן|saloon|sedan|סאלון|סליון|סיליון|ספורטבק|אלנטרה|סונטה|elantra|sonata|\bCLA\b|\bA3\b|\bA4\b|\bA5\b|\bE5\b|\b3-?series\b|\b5-?series\b/i.test(n)) return 'סדאן';
+      if ((c.seats && c.seats >= 7) || /7 ?מקומות|קרניבל|\bMPV\b|טוראן/i.test(n + ' ' + (c.engine || ''))) return 'רכב פנאי';
       return 'רכב פנאי';
     };
-    // map an inventory car to one catalog category id (suv / sedan / sport / ev)
+    // body category (suv / sedan / sport); electric cars still keep their body category —
+    // the "חשמלי" filter matches on drive type, not on this.
     const loanCat = (c) => {
-      const body = (c.type || '') + ' ' + loanBody(c) + ' ' + (c.trim || '') + ' ' + (c.name || '');
-      if (/קופה|coupe|\bGT\b|ספורט/i.test(body)) return 'sport';
-      if (/סדאן|saloon|sedan|ספורטבק/i.test(body)) return 'sedan';
-      return 'suv';   // רכבי פנאי / קרוסאובר / סופרמיני / MPV — leisure catch-all
+      const b = loanBody(c);
+      if (/קופה|ספורט/.test(b)) return 'sport';
+      if (/סדאן/.test(b)) return 'sedan';
+      return 'suv';
+    };
+    // multi-language brand aliases (he / en / ru / ar) so search works in any of them
+    const BRAND_ALIASES = {
+      'ב.י.ד': 'byd бид بي واي دي', "צ'רי": 'chery чери شيري', 'יונדאי': 'hyundai хендай хёндэ هيونداي',
+      'טויוטה': 'toyota тойота تويوتا', 'קיה': 'kia киа كيا', 'מאזדה': 'mazda мазда مازدا',
+      'ב.מ.וו': 'bmw бмв بي ام دبليو', 'אאודי': 'audi ауди اودي', 'מרצדס': 'mercedes benz мерседес مرسيدس',
+      'טסלה': 'tesla тесла تسلا', 'ניסאן': 'nissan ниссан نيسان', 'סקודה': 'skoda шкода سكودا',
+      'סיאט': 'seat сеат سيات', 'סיטרואן': 'citroen ситроен سيتروين', 'מיצובישי': 'mitsubishi мицубиси ميتسوبيشي',
+      'סובארו': 'subaru субару سوبارو', "אמ.ג'י": 'mg эмджи ام جي', "ג'אקו": 'jaecoo джейку جايكو',
+      'אומודה': 'omoda омода اومودا', 'ליפמוטור': 'leapmotor липмотор ليبموتور', 'זיקר': 'zeekr зикр زيكر',
+      'אווטר': 'avatr аватр افاتار', 'וויה': 'voyah воя فوياه', 'סמארט': 'smart смарт سمارت',
+      'סקיוואל': 'skywell скайвелл سكاي ويل', "קיי.ג'י.אם": 'kgm ssangyong кейджиэм', 'שברולט': 'chevrolet шевроле شيفروليه',
+      'GMC': 'gmc джиэмси جي ام سي', 'דונפנג': 'dongfeng дунфэн دونغفنغ', 'האמר': 'hummer хаммер هامر'
     };
 
     // group inventory rows into per-model cards (count trims, cheapest monthly)
@@ -166,7 +189,7 @@
       LOAN.forEach((c) => {
         const key = c.brand + '|' + c.name;
         if (!map.has(key)) {
-          map.set(key, { brand: c.brand, name: c.name, type: c.type || '', cat: c.cat || '',
+          map.set(key, { brand: c.brand, name: c.name, nameEn: c.nameEn || '', type: c.type || '',
             img: c.img, hero: c.hero, fuel: loanFuel(c), year: c.year || 2026,
             minM: c.m, minP: c.p, trims: 0, slug: FLAG[key] || c.id, cat: c.cat || loanCat(c) });
         }
@@ -182,7 +205,7 @@
     const loanCard = (g) => {
       const href = `car.html?car=${g.slug}`;
       const full = (window.Car2Buy.enName ? window.Car2Buy.enName(g) : g.brand + ' ' + g.name);
-      const searchName = full + ' ' + g.brand + ' ' + g.name + ' ' + (g.trim || '');
+      const searchName = full + ' ' + g.brand + ' ' + g.name + ' ' + (g.trim || '') + ' ' + (g.nameEn || '') + ' ' + (BRAND_ALIASES[g.brand] || '');
       return `<article class="car ccard reveal" data-cat="${g.cat}" data-brand="${g.brand}" data-fuel="${g.fuel}" data-monthly="${g.minM}" data-name="${searchName}">
         <a class="car-hit" href="${href}">
           <div class="ccard-ph">
@@ -208,6 +231,9 @@
       const prices = LOAN.map((c) => c.m);
       const minP = 0;
       const maxP = Math.ceil(Math.max(...prices) / 100) * 100;
+      // drive-type options that actually exist in the current catalog (no empty facets)
+      const FUEL_ORDER = ['בנזין', 'היברידי', 'היברידי נטען', 'חשמלי', 'דיזל'];
+      const presentFuels = FUEL_ORDER.filter((f) => GROUPS.some((g) => g.fuel === f));
       filters.innerHTML = `
         <div class="filter-group">
           <div class="filter-label">חיפוש</div>
@@ -225,7 +251,7 @@
         </div>
         <div class="filter-group">
           <div class="filter-label">הנעה</div>
-          ${FUELS.map((f) =>
+          ${presentFuels.map((f) =>
             `<label class="filter-chk"><input type="checkbox" name="fuel" value="${f}"><span>${f}</span></label>`).join('')}
         </div>
         <div class="filter-group">

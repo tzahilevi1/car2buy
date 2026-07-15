@@ -47,6 +47,7 @@
           var gallery = [row.imgL, row.imgB, row.imgR].map(driveUrl).filter(Boolean);
           return {
             brand: clean(row.brand), name: clean(row.name), trim: clean(row.trim),
+            nameEn: clean(row.nameEn), engine: clean(row.engine), seats: int(row.seats),
             m: int(row.m), p: int(row.p),
             img: cleanImg(row.img) || gallery[0] || '',
             gallery: gallery,
