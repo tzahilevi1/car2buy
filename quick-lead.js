@@ -65,6 +65,7 @@
     els.phone = modal.querySelector('#qlPhone');
     els.form = modal.querySelector('#qlForm');
     els.ok = modal.querySelector('#qlOk');
+    if (window.C2B_carPicker) window.C2B_carPicker(els.car);
     modal.addEventListener('click', function (e) { if (e.target.closest('[data-ql-close]')) close(); });
     els.form.addEventListener('submit', function (e) {
       e.preventDefault();

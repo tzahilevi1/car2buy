@@ -1196,9 +1196,18 @@ image-slot { display: block; }
 /* ===== phone inputs: force RTL alignment (Hebrew) across every form ===== */
 input[type="tel"] { direction: rtl; text-align: right; }
 
+/* ===== shared visual car picker (image + name autocomplete) ===== */
+.c2b-cp-res { position: absolute; z-index: 60; inset-inline: 0; top: calc(100% + 5px); background: var(--bg-card, #fff); border: 1px solid var(--line-2, #e6e3dd); border-radius: 12px; box-shadow: 0 24px 55px -26px rgba(0,0,0,0.45); max-height: 300px; overflow-y: auto; text-align: right; }
+.c2b-cp-item { display: flex; align-items: center; gap: 11px; padding: 8px 13px; cursor: pointer; border-bottom: 1px solid var(--line-2, #efece6); }
+.c2b-cp-item:last-child { border-bottom: 0; }
+.c2b-cp-item:hover { background: var(--bg-1, #f6f5f2); }
+.c2b-cp-item img, .c2b-cp-ph { width: 54px; height: 36px; object-fit: contain; flex: 0 0 auto; border-radius: 6px; background: var(--bg-1, #f2f1ee); }
+.c2b-cp-item span { font-size: 14px; font-weight: 600; color: var(--ink, #1a1613); }
+
 /* ===== shared consent checkbox (pre-checked, required to submit) ===== */
-.c2b-consent { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; line-height: 1.5; color: var(--ink-soft, #57534e); margin: 6px 0 2px; cursor: pointer; text-align: right; direction: rtl; }
-.c2b-consent input { margin-top: 2px; flex: 0 0 auto; width: 16px; height: 16px; accent-color: var(--gold, #F5691E); cursor: pointer; }
+.c2b-consent { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; line-height: 1.5; color: var(--ink-soft, #57534e); margin: 6px 0 2px; cursor: pointer; text-align: right; direction: rtl; width: 100%; }
+.c2b-consent input[type="checkbox"] { margin: 2px 0 0; flex: 0 0 16px; width: 16px; min-width: 16px; height: 16px; accent-color: var(--gold, #F5691E); cursor: pointer; }
+.c2b-consent span { flex: 1 1 auto; min-width: 0; }
 .c2b-consent a { color: var(--gold-deep, #c0551d); text-decoration: underline; }
 
 /* ===== article inline call-to-action banner ===== */

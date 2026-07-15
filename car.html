@@ -1266,6 +1266,10 @@ function renderCarDetail() {
         '<div class="cdl-done" id="cdlDone" hidden><div class="ok">✓</div><b>תודה! קיבלנו את הפרטים ונחזור אליכם בהקדם.</b></div>' +
       '</div>';
     document.body.appendChild(lead);
+    if (window.C2B_carPicker) window.C2B_carPicker(document.getElementById('cdlCar'), { onPick: function (c) {
+      var th = lead.querySelector('.cdl-car img'); if (th && c.img) th.src = c.img;
+      var nm = lead.querySelector('.cdl-car b'); if (nm) nm.textContent = c.name;
+    } });
     function openLead() { lead.classList.add('open'); document.body.style.overflow = 'hidden'; var n = document.getElementById('cdlName'); if (n) setTimeout(function () { n.focus(); }, 60); }
     function closeLead() { lead.classList.remove('open'); document.body.style.overflow = ''; }
     document.addEventListener('click', function (e) {

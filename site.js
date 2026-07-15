@@ -19,6 +19,51 @@ window.C2B_consentHTML = function () {
   return '<label class="c2b-consent"><input type="checkbox" class="c2b-consent-cb" checked>' +
     '<span>אני מאשר/ת יצירת קשר וקבלת מידע מ-Car2Buy בהתאם ל<a href="privacy.html" target="_blank" rel="noopener noreferrer">מדיניות הפרטיות</a></span></label>';
 };
+// visual car picker: attaches an image+name autocomplete dropdown to a text input.
+window.C2B_carPicker = function (input, opts) {
+  if (!input || input._c2bCp) return; input._c2bCp = 1;
+  opts = opts || {};
+  var C = window.Car2Buy || {};
+  var esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  function catalog() {
+    var L = (C.MODELS && C.MODELS.length) ? C.MODELS : (C.LOAN_CARS || []);
+    var seen = {}, out = [];
+    L.forEach(function (m) {
+      var name = ((C.enName ? C.enName(m) : ((m.brand || '') + ' ' + (m.name || ''))) || '').trim();
+      if (name && !seen[name]) { seen[name] = 1; out.push({ name: name, img: m.img || '', brand: m.brand }); }
+    });
+    return out;
+  }
+  var list = catalog();
+  input.setAttribute('autocomplete', 'off');
+  input.removeAttribute('list');
+  var box = document.createElement('div'); box.className = 'c2b-cp-res'; box.hidden = true;
+  if (getComputedStyle(input.parentNode).position === 'static') input.parentNode.style.position = 'relative';
+  input.parentNode.appendChild(box);
+  function render(q) {
+    if (!list.length) list = catalog();
+    q = (q || '').trim().toLowerCase();
+    var m = (q ? list.filter(function (c) { return c.name.toLowerCase().indexOf(q) >= 0; }) : list).slice(0, 8);
+    if (!m.length) { box.hidden = true; return; }
+    box.innerHTML = m.map(function (c) {
+      return '<div class="c2b-cp-item" data-i="' + list.indexOf(c) + '">' +
+        (c.img ? '<img src="' + esc(c.img) + '" alt="" onerror="this.style.visibility=\'hidden\'">' : '<span class="c2b-cp-ph"></span>') +
+        '<span>' + esc(c.name) + '</span></div>';
+    }).join('');
+    box.hidden = false;
+  }
+  input.addEventListener('focus', function () { render(input.value); });
+  input.addEventListener('input', function () { render(input.value); });
+  box.addEventListener('mousedown', function (e) {
+    var it = e.target.closest('.c2b-cp-item'); if (!it) return;
+    e.preventDefault();
+    var c = list[+it.dataset.i];
+    input.value = c.name; box.hidden = true;
+    if (opts.onPick) opts.onPick(c);
+  });
+  input.addEventListener('blur', function () { setTimeout(function () { box.hidden = true; }, 160); });
+};
+
 window.C2B_consentOK = function (scope) {
   var cb = (scope && scope.querySelector) ? scope.querySelector('.c2b-consent-cb') : null;
   if (cb && !cb.checked) {
