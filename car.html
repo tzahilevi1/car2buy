@@ -470,6 +470,7 @@
 <script src="cars-data.js"></script>
 <script src="car-videos.js"></script>
 <script src="loan-cars.js"></script>
+<script src="db-cars.js"></script>
 <script src="model-specs.js"></script>
 <script src="gov-data.js"></script>
 <script src="car-specs.js"></script>
@@ -481,7 +482,7 @@
 <script src="app.js"></script>
 
 <script>
-(function () {
+function renderCarDetail() {
   var root = document.getElementById('carDetail');
   if (!root) return;
   var params = new URLSearchParams(location.search);
@@ -1476,6 +1477,26 @@
       setTimeout(closeIdle, 2200);
     });
   })();
+}
+
+// Boot: the new-car catalog (models.html) links with live-sheet ids (sheetN) that only
+// exist after db-cars.js finishes fetching cars.json. Brand/related pages link with the
+// seed ids (cN) that are available immediately. Render at once when the id already
+// resolves; otherwise wait for the sheet so sheetN links don't hit "car not found".
+(function () {
+  var C = window.Car2Buy;
+  var slug = new URLSearchParams(location.search).get('car');
+  function canResolve(s) {
+    if (!C) return false;
+    if (C.getCar && C.getCar(s)) return true;
+    var L = C.LOAN_CARS || [];
+    for (var i = 0; i < L.length; i++) if (L[i].id === s) return true;
+    return false;
+  }
+  if (canResolve(slug) || !(C && C.carsLoading)) { renderCarDetail(); return; }
+  var done = false, go = function () { if (done) return; done = true; renderCarDetail(); };
+  document.addEventListener('c2b:cars-updated', go, { once: true });
+  setTimeout(function () { if (C) C.carsLoading = false; go(); }, 5000);
 })();
 </script>
 
