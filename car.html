@@ -700,9 +700,11 @@ function renderCarDetail() {
     ? '<div class="cd-figure"><img src="' + esc(car.img) + '" alt="' + esc(fullName) + '"></div>'
     : '<div class="cd-figure"><div class="cd-figure-ph"><div class="badge">' + esc(fullName) + '</div><div class="sub">' + esc(car.type) + ' · ' + esc(car.year) + '</div></div></div>';
 
+  // resolve one Hebrew review video for this car (own id, seed c-id, or brand+name match)
+  var carVideo = car.yt || (window.C2B_CAR_VIDEOS && window.C2B_CAR_VIDEOS[slug]) || (window.C2B_videoFor && window.C2B_videoFor(car.brand, car.model)) || '';
   var videoBlock;
-  if (car.yt) {
-    videoBlock = '<div class="cd-video-wrap"><iframe src="https://www.youtube.com/embed/' + esc(car.yt) + '" title="' + esc(fullName) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+  if (carVideo) {
+    videoBlock = '<div class="cd-video-wrap"><iframe src="https://www.youtube.com/embed/' + esc(carVideo) + '" title="' + esc(fullName) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
   } else {
     var q = encodeURIComponent(fullName + ' ' + (car.year || '') + ' סרטון רשמי');
     videoBlock = '<div class="cd-video-ph"><div><div class="ic">' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + '</div>' +
@@ -1030,7 +1032,7 @@ function renderCarDetail() {
             '<div class="cd-highlights">' +
               (car.highlights || []).map(function (h) { return '<span class="cd-chip">' + check + esc(h) + '</span>'; }).join('') +
             '</div>' +
-            '<button type="button" class="cd-vbtn cd-vbtn-wide" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפו בסרטון הרכב</button>' +
+            (carVideo ? '<button type="button" class="cd-vbtn cd-vbtn-wide" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפו בסרטון הרכב</button>' : '') +
             '<div class="cd-lead-cta">' +
               '<button type="button" class="btn btn-gold btn-lg" data-open-lead>לרכישת ' + esc(fullName) + ' החדשה</button>' +
               '<a class="btn btn-ghost btn-lg" href="calculator.html">חשבו החזר חודשי</a>' +
@@ -1053,7 +1055,7 @@ function renderCarDetail() {
           '<div class="cd-payband-facts">' + factsHtml + '</div>' +
           '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
             '<a class="btn btn-gold btn-lg" href="car-loan.html#wizard">קבלו הצעת מימון</a>' +
-            '<button type="button" class="cd-vbtn" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפו בסרטון</button>' +
+            (carVideo ? '<button type="button" class="cd-vbtn" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפו בסרטון</button>' : '') +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -1201,7 +1203,7 @@ function renderCarDetail() {
   var vmodal = document.getElementById('cdVideo');
   var vbody = document.getElementById('cdVideoBody');
   function openVideo() {
-    var ytId = car.yt || (window.C2B_CAR_VIDEOS && window.C2B_CAR_VIDEOS[slug]) || '';
+    var ytId = carVideo;
     if (ytId) {
       vbody.innerHTML = '<iframe src="https://www.youtube.com/embed/' + esc(ytId) + '?autoplay=1&rel=0" title="' + esc(fullName) + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
     } else {
