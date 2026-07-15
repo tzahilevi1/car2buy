@@ -22,7 +22,6 @@
     { img: 'images/customers/cust-10.jpg', name: 'משפחת כהן', car: 'Chery Tiggo 8 Pro', brand: "צ'רי" },
     { img: 'images/customers/cust-11.jpg', name: 'סועאד ורים', car: 'Cupra Formentor', brand: 'קופרה', big: true },
     { img: 'images/customers/cust-12.jpg', name: 'שירן ל׳', car: 'Cupra Formentor', brand: 'קופרה' },
-    { img: 'images/customers/cust-13.jpg', name: 'עידן ש׳', car: 'Chevrolet Silverado', brand: 'שברולט' },
     { img: 'images/customers/cust-14.jpg', name: 'פאטמה ונור', car: 'MG 4', brand: 'MG' },
     { img: 'images/customers/cust-15.jpg', name: 'יוסי ורן', car: 'BMW X1', brand: 'ב.מ.וו' },
     { img: 'images/customers/cust-16.jpg', name: 'עומר וניר', car: 'Mazda CX-30', brand: 'מאזדה' },
