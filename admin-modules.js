@@ -97,7 +97,7 @@
       var tplOpts = cfg.tpls.map(function (t, i) { return '<option value="' + i + '">' + esc(t[0]) + '</option>'; }).join('');
       var leadOpts = leads.map(function (l) { return '<tr data-lid="' + esc(l.id) + '"><td><b>' + esc(l.name || '—') + '</b></td><td>' + esc(channel === 'emails' ? (l.email || '') : (l.phone || '')) + '</td><td>' + esc(l.car || '—') + '</td><td><button class="btn btn-sm" data-send="' + esc(l.id) + '">' + cfg.icon + ' שלח</button></td></tr>'; }).join('') || '<tr><td colspan="4" class="empty">אין לידים עם ' + (channel === 'emails' ? 'אימייל' : 'טלפון') + '.</td></tr>';
       view('<h2 style="margin:0 0 4px">' + cfg.icon + ' ' + cfg.title + '</h2>' +
-        '<p class="muted" style="font-size:12.5px;margin:0 0 14px">בחרו תבנית, ערכו את ההודעה (משתנים: <code>{name}</code> <code>{firstname}</code> <code>{car}</code>) ושלחו לליד. השליחה נפתחת ב' + (channel === 'whatsapp' ? 'WhatsApp' : channel === 'emails' ? 'תוכנת המייל' : 'הודעות') + ' ומתועדת בציר הזמן של הליד.</p>' +
+        '<p class="muted" style="font-size:12.5px;margin:0 0 14px">בחרו תבנית, ערכו את ההודעה (משתנים: <code>{name}</code> <code>{firstname}</code> <code>{car}</code>) ושלחו לליד. ' + (channel === 'emails' ? 'המייל <b>נשלח ישירות מהמערכת</b> (דרך Resend) ומתועד בציר הזמן.' : 'השליחה נפתחת ב' + (channel === 'whatsapp' ? 'WhatsApp' : 'הודעות') + ' עם ההודעה מוכנה, ומתועדת בציר הזמן.') + '</p>' +
         '<div class="card"><div class="row-between" style="gap:10px;flex-wrap:wrap;align-items:end"><div class="field" style="flex:0 0 220px;margin:0"><label>תבנית</label><select class="inp" id="cmTpl" style="width:100%"><option value="">— חדש —</option>' + tplOpts + '</select></div></div>' +
         '<div class="field" style="margin:10px 0 0"><label>תוכן ההודעה</label><textarea class="inp" id="cmMsg" rows="' + (channel === 'emails' ? 7 : 4) + '" style="width:100%" placeholder="הקלד/י הודעה…">' + esc(cfg.tpls[0][1]) + '</textarea></div>' +
         (channel === 'emails' ? '<div class="field" style="margin:10px 0 0"><label>נושא</label><input class="inp" id="cmSubj" style="width:100%" value="הצעה אישית מ-Car2Buy"></div>' : '') + '</div>' +
@@ -110,11 +110,26 @@
         b.addEventListener('click', function () {
           var l = leads.filter(function (x) { return String(x.id) === b.dataset.send; })[0]; if (!l) return;
           var text = fill(msg.value, l);
+          if (channel === 'emails') {
+            // real send from the system via the send-message Edge Function (Resend)
+            b.textContent = 'שולח…'; b.disabled = true;
+            db.functions.invoke('send-message', { body: { channel: 'email', to: l.email, subject: ($('cmSubj') && $('cmSubj').value) || 'הצעה אישית מ-Car2Buy', text: text } }).then(function (r) {
+              var d = r.data || {};
+              if (r.error || d.error) {
+                b.textContent = cfg.icon + ' שלח'; b.disabled = false;
+                alert('שליחת המייל נכשלה: ' + ((d.error) || (r.error && r.error.message) || 'שגיאה') + '\n\nוודאו שהפונקציה "send-message" פרוסה ב-Supabase ושה-Secret "RESEND_API_KEY" מוגדר.');
+                return;
+              }
+              logAct(l.id, 'email', 'נשלח מייל ללקוח: ' + text.slice(0, 80));
+              b.textContent = '✓ נשלח'; setTimeout(function () { b.textContent = cfg.icon + ' שלח'; b.disabled = false; }, 3000);
+            }, function (e) { b.textContent = cfg.icon + ' שלח'; b.disabled = false; alert('שגיאת רשת: ' + (e && e.message || e)); });
+            return;
+          }
+          // whatsapp / sms — open the app with the message ready
           var url;
           if (channel === 'whatsapp') { url = 'https://wa.me/' + intlPhone(l.phone) + '?text=' + encodeURIComponent(text); window.open(url, '_blank', 'noopener'); }
-          else if (channel === 'sms') { url = 'sms:' + (l.phone || '') + '?body=' + encodeURIComponent(text); window.location.href = url; }
-          else { url = 'mailto:' + (l.email || '') + '?subject=' + encodeURIComponent(($('cmSubj') && $('cmSubj').value) || 'Car2Buy') + '&body=' + encodeURIComponent(text); window.location.href = url; }
-          logAct(l.id, channel === 'emails' ? 'email' : channel === 'sms' ? 'sms' : 'whatsapp', 'נשלחה הודעת ' + cfg.title + ': ' + text.slice(0, 80));
+          else { url = 'sms:' + (l.phone || '') + '?body=' + encodeURIComponent(text); window.location.href = url; }
+          logAct(l.id, channel === 'sms' ? 'sms' : 'whatsapp', 'נשלחה הודעת ' + cfg.title + ': ' + text.slice(0, 80));
           b.textContent = '✓ נשלח'; b.disabled = true; setTimeout(function () { b.textContent = cfg.icon + ' שלח'; b.disabled = false; }, 2500);
         });
       });
