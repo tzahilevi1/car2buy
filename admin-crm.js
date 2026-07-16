@@ -193,6 +193,28 @@
 
   // ---------- LEADS TABLE ----------
   var cache = [], profiles = {}, orderIds = [], curFilter = null, curDeals = [], leadFilter = null, selectedLeads = {};
+  // configurable columns for the leads table (show/hide/reorder via the column chooser)
+  var LEAD_COLS = [
+    { key: 'name', label: 'שם לקוח', fixed: true, cell: function (l) { return '<td style="cursor:pointer" data-open="1"><span class="avatar" style="margin-inline-end:8px">' + esc(initials(l.name)) + '</span><b>' + esc(l.name) + '</b></td>'; } },
+    { key: 'phone', label: 'טלפון ראשי', cell: function (l) { return '<td>' + esc(l.phone || '—') + '</td>'; } },
+    { key: 'whatsapp', label: 'וואטסאפ', cell: function (l) { var wa = waLink(l.phone); return '<td>' + (wa ? '<a class="wa-ic" href="' + wa + '" target="_blank" rel="noopener" title="פתח וואטסאפ" onclick="event.stopPropagation()">💬</a>' : '—') + '</td>'; } },
+    { key: 'assigned', label: 'מנהל מכירות', cell: function (l) { return '<td>' + assignChip(l) + '</td>'; } },
+    { key: 'status', label: 'סטטוס לקוח', cell: function (l) { return '<td>' + badge(l.status || 'new', true, l.id) + '</td>'; } },
+    { key: 'source', label: 'מקור הגעה', cell: function (l) { return '<td>' + (l.source ? '<span class="tag">' + esc(l.source) + '</span>' : '—') + '</td>'; } },
+    { key: 'car', label: 'רכב', cell: function (l) { return '<td>' + esc(l.car || '—') + '</td>'; } },
+    { key: 'updated', label: 'עדכון אחרון', cell: function (l) { return '<td class="muted">' + fmt(l.updated_at || l.status_changed_at || l.created_at) + '</td>'; } },
+    { key: 'brand', label: 'מותג', def: false, cell: function (l) { return '<td>' + esc(l.brand || '—') + '</td>'; } },
+    { key: 'city', label: 'עיר', def: false, cell: function (l) { return '<td>' + esc(l.city || '—') + '</td>'; } },
+    { key: 'email', label: 'אימייל', def: false, cell: function (l) { return '<td class="muted">' + esc(l.email || '—') + '</td>'; } },
+    { key: 'id_num', label: 'ת.ז / ח.פ', def: false, cell: function (l) { return '<td class="muted">' + esc(l.id_num || '—') + '</td>'; } },
+    { key: 'utm_campaign', label: 'utm_campaign', def: false, cell: function (l) { return '<td class="muted">' + esc(l.utm_campaign || '—') + '</td>'; } },
+    { key: 'utm_source', label: 'utm_source', def: false, cell: function (l) { return '<td class="muted">' + esc(l.utm_source || '—') + '</td>'; } },
+    { key: 'marketing_company', label: 'חברת שיווק', def: false, cell: function (l) { return '<td class="muted">' + esc(l.marketing_company || '—') + '</td>'; } },
+    { key: 'message', label: 'תיאור / הודעה', def: false, cell: function (l) { return '<td class="muted" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(l.message || '—') + '</td>'; } },
+    { key: 'lead_no', label: 'מספר לקוח', def: false, cell: function (l) { return '<td class="muted">' + esc(l.lead_no || l.id || '—') + '</td>'; } },
+    { key: 'created', label: 'נוצר בתאריך', def: false, cell: function (l) { return '<td class="muted">' + fmt(l.created_at) + '</td>'; } }
+  ];
+  var leadCols = null;
   window.C2B_renderLeads = function (statusFilter) {
     curFilter = statusFilter || null; selectedLeads = {};
     loading();
@@ -212,13 +234,15 @@
         { key: 'ad_group', label: 'ad_group' }, { key: 'city', label: 'עיר' },
         { key: 'assigned', label: 'איש מכירות', get: function (l) { return profiles[l.assigned_to] || ''; } }
       ], draw);
+      if (!leadCols) leadCols = C.colPicker('leads', LEAD_COLS, draw);
       var title = statusFilter ? stDef(statusFilter).label : 'כל הלידים';
       view('<div class="card"><div class="row-between"><h3>' + esc(title) + ' <span class="muted" id="lcount"></span></h3>' +
-        '<div><input class="inp" id="lq" placeholder="חיפוש חופשי…" style="width:170px"> <button class="btn btn-sm" id="lnew">+ ליד חדש</button> <button class="btn btn-ghost btn-sm" id="lcsv">CSV</button></div></div>' +
+        '<div><input class="inp" id="lq" placeholder="חיפוש חופשי…" style="width:170px"> <button class="btn btn-sm" id="lnew">+ ליד חדש</button> <button class="btn btn-ghost btn-sm" id="lcsv">CSV</button> ' + leadCols.button() + '</div></div>' +
         '<div id="leadsBody"></div></div>');
       C.$('lnew').addEventListener('click', newLeadForm);
       C.$('lq').addEventListener('input', draw);
       C.$('lcsv').addEventListener('click', function () { C.exportCsv(listRows(), ['created_at', 'name', 'phone', 'email', 'car', 'source', 'status', 'city', 'brand', 'marketing_company', 'utm_source', 'utm_campaign', 'message'], 'car2buy-leads'); });
+      leadCols.bind();
       draw();
     });
   };
@@ -236,13 +260,9 @@
     orderIds = rows.map(function (l) { return l.id; });
     if (C.$('lcount')) C.$('lcount').textContent = '(' + rows.length + ')';
     var body = rows.map(function (l) {
-      var wa = waLink(l.phone);
       return '<tr data-lead="' + l.id + '"><td style="width:30px;text-align:center"><input type="checkbox" data-sel="' + l.id + '"' + (selectedLeads[l.id] ? ' checked' : '') + '></td>' +
-        '<td style="cursor:pointer" data-open="1"><span class="avatar" style="margin-inline-end:8px">' + esc(initials(l.name)) + '</span><b>' + esc(l.name) + '</b></td>' +
-        '<td>' + esc(l.phone) + '</td><td>' + (wa ? '<a class="wa-ic" href="' + wa + '" target="_blank" rel="noopener" title="פתח וואטסאפ" onclick="event.stopPropagation()">💬</a>' : '—') + '</td>' +
-        '<td><span class="tag">' + esc(l.source) + '</span></td><td>' + esc(l.car) + '</td>' +
-        '<td>' + assignChip(l) + '</td><td>' + badge(l.status || 'new', true, l.id) + '</td><td class="muted">' + fmt(l.updated_at || l.status_changed_at || l.created_at) + '</td></tr>';
-    }).join('') || '<tr><td colspan="9" class="empty">אין לידים</td></tr>';
+        leadCols.cells(l) + '</tr>';
+    }).join('') || '<tr><td colspan="' + (leadCols.colCount() + 1) + '" class="empty">אין לידים</td></tr>';
     var agentOpts = Object.keys(profiles).map(function (uid) { return '<option value="' + uid + '">' + esc(profiles[uid]) + '</option>'; }).join('');
     var srcList = ((C.lists && C.lists.source) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
     var brandList = ((C.lists && C.lists.brand) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
@@ -254,7 +274,7 @@
       '<input id="bulkBrand" list="bulkBrandL" placeholder="🚗 מותג" style="width:120px"><datalist id="bulkBrandL">' + brandList + '</datalist>' +
       '<button class="btn btn-sm" id="bulkApply">החל</button><button class="btn btn-ghost btn-sm" id="bulkDel" style="color:var(--danger);border-color:var(--danger)">🗑️ מחק</button><button class="btn btn-ghost btn-sm" id="bulkClear">בטל בחירה</button></div>';
     C.$('leadsBody').innerHTML = (leadFilter ? leadFilter.render() : '') + bulkBar +
-      '<div class="table-scroll"><table><thead><tr><th style="width:30px;text-align:center"><input type="checkbox" id="selAll" title="בחר הכל"></th><th>שם</th><th>טלפון</th><th>וואטסאפ</th><th>מקור</th><th>רכב</th><th>איש מכירות</th><th>סטטוס</th><th>עדכון</th></tr></thead><tbody id="ltbl">' + body + '</tbody></table></div>';
+      '<div class="table-scroll"><table><thead><tr><th style="width:30px;text-align:center"><input type="checkbox" id="selAll" title="בחר הכל"></th>' + leadCols.thead() + '</tr></thead><tbody id="ltbl">' + body + '</tbody></table></div>';
     if (leadFilter) leadFilter.bind();
     bindBulk();
     C.$('ltbl').querySelectorAll('td[data-open]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openLeadCard(td.parentNode.dataset.lead); }); });

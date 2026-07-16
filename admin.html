@@ -87,6 +87,22 @@
   .stmenu{position:absolute;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:45;padding:6px;min-width:180px}
   .stmenu .si{padding:8px 12px;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:600}
   .stmenu .si:hover{background:var(--surface-2)}
+  /* column chooser */
+  .colpick-menu{position:fixed;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);z-index:2147483000;width:280px;padding:10px;max-height:72vh;overflow:auto}
+  .colpick-menu .cp-head{font-size:11.5px;color:var(--muted);font-weight:700;padding:2px 4px 9px}
+  .cp-row{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px}
+  .cp-row:hover{background:var(--surface-2)}
+  .cp-mv{display:flex;flex-direction:column}
+  .cp-mv button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:9px;line-height:1.1;padding:1px 3px}
+  .cp-mv button:hover{color:var(--brand)}
+  .cp-lbl{flex:1;font-size:13.5px;font-weight:600}
+  .cp-sw{position:relative;display:inline-block;width:38px;height:21px;flex:none}
+  .cp-sw input{opacity:0;width:0;height:0;position:absolute}
+  .cp-sl{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:.2s;cursor:pointer}
+  .cp-sl:before{content:"";position:absolute;width:15px;height:15px;inset-inline-start:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .cp-sw input:checked + .cp-sl{background:var(--brand)}
+  .cp-sw input:checked + .cp-sl:before{transform:translateX(-17px)}
+  .cp-sw input:disabled + .cp-sl{opacity:.45;cursor:not-allowed}
   .ac-box{position:relative}
   .ac-res{position:absolute;top:42px;inset-inline-start:0;inset-inline-end:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:260px;overflow:auto;z-index:30}
   .ac-res .ai{padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
@@ -289,8 +305,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.3/dist/html2pdf.bundle.min.js" integrity="sha384-1Rq385dzyHeeImKREXc2dTf1lhBKJHL8YR6phOUkikTCsUwGgDyWRoGv8KVG2+qY" crossorigin="anonymous"></script>
-<script src="admin.js?v=20260716t"></script>
-<script src="admin-crm.js?v=20260716t"></script>
-<script src="admin-modules.js?v=20260716t"></script>
+<script src="admin.js?v=20260716u"></script>
+<script src="admin-crm.js?v=20260716u"></script>
+<script src="admin-modules.js?v=20260716u"></script>
 </body>
 </html>

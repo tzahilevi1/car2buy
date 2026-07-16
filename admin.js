@@ -255,6 +255,48 @@
   }
   window.C2B.makeFilter = makeFilter;
 
+  // ---- reusable column chooser (show/hide + reorder columns), persisted per view ----
+  function closeColPanel() { var m = document.getElementById('colpickmenu'); if (m) m.remove(); }
+  // cols: [{key,label,cell:fn(row)->'<td>..</td>',th:'attrs?',fixed:bool,def:false-to-hide-by-default}]
+  window.C2B.colPicker = function (viewKey, cols, onChange) {
+    var LSKEY = 'c2b_cols_' + viewKey, byKey = {}; cols.forEach(function (c) { byKey[c.key] = c; });
+    function load() {
+      var s = null; try { s = JSON.parse(localStorage.getItem(LSKEY)); } catch (e) {}
+      if (!s || !s.order) return { order: cols.map(function (c) { return c.key; }), hidden: cols.filter(function (c) { return !c.fixed && c.def === false; }).map(function (c) { return c.key; }) };
+      var order = s.order.filter(function (k) { return byKey[k]; });
+      cols.forEach(function (c) { if (order.indexOf(c.key) < 0) order.push(c.key); });
+      return { order: order, hidden: (s.hidden || []).filter(function (k) { return byKey[k] && !byKey[k].fixed; }) };
+    }
+    var state = load();
+    function save() { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch (e) {} }
+    function visible() { return state.order.map(function (k) { return byKey[k]; }).filter(function (c) { return c && state.hidden.indexOf(c.key) < 0; }); }
+    function openPanel(anchor) {
+      closeColPanel();
+      var m = document.createElement('div'); m.id = 'colpickmenu'; m.className = 'colpick-menu';
+      m.innerHTML = '<div class="cp-head">בחירת עמודות · גררו בחצים לשינוי סדר</div><div class="cp-list">' +
+        state.order.map(function (k) { var c = byKey[k], on = state.hidden.indexOf(k) < 0;
+          return '<div class="cp-row" data-k="' + esc(k) + '"><span class="cp-mv"><button data-cpu aria-label="למעלה">▲</button><button data-cpd aria-label="למטה">▼</button></span><span class="cp-lbl">' + esc(c.label) + (c.fixed ? ' 🔒' : '') + '</span><label class="cp-sw"><input type="checkbox" data-cptg ' + (on ? 'checked' : '') + (c.fixed ? ' disabled' : '') + '><span class="cp-sl"></span></label></div>';
+        }).join('') + '</div><button class="btn btn-ghost btn-sm" data-cpreset style="width:100%;margin-top:8px">איפוס לברירת מחדל</button>';
+      document.body.appendChild(m);
+      var r = anchor.getBoundingClientRect(); m.style.top = (r.bottom + 6) + 'px'; m.style.right = Math.max(8, window.innerWidth - r.right) + 'px';
+      m.addEventListener('click', function (e) { e.stopPropagation(); });
+      m.querySelectorAll('[data-cptg]').forEach(function (cb) { cb.addEventListener('change', function () { var k = cb.closest('.cp-row').dataset.k, i = state.hidden.indexOf(k); if (cb.checked) { if (i >= 0) state.hidden.splice(i, 1); } else if (i < 0) state.hidden.push(k); save(); onChange(); }); });
+      function move(k, d) { var i = state.order.indexOf(k), j = i + d; if (j < 0 || j >= state.order.length) return; var t = state.order[i]; state.order[i] = state.order[j]; state.order[j] = t; save(); onChange(); openPanel(anchor); }
+      m.querySelectorAll('[data-cpu]').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); move(b.closest('.cp-row').dataset.k, -1); }); });
+      m.querySelectorAll('[data-cpd]').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); move(b.closest('.cp-row').dataset.k, 1); }); });
+      m.querySelector('[data-cpreset]').addEventListener('click', function () { try { localStorage.removeItem(LSKEY); } catch (e) {} state = load(); onChange(); openPanel(anchor); });
+      setTimeout(function () { document.addEventListener('click', closeColPanel, { once: true }); }, 0);
+    }
+    return {
+      visible: visible,
+      thead: function () { return visible().map(function (c) { return '<th' + (c.th ? ' ' + c.th : '') + '>' + esc(c.label) + '</th>'; }).join(''); },
+      cells: function (row) { return visible().map(function (c) { return c.cell(row); }).join(''); },
+      colCount: function () { return visible().length; },
+      button: function () { return '<button class="btn btn-ghost btn-sm" data-colpick="' + esc(viewKey) + '" title="בחירת עמודות"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" style="vertical-align:-2px"><path d="M4 5h16M4 12h16M4 19h16"/></svg> עמודות</button>'; },
+      bind: function () { var b = document.querySelector('[data-colpick="' + viewKey + '"]'); if (b) b.addEventListener('click', function (e) { e.stopPropagation(); openPanel(b); }); }
+    };
+  };
+
   // ---------- CARS (read-only from the Google Sheet → cars.json) ----------
   var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LiK--j3BCPnHO4rZQj7N2RetdnExEmwimWTwn7kmWe8/edit';
   var CAR_COLS = 12;
