@@ -385,7 +385,8 @@
   .idle-form input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 3px color-mix(in oklab, var(--gold) 18%, transparent); }
   .idle-form .btn { flex:0 0 auto; white-space:nowrap; }
   .idle-form .c2b-consent { flex:1 1 100%; margin-top:2px; font-size:11.5px; }
-  .idle-done { font-weight:700; color:var(--gold-deep); display:flex; align-items:center; gap:8px; flex:1 1 auto; justify-content:center; }
+  .idle-done { font-weight:700; color:var(--gold-deep); display:flex; align-items:center; gap:8px; flex:1 1 100%; justify-content:center; padding:6px 0; }
+  .idle-form[hidden], .idle-done[hidden] { display:none !important; }   /* respect the hidden attribute (show 'תודה' only after submit) */
   .idle-check { width:26px; height:26px; border-radius:50%; background:linear-gradient(150deg,var(--gold-bright),var(--gold-deep)); color:#fff; display:grid; place-items:center; font-size:14px; }
   @media (max-width:900px){ .idle-bar { flex-wrap:wrap; } .idle-copy { flex:1 1 100%; } .idle-form { flex:1 1 100%; } }
   @media (max-width:560px){ .idle-img { display:none; } .idle-form { flex-wrap:wrap; } .idle-form input, .idle-form .btn { flex:1 1 100%; } }
@@ -1083,7 +1084,7 @@ function renderCarDetail() {
           '<div class="cd-acc">' + accHtml + '</div>' +
           '<div class="cd-card-cta">' +
             '<a class="btn btn-gold btn-lg" href="car-loan.html#wizard">קבלו הצעת מימון לרכב זה</a>' +
-            '<a class="btn btn-ghost" href="tel:+972584700706">דברו עם יועץ · 054-470-0706</a>' +
+            '<a class="btn btn-ghost" href="tel:+972723319929">דברו עם יועץ · 072-3319929</a>' +
             '<div class="cd-card-note">המפרט להמחשה בלבד וייתכנו הבדלים בין רמות הגימור. ההחזר החודשי משוער ואינו מהווה הצעה מחייבת.</div>' +
           '</div>' +
         '</div>' +

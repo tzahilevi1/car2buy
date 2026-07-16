@@ -145,7 +145,7 @@
         var ac = (ACTIONS.filter(function (x) { return x[0] === a.action; })[0] || [a.action, a.action])[1];
         var pd = a.params || {};
         var detail = (pd.text ? ' <span class="muted">("' + esc(pd.text) + '")</span>' : '') + (a.action === 'task' && pd.days != null ? ' <span class="muted">· בעוד ' + esc(pd.days) + ' ימים</span>' : '');
-        return '<tr><td><b>' + esc(a.name || 'חוק') + '</b></td><td>כשסטטוס → <b>' + esc(st) + '</b></td><td>' + esc(ac) + detail + '</td><td><label class="switch-sm"><input type="checkbox" data-toggle="' + a.id + '"' + (a.active ? ' checked' : '') + '> ' + (a.active ? 'פעיל' : 'כבוי') + '</label></td><td><button class="btn btn-ghost btn-sm" data-del="' + a.id + '">🗑️</button></td></tr>';
+        return '<tr><td><b>' + esc(a.name || 'חוק') + '</b></td><td>כשסטטוס → <b>' + esc(st) + '</b></td><td>' + esc(ac) + detail + '</td><td><label class="switch-sm"><input type="checkbox" data-toggle="' + a.id + '"' + (a.active ? ' checked' : '') + '> ' + (a.active ? 'פעיל' : 'כבוי') + '</label></td><td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" data-edit="' + a.id + '">✏️ ערוך</button> <button class="btn btn-ghost btn-sm" data-del="' + a.id + '">🗑️</button></td></tr>';
       }).join('') : '<tr><td colspan="5" class="empty">אין עדיין חוקים. הוסיפו חוק ראשון למטה.</td></tr>';
       view('<div class="row-between" style="align-items:center;margin-bottom:12px"><h2 style="margin:0">🤖 אוטומציות</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="auEmailOnly">🧹 השאר רק מיילים</button><button class="btn btn-sm" id="auPack">✨ טען חבילת מיילים מומלצת</button></div></div>' +
         '<div class="card"><h3>חוק חדש</h3><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">' +
@@ -157,10 +157,29 @@
           '<button class="btn" id="auAdd">➕ הוסף חוק</button></div></div>' +
         '<div class="card"><h3>חוקים פעילים (' + rules.length + ')</h3><div class="table-scroll"><table><thead><tr><th>שם</th><th>תנאי</th><th>פעולה</th><th>מצב</th><th></th></tr></thead><tbody>' + list + '</tbody></table></div>' +
         '<p class="muted" style="font-size:12px;margin-top:10px">✅ <b>המנוע פעיל.</b> כשסטטוס של ליד משתנה ב-CRM, החוקים המתאימים רצים אוטומטית — פותחים משימת מעקב, רושמים הערה בציר הזמן, או פותחים תזכורת "שלח WhatsApp". (שליחת WhatsApp/מייל אוטומטית לגמרי, בלי משימה, תתאפשר לאחר חיבור ה-Meta API.)</p></div>');
+      var editState = null;
       $('auAdd').addEventListener('click', function () {
         var name = $('auName').value.trim(); if (!name) { $('auName').focus(); return; }
+        var action = $('auAct').value;
         var params = { text: ($('auText').value || '').trim() || null, days: (+$('auDays').value || 1) };
-        db.from('automations').insert({ name: name, trigger_status: $('auTrig').value, action: $('auAct').value, active: true, params: params }).then(function (u) { if (u.error) return alert('שגיאה: ' + u.error.message); window.C2B_renderAutomations(); });
+        if (editState && editState.params && editState.params.subject && action === 'email') params.subject = editState.params.subject;
+        var payload = { name: name, trigger_status: $('auTrig').value, action: action, params: params };
+        var q = editState ? db.from('automations').update(payload).eq('id', editState.id) : db.from('automations').insert(Object.assign({ active: true }, payload));
+        q.then(function (u) { if (u.error) return alert('שגיאה: ' + u.error.message); window.C2B_renderAutomations(); });
+      });
+      $('view').querySelectorAll('[data-edit]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var a = rules.filter(function (x) { return String(x.id) === b.dataset.edit; })[0]; if (!a) return;
+          editState = a;
+          $('auName').value = a.name || '';
+          $('auTrig').value = a.trigger_status || '';
+          $('auAct').value = a.action || 'task';
+          $('auText').value = (a.params && a.params.text) || '';
+          $('auDays').value = (a.params && a.params.days != null) ? a.params.days : 1;
+          $('auAdd').textContent = '✔️ עדכן חוק';
+          if ($('auName').scrollIntoView) $('auName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          $('auName').focus();
+        });
       });
       $('auPack').addEventListener('click', function () {
         var have = {}; rules.forEach(function (x) { have[x.name] = 1; });

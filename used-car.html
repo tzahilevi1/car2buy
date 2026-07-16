@@ -479,6 +479,7 @@
   .idle-form input { width:100%; padding:13px 15px; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:15px; text-align:right; }
   .idle-form input:focus { outline:none; border-color:var(--gold); }
   .idle-done { margin-top:16px; font-weight:700; color:var(--gold-deep); display:flex; align-items:center; gap:8px; }
+  .idle-form[hidden], .idle-done[hidden] { display:none !important; }   /* show 'תודה' only after submit */
   .idle-check { width:26px; height:26px; border-radius:50%; background:linear-gradient(150deg,var(--gold-bright),var(--gold-deep)); color:#fff; display:grid; place-items:center; font-size:14px; }
   .idle-img { position:relative; background:var(--bg-1); }
   .idle-img img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
@@ -920,7 +921,7 @@
     ['לקבלת עד 100% מימון לרכב', 'red', 'button', 'data-open-loan', ''],
     ['לתהליך טרייד אין מהיר ופשוט', 'red', 'button', 'data-open-tradein', ''],
     ['לתיאום פגישה בסניף הקרוב', 'dark', 'button', 'data-open-scheduler data-car="' + esc(fullName) + '"', ''],
-    ['פנו ליועצים שלנו בוואטסאפ', 'wa', 'a', 'target="_blank" rel="noopener"', 'https://wa.me/972584700706?text=' + waMsgHero]
+    ['פנו ליועצים שלנו בוואטסאפ', 'wa', 'a', 'target="_blank" rel="noopener"', 'https://wa.me/972723319929?text=' + waMsgHero]
   ];
   var optCardsHtml = optCards.map(function (o) {
     var btn = o[2] === 'a'
@@ -1245,7 +1246,7 @@
           '<div class="cd-acc">' + accHtml + '</div>' +
           '<div class="cd-card-cta">' +
             '<a class="btn btn-gold btn-lg" href="#purchase">לרכישת הרכב</a>' +
-            '<a class="btn btn-ghost" href="tel:+972584700706">דברו עם יועץ · 054-470-0706</a>' +
+            '<a class="btn btn-ghost" href="tel:+972723319929">דברו עם יועץ · 072-3319929</a>' +
             '<div class="cd-card-note">המפרט להמחשה בלבד וייתכנו הבדלים בין רמות הגימור ושנתונים. הנתונים נגזרים ממאפייני הדגם ואינם מהווים הצהרה מחייבת.</div>' +
           '</div>' +
         '</div>' +

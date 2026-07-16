@@ -84,7 +84,7 @@
       + '<div class="cd-section-k">אודות היצרן</div><h2 class="brand-content-h">' + esc(brandDisp) + ' ב-Car2Buy</h2>'
       + '<div class="brand-content"><p>' + esc(intro0) + '</p>'
       + '<p>גם אם דגם מסוים אינו מופיע כרגע בקטלוג המלאי שלנו — אנחנו נאתר ונשיג אותו עבורכם, בליווי אישי מלא ובמסלול מימון של עד 100% בהחזר חודשי מותאם. יש לכם רכב קיים? עסקת טרייד-אין תקזז את שוויו ותקטין עוד יותר את ההחזר.</p></div>'
-      + '<div class="mh-actions" style="margin-top:26px;"><a href="contact.html" class="btn btn-gold btn-lg">השאירו פרטים לרכב ' + esc(brandDisp) + '</a> <a href="https://wa.me/972584700706" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">שיחה בוואטסאפ</a></div>'
+      + '<div class="mh-actions" style="margin-top:26px;"><a href="contact.html" class="btn btn-gold btn-lg">השאירו פרטים לרכב ' + esc(brandDisp) + '</a> <a href="https://wa.me/972723319929" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">שיחה בוואטסאפ</a></div>'
       + '</div></section>';
     document.title = brandDisp + ' · Car2Buy';
     return;

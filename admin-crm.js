@@ -1231,7 +1231,7 @@
       '<p style="font-size:12px;color:#555;margin-top:14px">* הקונה מצהיר בזאת כי קרא את סעיפי ההסכם והבין את משמעותם ותוכנם.</p>' +
       '<div style="margin-top:36px;display:flex;justify-content:space-between;align-items:flex-end;page-break-inside:avoid">' +
         '<div>חתימת הרוכש:<br>' + (sig ? '<img src="' + sig + '" style="height:70px">' : '________________________') + '</div>' +
-        '<div style="text-align:left">בברכה,<br><b>צוות Car2Buy</b><br>' + esc(owner || '054-470-0706') + '</div>' +
+        '<div style="text-align:left">בברכה,<br><b>צוות Car2Buy</b><br>' + esc(owner || '072-3319929') + '</div>' +
       '</div></div>';
   }
   function contractView(lead, deal) {
