@@ -781,25 +781,17 @@
     var q = ($('aiQ').value || '').trim(); if (!q) return;
     var state = $('aiState'), ans = $('aiAns'), btn = $('aiAsk');
     state.style.color = 'var(--muted)'; state.textContent = 'חושב… (עד ~30 שניות)'; ans.innerHTML = ''; btn.disabled = true;
-    db.rpc('ai_ask', { p_prompt: ctx + '\n\nשאלת המנהל: ' + q }).then(function (r) {
-      if (r.error) { btn.disabled = false; state.style.color = 'var(--danger)'; state.textContent = 'שגיאה: ' + r.error.message; return; }
-      var rid = r.data, tries = 0;
-      var poll = setInterval(function () {
-        tries++;
-        if (tries > 22) { clearInterval(poll); btn.disabled = false; state.style.color = 'var(--danger)'; state.textContent = 'לקח יותר מדי זמן — נסה שוב.'; return; }
-        db.rpc('ai_get', { p_id: rid }).then(function (g) {
-          if (g.error || !g.data) return; // still pending
-          clearInterval(poll); btn.disabled = false; state.textContent = '';
-          var d = g.data;
-          if (d.error) { state.style.color = 'var(--danger)'; state.textContent = 'שגיאת רשת: ' + d.error; return; }
-          var text;
-          try { var body = typeof d.content === 'string' ? JSON.parse(d.content) : d.content; text = body && body.content && body.content[0] && body.content[0].text; if (!text && body && body.error) text = 'שגיאת API: ' + (body.error.message || JSON.stringify(body.error)); }
-          catch (e) { text = null; }
-          if (d.status !== 200 && !text) { state.style.color = 'var(--danger)'; state.textContent = 'שגיאה (' + d.status + ')'; ans.innerHTML = '<pre style="white-space:pre-wrap;font-size:12px">' + esc(String(d.content).slice(0, 800)) + '</pre>'; return; }
-          ans.innerHTML = '<div class="card" style="box-shadow:none;border:1px solid var(--line);background:var(--surface-2)"><div style="white-space:pre-wrap;line-height:1.7">' + esc(text || 'לא התקבלה תשובה.') + '</div></div>';
-        });
-      }, 1500);
-    });
+    db.functions.invoke('ai-assistant', { body: { prompt: ctx + '\n\nשאלת המנהל: ' + q } }).then(function (r) {
+      btn.disabled = false; state.textContent = '';
+      var d = r.data || {};
+      if (r.error || d.error) {
+        state.style.color = 'var(--danger)';
+        var msg = (d && d.error) || (r.error && r.error.message) || 'שגיאה';
+        state.textContent = /unauthorized/i.test(msg) ? 'נדרשת התחברות מחדש.' : /ANTHROPIC_API_KEY/.test(msg) ? 'חסר מפתח Claude — יש להגדיר את הפונקציה (ראה הנחיות).' : 'שגיאה: ' + msg;
+        return;
+      }
+      ans.innerHTML = '<div class="card" style="box-shadow:none;border:1px solid var(--line);background:var(--surface-2)"><div style="white-space:pre-wrap;line-height:1.7">' + esc(d.text || 'לא התקבלה תשובה.') + '</div></div>';
+    }).catch(function (e) { btn.disabled = false; state.style.color = 'var(--danger)'; state.textContent = 'שגיאת רשת: ' + (e && e.message || e); });
   }
 
   // after creating a user, poll the real async results so failures aren't silent
