@@ -126,6 +126,17 @@
     view('<div class="loading">טוען אוטומציות…</div>');
     var STAT = (window.C2B_STATUSES || []).map(function (s) { return [s.k, s.label]; });
     var ACTIONS = [['task', 'פתח משימת מעקב'], ['note', 'רשום הערה בציר הזמן'], ['whatsapp', 'פתח משימת "שלח WhatsApp"']];
+    // recommended starter pack — one-click load (deduped by name)
+    var PACK = [
+      { name: 'ליד חדש — יצירת קשר', trigger_status: 'new', action: 'task', params: { text: 'ליצור קשר ראשוני עם הליד החדש', days: 0 } },
+      { name: 'אין מענה — לנסות שוב', trigger_status: 'no_answer', action: 'task', params: { text: 'לנסות ליצור קשר שוב', days: 1 } },
+      { name: 'פגישה — תזכורת יום לפני', trigger_status: 'meeting_set', action: 'task', params: { text: 'תזכורת: להתקשר יום לפני הפגישה', days: 1 } },
+      { name: 'הצעה נשלחה — מעקב WhatsApp', trigger_status: 'quote_sent', action: 'whatsapp', params: { text: 'מעקב אחרי הצעת המחיר', days: 2 } },
+      { name: 'בטיפול — הערת מעקב', trigger_status: 'in_progress', action: 'note', params: { text: '🔥 ליד בטיפול — לא לשכוח לחזור אליו', days: 1 } },
+      { name: 'חיתום — בדיקת סטטוס מימון', trigger_status: 'underwriting', action: 'task', params: { text: 'לבדוק סטטוס בקשת המימון מול הבנק', days: 3 } },
+      { name: 'עסקה נסגרה — מסירה והמלצה', trigger_status: 'won', action: 'task', params: { text: 'לתאם מסירה + לבקש המלצה מהלקוח', days: 1 } },
+      { name: 'ליד אבוד — תיעוד סיבה', trigger_status: 'lost', action: 'note', params: { text: '❌ ליד אבוד — לוודא שתועדה הסיבה', days: 1 } }
+    ];
     db.from('automations').select('*').order('created_at', { ascending: false }).then(function (r) {
       if (r.error) {
         return view('<h2 style="margin:0 0 12px">🤖 אוטומציות</h2><div class="card"><h3>נדרשת הקמה חד-פעמית</h3><p class="muted">כדי לשמור ולהריץ אוטומציות, צרו את הטבלה ב-Supabase (SQL Editor):</p>' +
@@ -140,7 +151,7 @@
         var detail = (pd.text ? ' <span class="muted">("' + esc(pd.text) + '")</span>' : '') + (a.action === 'task' && pd.days != null ? ' <span class="muted">· בעוד ' + esc(pd.days) + ' ימים</span>' : '');
         return '<tr><td><b>' + esc(a.name || 'חוק') + '</b></td><td>כשסטטוס → <b>' + esc(st) + '</b></td><td>' + esc(ac) + detail + '</td><td><label class="switch-sm"><input type="checkbox" data-toggle="' + a.id + '"' + (a.active ? ' checked' : '') + '> ' + (a.active ? 'פעיל' : 'כבוי') + '</label></td><td><button class="btn btn-ghost btn-sm" data-del="' + a.id + '">🗑️</button></td></tr>';
       }).join('') : '<tr><td colspan="5" class="empty">אין עדיין חוקים. הוסיפו חוק ראשון למטה.</td></tr>';
-      view('<h2 style="margin:0 0 12px">🤖 אוטומציות</h2>' +
+      view('<div class="row-between" style="align-items:center;margin-bottom:12px"><h2 style="margin:0">🤖 אוטומציות</h2><button class="btn btn-sm" id="auPack">✨ טען חבילת אוטומציות מומלצות</button></div>' +
         '<div class="card"><h3>חוק חדש</h3><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">' +
           '<div class="field" style="margin:0;flex:1;min-width:150px"><label>שם החוק</label><input class="inp" id="auName" placeholder="למשל: מעקב אחרי הצעה"></div>' +
           '<div class="field" style="margin:0"><label>כאשר הסטטוס הופך ל…</label><select class="inp" id="auTrig">' + STAT.map(function (s) { return '<option value="' + s[0] + '">' + esc(s[1]) + '</option>'; }).join('') + '</select></div>' +
@@ -154,6 +165,12 @@
         var name = $('auName').value.trim(); if (!name) { $('auName').focus(); return; }
         var params = { text: ($('auText').value || '').trim() || null, days: (+$('auDays').value || 1) };
         db.from('automations').insert({ name: name, trigger_status: $('auTrig').value, action: $('auAct').value, active: true, params: params }).then(function (u) { if (u.error) return alert('שגיאה: ' + u.error.message); window.C2B_renderAutomations(); });
+      });
+      $('auPack').addEventListener('click', function () {
+        var have = {}; rules.forEach(function (x) { have[x.name] = 1; });
+        var add = PACK.filter(function (p) { return !have[p.name]; }).map(function (p) { return { name: p.name, trigger_status: p.trigger_status, action: p.action, params: p.params, active: true }; });
+        if (!add.length) { alert('כל האוטומציות המומלצות כבר קיימות ✓'); return; }
+        db.from('automations').insert(add).then(function (u) { if (u.error) return alert('שגיאה: ' + u.error.message); window.C2B_renderAutomations(); });
       });
       $('view').querySelectorAll('[data-del]').forEach(function (b) { b.addEventListener('click', function () { db.from('automations').delete().eq('id', b.dataset.del).then(function () { window.C2B_renderAutomations(); }); }); });
       $('view').querySelectorAll('[data-toggle]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('automations').update({ active: cb.checked }).eq('id', cb.dataset.toggle).then(function () { window.C2B_renderAutomations(); }); }); });
