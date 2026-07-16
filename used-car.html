@@ -236,14 +236,25 @@
   @media (max-width:560px){ .cd-mag-sec .brand-articles { grid-template-columns:1fr; } }
   .cd-mag-sec .ba-card { display:flex; flex-direction:column; background:var(--bg-card); border:1px solid var(--line-2); border-radius:16px; overflow:hidden; color:inherit; transition:.35s var(--ease); }
   .cd-mag-sec .ba-card:hover { transform:translateY(-5px); border-color:var(--gold-line); box-shadow:0 26px 54px -40px rgba(0,0,0,.4); }
-  .cd-mag-sec .ba-ph { aspect-ratio:16/10; background:#eef0f2; overflow:hidden; }
-  .cd-mag-sec .ba-ph img { width:100%; height:100%; object-fit:cover; transition:transform .5s var(--ease); }
-  .cd-mag-sec .ba-card:hover .ba-ph img { transform:scale(1.05); }
-  .cd-mag-sec .ba-body { padding:18px 20px 20px; display:flex; flex-direction:column; gap:8px; }
-  .cd-mag-sec .ba-tag { align-self:flex-start; font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--gold-deep); background:color-mix(in oklab,var(--gold) 12%, transparent); border-radius:999px; padding:5px 12px; }
+  .cd-mag-sec .ba-ph { position:relative; aspect-ratio:16/10; overflow:hidden; background:radial-gradient(120% 100% at 50% 6%, #ffffff 0%, #eef1f6 46%, #dbe1ea 100%); }
+  .cd-mag-sec .ba-ph::after { content:""; position:absolute; left:50%; bottom:-26%; width:74%; height:56%; transform:translateX(-50%); background:radial-gradient(ellipse at center, color-mix(in oklab,var(--gold) 40%, transparent) 0%, transparent 68%); opacity:.45; pointer-events:none; }
+  .cd-mag-sec .ba-ph img { position:relative; z-index:1; width:100%; height:100%; object-fit:contain; padding:18px 22px 24px; mix-blend-mode:multiply; transition:transform .5s var(--ease); }
+  .cd-mag-sec .ba-card:hover .ba-ph img { transform:scale(1.06); }
+  .cd-mag-sec .ba-cat { position:absolute; z-index:2; top:12px; inset-inline-end:12px; display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; letter-spacing:.02em; color:#fff; padding:6px 11px; border-radius:999px; box-shadow:0 6px 16px -6px rgba(0,0,0,.45); }
+  .cd-mag-sec .ba-cat svg { width:13px; height:13px; flex:none; }
+  .cd-mag-sec .ba-cat.c-guide { background:linear-gradient(135deg,#2563eb,#1d4ed8); }
+  .cd-mag-sec .ba-cat.c-review { background:linear-gradient(135deg,#16a34a,#15803d); }
+  .cd-mag-sec .ba-cat.c-value { background:linear-gradient(135deg,var(--gold),var(--gold-deep)); color:#1a1305; }
+  .cd-mag-sec .ba-read { position:absolute; z-index:2; bottom:12px; inset-inline-start:12px; display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:#3a3f4a; background:rgba(255,255,255,.85); padding:4px 10px; border-radius:999px; box-shadow:0 2px 8px -3px rgba(0,0,0,.25); }
+  .cd-mag-sec .ba-read svg { width:12px; height:12px; flex:none; }
+  .cd-mag-sec .ba-body { padding:18px 20px 18px; display:flex; flex-direction:column; gap:9px; }
   .cd-mag-sec .ba-body h4 { font-size:18px; line-height:1.35; color:var(--ink); }
   .cd-mag-sec .ba-body p { font-size:14px; color:var(--muted); line-height:1.65; }
-  .cd-mag-sec .ba-more { margin-top:auto; font-size:14px; font-weight:600; color:var(--gold-deep); }
+  .cd-mag-sec .ba-foot { margin-top:auto; padding-top:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; border-top:1px solid var(--line-2); }
+  .cd-mag-sec .ba-price { display:inline-flex; flex-direction:column; font-size:10.5px; color:var(--muted); font-weight:600; line-height:1.25; }
+  .cd-mag-sec .ba-price b { font-size:15px; color:var(--gold-deep); font-weight:800; }
+  .cd-mag-sec .ba-more { font-size:14px; font-weight:700; color:var(--ink); display:inline-flex; align-items:center; gap:5px; white-space:nowrap; transition:gap .25s var(--ease),color .25s var(--ease); }
+  .cd-mag-sec .ba-card:hover .ba-more { gap:9px; color:var(--gold-deep); }
   .cd-reg-title { text-align:center; font-size:clamp(24px,3.2vw,38px); color:var(--ink); margin:8px 0 clamp(24px,3.5vw,38px); }
   .cd-reg-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(12px,1.6vw,20px); max-width:1040px; margin-inline:auto; }
   @media (max-width:820px){ .cd-reg-grid { grid-template-columns:repeat(2,1fr); } }
@@ -1486,13 +1497,29 @@
     if (!models.length) models = [{ brand: car.brand, name: car.model, trim: car.trim, type: car.type, cat: car.cat, monthly: car.monthly60, list: car.price, img: car.img, fuel: (s.fuel || '') }];
     var arts = window.C2B_BRAND_ARTICLES ? window.C2B_BRAND_ARTICLES(car.brand, models, { esc: esc, NIS: fmt, fuelOf: function (c) { return c.fuel || 'בנזין'; } }) : [];
     if (!arts.length) { var sec = document.getElementById('magazine'); if (sec) sec.style.display = 'none'; return; }
+    var mVals = models.map(function (m) { return +(m.minM || m.monthly) || 0; }).filter(function (v) { return v > 0; });
+    var brandMinM = mVals.length ? Math.min.apply(null, mVals) : (+car.monthly60 || 0);
+    var priceChip = brandMinM ? '<span class="ba-price">החזר חודשי מ־<b>' + fmt(brandMinM) + '</b></span>' : '<span></span>';
+    function catClass(t) { return /מבחן/.test(t) ? 'c-review' : /מדריך/.test(t) ? 'c-guide' : 'c-value'; }
+    function catIcon(t) {
+      var s = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">';
+      if (/מבחן/.test(t)) return s + '<path d="M5 21V4h11l-1.6 3.5L16 11H5"/></svg>';
+      if (/מדריך/.test(t)) return s + '<path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4"/></svg>';
+      return s + '<path d="M4 20V10M10 20V4M16 20v-7M3 20h18"/></svg>';
+    }
+    var clk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
     box.innerHTML = arts.map(function (a, i) {
       return '<a class="ba-card reveal" href="brand-article.html?brand=' + encodeURIComponent(car.brand) + '&a=' + i + '">' +
-        '<div class="ba-ph"><img loading="lazy" src="' + esc(a.heroImg) + '" alt="' + esc(a.title) + '" onerror="this.closest(\'.ba-ph\').style.display=\'none\'"></div>' +
-        '<div class="ba-body"><span class="ba-tag">' + esc(a.tag) + '</span>' +
+        '<div class="ba-ph">' +
+          '<span class="ba-cat ' + catClass(a.tag) + '">' + catIcon(a.tag) + esc(a.tag) + '</span>' +
+          '<img loading="lazy" src="' + esc(a.heroImg) + '" alt="' + esc(a.title) + '" onerror="this.style.visibility=\'hidden\'">' +
+          '<span class="ba-read">' + clk + (a.readMin || 3) + ' דק’ קריאה</span>' +
+        '</div>' +
+        '<div class="ba-body">' +
           '<h4>' + esc(a.title) + '</h4>' +
           '<p>' + esc((a.dek || '').slice(0, 110)) + '</p>' +
-          '<span class="ba-more">קראו עוד ←</span></div></a>';
+          '<div class="ba-foot">' + priceChip + '<span class="ba-more">קראו עוד ←</span></div>' +
+        '</div></a>';
     }).join('');
   })();
 
