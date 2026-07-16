@@ -44,8 +44,9 @@
   .mag-info-btn:hover { background: #23232a; }
   .mag-info-btn svg { width: 16px; height: 16px; }
   .mag-lead { font-size: 19px; line-height: 1.85; color: var(--ink); font-weight: 500; margin: 0 0 8px; }
-  .mag-fig { margin: 30px 0; background: #fff; border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; aspect-ratio: 16/10; display: grid; place-items: center; }
-  .mag-fig img { width: 100%; height: 100%; object-fit: contain; padding: 18px; }
+  .mag-fig { position: relative; margin: 30px 0; background: radial-gradient(120% 100% at 50% 8%, #ffffff 0%, #eef1f6 48%, #dbe1ea 100%); border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; aspect-ratio: 16/10; display: grid; place-items: center; box-shadow: 0 20px 44px -34px rgba(0,0,0,.35); }
+  .mag-fig::after { content: ""; position: absolute; left: 50%; bottom: -24%; width: 70%; height: 52%; transform: translateX(-50%); background: radial-gradient(ellipse at center, color-mix(in oklab, var(--gold) 34%, transparent) 0%, transparent 68%); opacity: .4; pointer-events: none; }
+  .mag-fig img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; padding: 18px; mix-blend-mode: multiply; }
   .mag-body { font-size: 17.5px; line-height: 1.95; color: var(--ink-soft); }
   .mag-body h2 { font-family: var(--display); font-size: clamp(23px, 2.9vw, 30px); font-weight: 800; color: var(--gold-deep); margin: 40px 0 4px; line-height: 1.25; }
   .mag-body h3 { font-size: clamp(19px, 2.2vw, 22px); font-weight: 700; color: var(--ink); margin: 30px 0 2px; }
@@ -67,8 +68,9 @@
   .mag-gallery-h { font-family: var(--display); font-size: 22px; font-weight: 800; color: var(--ink); margin: 44px 0 16px; }
   .mag-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   @media (max-width: 560px) { .mag-gallery { grid-template-columns: repeat(2, 1fr); } }
-  .mag-gallery a { display: block; aspect-ratio: 4/3; background: #fff; border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; }
-  .mag-gallery img { width: 100%; height: 100%; object-fit: contain; padding: 10px; transition: transform .4s var(--ease); }
+  .mag-gallery a { position: relative; display: block; aspect-ratio: 4/3; background: radial-gradient(120% 100% at 50% 8%, #ffffff 0%, #eef1f6 48%, #dce2ea 100%); border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 28px -24px rgba(0,0,0,.4); transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
+  .mag-gallery a:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -28px rgba(0,0,0,.5); }
+  .mag-gallery img { width: 100%; height: 100%; object-fit: contain; padding: 12px; mix-blend-mode: multiply; transition: transform .4s var(--ease); }
   .mag-gallery a:hover img { transform: scale(1.06); }
 
   /* ---- sidebar ---- */
@@ -346,8 +348,40 @@
   var enBrand = C.enBrand ? C.enBrand(brand) : brand;
   var leadCar = (models && models[0]) ? (C.enName ? C.enName(models[0]) : ((models[0].brand || brand) + ' ' + (models[0].name || ''))) : brand;
 
+  // ---- imagin.studio multi-angle renders so figures + gallery show real variety (not one image repeated) ----
+  var IMAGIN_MAKE = {
+    'ב.י.ד':'byd', "ג'אקו":'jaecoo', "צ'רי":'chery', "אמ.ג'י":'mg', "קיי.ג'י.אם":'kgm',
+    'אאודי':'audi', 'אווטר':'avatr', 'אומודה':'omoda', 'ב.מ.וו':'bmw', 'וויה':'voyah', 'זיקר':'zeekr',
+    'טויוטה':'toyota', 'יונדאי':'hyundai', 'ליפמוטור':'leapmotor', 'מאזדה':'mazda', 'מיצובישי':'mitsubishi',
+    'מרצדס':'mercedes-benz', 'ניסאן':'nissan', 'סובארו':'subaru', 'סיאט':'seat', 'סיטרואן':'citroen',
+    'סמארט':'smart', 'סקודה':'skoda', 'קיה':'kia', 'שברולט':'chevrolet', 'GMC':'gmc'
+  };
+  var IMAGIN_MODEL = {
+    'אטו 2':'atto2', 'סיל 5 DM-i':'seal', 'סיל U':'sealu', 'סיליון 5':'sealion5',
+    '216':'2-series', '420i':'4-series', '530e':'5-series', 'X1':'x1', 'X2':'x2', 'X4':'x4', 'X5':'x5', 'iX1':'ix1',
+    'A3 ספורטבק':'a3', 'Q3 ספורטבק':'q3', 'אווטר 11':'11', 'אומודה 7':'7', 'Free':'free',
+    'זיקר 001':'001', 'זיקר 7X':'7x', 'זיקר X':'x', 'C-HR':'c-hr', 'יאריס':'yaris', 'יאריס קרוס':'yaris-cross',
+    'אלנטרה':'elantra', 'וניו':'venue', 'טוסון':'tucson', 'סונטה':'sonata', 'קונה':'kona', 'C10':'c10', 'CX-5':'cx-5',
+    'אאוטלנדר':'outlander', 'אקליפס קרוס':'eclipse-cross', 'CLA 200':'cla', 'GLA 200':'gla', 'GLC 200':'glc', 'GLC 300 קופה':'glc',
+    'קשקאי':'qashqai', "ג'וק":'juke', 'קרוסטרק':'crosstrek', 'ארונה':'arona', 'ברלינגו':'berlingo', 'סמארט #5':'#5',
+    'אוקטביה':'octavia', 'סופרב':'superb', 'קאמיק':'kamiq', 'נירו':'niro', 'סלטוס':'seltos', 'פיקנטו':'picanto', 'סילברדו EV':'silverado',
+    'FX EV':'fx', 'FX':'fx', 'טיגו 4':'tiggo4', 'טיגו 7 פרו':'tiggo7', 'טיגו 8 פרו':'tiggo8', 'טיגו 9 לקשרי':'tiggo9', 'טיגו 9 פרו נובל':'tiggo9',
+    'EHS':'ehs', 'HS':'hs', 'MG 3':'3', 'S9':'s9', 'ZS':'zs',
+    "ג'אקו 8":'8', "ג'אקו 7":'7', "ג'אקו 5":'5', "ג'אקו 5 חשמלי":'5', 'רקסטון':'rexton', 'GMC':'sierra'
+  };
+  var GAL_ANGLES = ['23', '29', '05', '09', '13', '17', '21', '01'];   // front-3/4, front, side, rear-3/4, rear, high...
+  function imaginUrl(mk, md, a) { return 'https://cdn.imagin.studio/getimage?customer=img&make=' + encodeURIComponent(mk) + '&modelFamily=' + encodeURIComponent(md) + '&angle=' + a + '&width=1000'; }
+  function uniq(arr) { return arr.filter(function (u, i) { return u && arr.indexOf(u) === i; }); }
+  var staticImgs = uniq(models.map(function (m) { return m.img; }));
+  var angleImgs = [];
+  models.forEach(function (m) {
+    var mk = IMAGIN_MAKE[m.brand] || '', md = IMAGIN_MODEL[m.name] || '';
+    if (mk && md) GAL_ANGLES.forEach(function (a) { angleImgs.push(imaginUrl(mk, md, a)); });
+  });
+  // local static image first (guaranteed to load), then the varied studio angles
+  var imgs = uniq(staticImgs.concat(angleImgs));
+
   // ---- intersperse model images between H2 sections ----
-  var imgs = models.map(function (m) { return m.img; }).filter(Boolean);
   var bodyParts = art.bodyHtml.split('<h2>');
   var bodyHtml = bodyParts[0];
   var imgN = 0;
@@ -365,10 +399,9 @@
     bodyHtml += '<h2>' + bodyParts[i];
   }
 
-  // ---- gallery ----
-  var galImgs = imgs.slice();
-  while (galImgs.length && galImgs.length < 6) galImgs = galImgs.concat(imgs);
-  var galleryHtml = galImgs.slice(0, 9).map(function (src, i) {
+  // ---- gallery (varied angles; no duplicate padding) ----
+  var galImgs = imgs.slice(0, 9);
+  var galleryHtml = galImgs.map(function (src, i) {
     var slug = models[i % models.length].slug;
     return '<a href="car.html?car=' + slug + '"><img loading="lazy" src="' + esc(src) + '" alt="' + esc(enBrand) + '" onerror="this.parentNode.style.display=\'none\'"></a>';
   }).join('');

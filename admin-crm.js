@@ -1348,10 +1348,11 @@
     window.scrollTo(0, 0);
     function done(blob) { window.scrollTo(sx, sy); [wrap, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); onBlob(blob); }
     window.html2pdf().set({
-      margin: [8, 8, 10, 8],
+      margin: [10, 10, 12, 10],
       image: { type: 'jpeg', quality: 0.95 },
-      // windowWidth MUST equal the holder width, else RTL layout offsets and the left edge gets clipped
-      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: W, width: W, scrollX: 0, scrollY: 0 },
+      // Do NOT pass html2canvas width/windowWidth — they made the content render in a tiny left column.
+      // The holder has a fixed inline width, so html2pdf measures it and scales it to fill the page.
+      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, scrollX: 0, scrollY: 0 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['css', 'legacy'], avoid: ['li', 'tr'] }
     }).from(holder).outputPdf('blob').then(done).catch(function () { done(null); });
@@ -1360,8 +1361,8 @@
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
-    var path = lead.id + '/signed_' + deal.id + '_v4.pdf';       // v4 = full-width capture (no left clipping)
-    var oldPaths = [lead.id + '/signed_' + deal.id + '.pdf', lead.id + '/signed_' + deal.id + '_v2.pdf', lead.id + '/signed_' + deal.id + '_v3.pdf'];
+    var path = lead.id + '/signed_' + deal.id + '_v5.pdf';       // v5 = removed html2canvas width/windowWidth (was rendering a narrow column)
+    var oldPaths = [lead.id + '/signed_' + deal.id + '.pdf', lead.id + '/signed_' + deal.id + '_v2.pdf', lead.id + '/signed_' + deal.id + '_v3.pdf', lead.id + '/signed_' + deal.id + '_v4.pdf'];
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
       if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v3)
