@@ -187,7 +187,6 @@ window.C2B_consentOK = function (scope) {
           <div class="nav-lang" id="navLang">
             <button type="button" class="nav-lang-btn" id="navLangBtn" aria-haspopup="true" aria-expanded="false" aria-label="שפה / Language" title="שפה / Language">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-              <span id="navLangCur">עב</span>
             </button>
             <div class="nav-lang-menu" id="navLangMenu" hidden>
               <button type="button" data-lang="he">🇮🇱 עברית</button>
@@ -296,12 +295,12 @@ window.C2B_consentOK = function (scope) {
       '.goog-tooltip,#goog-gt-tt,.goog-te-balloon-frame{display:none!important}.goog-text-highlight{background:none!important;box-shadow:none!important}' +
       '.nav-top-start{justify-self:start;display:flex;align-items:center;gap:8px;min-width:0}' +
       '.nav-lang{position:relative;display:flex;align-items:center;flex:none}' +
-      '.nav-lang-btn{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:999px;padding:7px 10px;font:inherit;font-size:13px;font-weight:700;color:#ECE7DE;cursor:pointer;white-space:nowrap;line-height:1}' +
+      '.nav-lang-btn{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:999px;width:38px;height:38px;padding:0;color:#ECE7DE;cursor:pointer;line-height:1}' +
       '.nav-lang-btn:hover{background:rgba(255,255,255,0.12)}' +
-      '.nav-lang-btn svg{width:16px;height:16px;opacity:.85}' +
-      '.nav-lang-menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;box-shadow:0 12px 32px -12px rgba(0,0,0,.3);padding:6px;z-index:1200;min-width:150px}' +
+      '.nav-lang-btn svg{width:18px;height:18px;opacity:.9}' +
+      '.nav-lang-menu{position:fixed;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;box-shadow:0 18px 44px -14px rgba(0,0,0,.4);padding:6px;z-index:2147483000;width:172px;direction:rtl}' +
       '.nav-lang-menu[hidden]{display:none}' +
-      '.nav-lang-menu button{display:block;width:100%;text-align:start;background:none;border:0;border-radius:8px;padding:9px 12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;color:#1c2430}' +
+      '.nav-lang-menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:start;background:none;border:0;border-radius:8px;padding:10px 12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;color:#1c2430;white-space:nowrap}' +
       '.nav-lang-menu button:hover{background:#f0f1f4}';
     document.head.appendChild(st);
     // Google's hidden mount point lives on the body (NOT in the header grid, so it can't disturb the layout)
@@ -332,12 +331,17 @@ window.C2B_consentOK = function (scope) {
     var lang = curLang();
     applyDir(lang);
     if (lang !== 'he') loadGT();   // only pull in Google when a non-Hebrew language is active (Hebrew = default, no external dep)
-    var btn = document.getElementById('navLangBtn'), menu = document.getElementById('navLangMenu'), cur = document.getElementById('navLangCur');
-    if (cur) cur.textContent = SHORT[lang] || 'עב';
+    var btn = document.getElementById('navLangBtn'), menu = document.getElementById('navLangMenu');
     if (btn && menu) {
-      btn.addEventListener('click', function (e) { e.stopPropagation(); var open = menu.hasAttribute('hidden'); if (open) menu.removeAttribute('hidden'); else menu.setAttribute('hidden', ''); btn.setAttribute('aria-expanded', String(open)); });
+      // mark the active language
+      menu.querySelectorAll('[data-lang]').forEach(function (b) { if (b.dataset.lang === lang) { b.style.background = '#f0f1f4'; b.insertAdjacentHTML('beforeend', ' ✓'); } });
+      // fixed dropdown positioned under the button — never clipped by header ancestors
+      function place() { var r = btn.getBoundingClientRect(); menu.style.top = (r.bottom + 8) + 'px'; menu.style.right = Math.max(8, window.innerWidth - r.right) + 'px'; menu.style.left = 'auto'; }
+      btn.addEventListener('click', function (e) { e.stopPropagation(); var open = menu.hasAttribute('hidden'); if (open) { place(); menu.removeAttribute('hidden'); } else { menu.setAttribute('hidden', ''); } btn.setAttribute('aria-expanded', String(open)); });
+      menu.addEventListener('click', function (e) { e.stopPropagation(); });
       menu.querySelectorAll('[data-lang]').forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
       document.addEventListener('click', function () { if (!menu.hasAttribute('hidden')) { menu.setAttribute('hidden', ''); btn.setAttribute('aria-expanded', 'false'); } });
+      window.addEventListener('resize', function () { if (!menu.hasAttribute('hidden')) place(); });
     }
   })();
 
