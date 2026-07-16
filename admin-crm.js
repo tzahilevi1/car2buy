@@ -1214,7 +1214,7 @@
       'על הצהרה זו ו/או ההסכם המקורי, פרשנותם ו/או ביצועם יחולו אך ורק דיני מדינת ישראל. סמכות השיפוט הבלעדית בכל הקשור ו/או הנובע מהם תהא נתונה לבית המשפט המוסמך במחוז המרכז.',
       'כתובות הצדדים להזמנה זאת הן כקבוע במבוא לה, זאת כל עוד לא הודיע צד למשנהו על שינוי בכתובת. כל הודעה או התראה שתישלח על-ידי צד למשנהו על פי כתובתו כאמור בדואר רשום, תיחשב כאילו התקבלה על-ידי הנמען 72 שעות לאחר מסירתה למשרד הדואר; אם נמסרה ביד — מעת מסירתה. הודעה שנשלחה בפקס תחשב כאילו התקבלה בשעה הרשומה על גבי אישור העברת הפקס בתנאי שנשלחה ביום עבודה (א׳–ה׳) בין השעות 09:00–17:00 (זמן ישראל).'
     ];
-    return '<div style="font-family:Arial,sans-serif;line-height:1.75;max-width:720px;margin:auto;color:#111;font-size:13px;padding:6px 4px">' +
+    return '<div style="font-family:Arial,sans-serif;line-height:1.75;width:100%;color:#111;font-size:13px;direction:rtl;text-align:right">' +
       '<h1 style="text-align:center;color:#F5691E;margin:0 0 10px;font-size:22px;line-height:1.35;font-weight:800">הסכם הזמנת רכב' + (d.brand ? ' — ' + esc(d.brand) : '') + '</h1>' +
       '<p style="text-align:center;color:#444;margin:0 0 6px;font-size:13px"><bdi>Car2Buy</bdi> באמצעות גלובל דרייב ח.פ <bdi>516685898</bdi> (להלן: "גלובל דרייב")</p>' +
       '<p style="text-align:center;color:#888;margin:0 0 14px;font-size:12.5px">מספר הזמנה: <bdi>' + esc(d.order_no || '—') + '</bdi> &nbsp;·&nbsp; תאריך: <bdi>' + today + '</bdi></p>' +
@@ -1339,15 +1339,17 @@
     var wrap = document.createElement('div');
     wrap.style.cssText = 'height:0;overflow:hidden';   // static (in-flow), hidden — do NOT use absolute/fixed
     var holder = document.createElement('div');
-    holder.style.cssText = 'width:760px;background:#fff;color:#111;padding:4px 8px';
+    var W = 800;
+    holder.style.cssText = 'width:' + W + 'px;box-sizing:border-box;background:#fff;color:#111;padding:30px 36px;direction:rtl;text-align:right';
     holder.innerHTML = contractHTML(deal, deal.signature || null);
     wrap.appendChild(holder); document.body.appendChild(wrap); document.body.appendChild(ov);
     window.scrollTo(0, 0);
     function done(blob) { window.scrollTo(sx, sy); [wrap, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); onBlob(blob); }
     window.html2pdf().set({
-      margin: [14, 12, 16, 12],
-      image: { type: 'jpeg', quality: 0.96 },
-      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: 820, scrollX: 0, scrollY: 0 },
+      margin: [8, 8, 10, 8],
+      image: { type: 'jpeg', quality: 0.95 },
+      // windowWidth MUST equal the holder width, else RTL layout offsets and the left edge gets clipped
+      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: W, width: W, scrollX: 0, scrollY: 0 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['css', 'legacy'], avoid: ['li', 'tr'] }
     }).from(holder).outputPdf('blob').then(done).catch(function () { done(null); });
@@ -1356,8 +1358,8 @@
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
-    var path = lead.id + '/signed_' + deal.id + '_v3.pdf';       // v3 = tidy layout (margins/spacing/bidi)
-    var oldPaths = [lead.id + '/signed_' + deal.id + '.pdf', lead.id + '/signed_' + deal.id + '_v2.pdf'];
+    var path = lead.id + '/signed_' + deal.id + '_v4.pdf';       // v4 = full-width capture (no left clipping)
+    var oldPaths = [lead.id + '/signed_' + deal.id + '.pdf', lead.id + '/signed_' + deal.id + '_v2.pdf', lead.id + '/signed_' + deal.id + '_v3.pdf'];
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
       if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v3)
