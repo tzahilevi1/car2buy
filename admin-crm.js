@@ -1341,7 +1341,7 @@
     wrap.style.cssText = 'position:fixed;top:0;left:0;width:' + W + 'px;background:#fff;z-index:90000;overflow:visible';
     var holder = document.createElement('div');
     holder.setAttribute('dir', 'rtl');
-    holder.style.cssText = 'width:' + W + 'px;box-sizing:border-box;background:#fff;color:#111;padding:34px 50px;direction:rtl;text-align:right;font-family:Arial,sans-serif';
+    holder.style.cssText = 'width:' + W + 'px;box-sizing:border-box;background:#fff;color:#111;padding:32px 70px;direction:rtl;text-align:right;font-family:Arial,sans-serif;overflow-wrap:break-word;word-break:break-word';
     holder.innerHTML = contractHTML(deal, deal.signature || null);
     var ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:99999;display:flex;align-items:center;justify-content:center;color:#F5691E;font-weight:800;font-size:18px';
@@ -1363,8 +1363,8 @@
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
-    var path = lead.id + '/signed_' + deal.id + '_v6.pdf';       // v6 = label spacing (no nowrap) + wider padding so text isn't clipped at edges
-    var oldPaths = [lead.id + '/signed_' + deal.id + '.pdf', lead.id + '/signed_' + deal.id + '_v2.pdf', lead.id + '/signed_' + deal.id + '_v3.pdf', lead.id + '/signed_' + deal.id + '_v4.pdf', lead.id + '/signed_' + deal.id + '_v5.pdf'];
+    var path = lead.id + '/signed_' + deal.id + '_v7.pdf';       // v7 = large 70px side buffer + word-break so RTL line-ends never clip
+    var oldPaths = ['', '_v2', '_v3', '_v4', '_v5', '_v6'].map(function (s) { return lead.id + '/signed_' + deal.id + s + '.pdf'; });
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
       if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v3)
