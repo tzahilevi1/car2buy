@@ -188,6 +188,19 @@ window.C2B_consentOK = function (scope) {
           <input type="search" name="q" placeholder="חיפוש דגם" aria-label="חיפוש דגם" id="navSearchInput" autocomplete="off">
           <div class="nav-search-results" id="navSearchResults"></div>
         </form>
+        <div class="nav-lang" id="navLang">
+          <button type="button" class="nav-lang-btn" id="navLangBtn" aria-haspopup="true" aria-expanded="false" aria-label="שפה / Language">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+            <span id="navLangCur">עברית</span><span class="nav-lang-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-lang-menu" id="navLangMenu" hidden>
+            <button type="button" data-lang="he">🇮🇱 עברית</button>
+            <button type="button" data-lang="en">🇬🇧 English</button>
+            <button type="button" data-lang="ar">🇸🇦 العربية</button>
+            <button type="button" data-lang="ru">🇷🇺 Русский</button>
+          </div>
+        </div>
+        <div id="google_translate_element" aria-hidden="true"></div>
         <a href="index.html" class="brand nav-logo" aria-label="Car2Buy"><img class="brand-img" src="logo.png" alt="Car2Buy — רכב חדש, קל ופשוט"></a>
         <div class="nav-cta">
           <a href="tel:+972723319929" class="nav-phone-pill">חייגו 072-3319929</a>
@@ -271,6 +284,54 @@ window.C2B_consentOK = function (scope) {
   if (!document.getElementById('compareTray')) {
     document.body.insertAdjacentHTML('beforeend', '<div id="compareTray" class="compare-tray"></div>');
   }
+
+  // ---- language switcher (Google Translate — auto-translates the whole site) ----
+  (function () {
+    var LANGS = { he: 'עברית', en: 'English', ar: 'العربية', ru: 'Русский' };
+    var st = document.createElement('style');
+    st.textContent = '#google_translate_element{position:absolute;left:-9999px;top:-9999px;height:0;overflow:hidden}' +
+      '.goog-te-banner-frame,.skiptranslate iframe{display:none!important}body{top:0!important}' +
+      '.goog-tooltip,#goog-gt-tt,.goog-te-balloon-frame{display:none!important}.goog-text-highlight{background:none!important;box-shadow:none!important}' +
+      '.nav-lang{position:relative;display:flex;align-items:center;flex:none}' +
+      '.nav-lang-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface,#fff);border:1px solid rgba(0,0,0,.14);border-radius:999px;padding:8px 12px;font:inherit;font-size:14px;font-weight:700;color:inherit;cursor:pointer;white-space:nowrap}' +
+      '.nav-lang-btn svg{width:17px;height:17px;opacity:.8}.nav-lang-caret{font-size:10px;opacity:.7}' +
+      '.nav-lang-menu{position:absolute;top:calc(100% + 6px);inset-inline-end:0;background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:12px;box-shadow:0 12px 32px -12px rgba(0,0,0,.3);padding:6px;z-index:1200;min-width:150px}' +
+      '.nav-lang-menu[hidden]{display:none}' +
+      '.nav-lang-menu button{display:block;width:100%;text-align:start;background:none;border:0;border-radius:8px;padding:9px 12px;font:inherit;font-size:14px;cursor:pointer;color:#1c2430}' +
+      '.nav-lang-menu button:hover{background:#f0f1f4}';
+    document.head.appendChild(st);
+
+    window.googleTranslateElementInit = function () {
+      try { new google.translate.TranslateElement({ pageLanguage: 'he', includedLanguages: 'en,ar,ru,he', autoDisplay: false }, 'google_translate_element'); } catch (e) {}
+    };
+    function loadGT() { if (document.getElementById('c2b-gt-script')) return; var s = document.createElement('script'); s.id = 'c2b-gt-script'; s.async = true; s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'; document.head.appendChild(s); }
+    function curLang() { var m = document.cookie.match(/googtrans=\/[a-z]+\/(\w+)/); return (m && m[1]) || localStorage.getItem('c2b_lang') || 'he'; }
+    function applyDir(l) { document.documentElement.setAttribute('dir', (l === 'he' || l === 'ar') ? 'rtl' : 'ltr'); }
+    function setLang(l) {
+      var host = location.hostname;
+      if (l === 'he') {
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + host;
+        localStorage.setItem('c2b_lang', 'he');
+      } else {
+        var val = '/he/' + l;
+        document.cookie = 'googtrans=' + val + '; path=/';
+        document.cookie = 'googtrans=' + val + '; path=/; domain=' + host;
+        localStorage.setItem('c2b_lang', l);
+      }
+      location.reload();
+    }
+    var lang = curLang();
+    applyDir(lang);
+    if (lang !== 'he') loadGT();   // only pull in Google when a non-Hebrew language is active (Hebrew = default, no external dep)
+    var btn = document.getElementById('navLangBtn'), menu = document.getElementById('navLangMenu'), cur = document.getElementById('navLangCur');
+    if (cur) cur.textContent = LANGS[lang] || 'עברית';
+    if (btn && menu) {
+      btn.addEventListener('click', function (e) { e.stopPropagation(); var open = menu.hasAttribute('hidden'); if (open) menu.removeAttribute('hidden'); else menu.setAttribute('hidden', ''); btn.setAttribute('aria-expanded', String(open)); });
+      menu.querySelectorAll('[data-lang]').forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
+      document.addEventListener('click', function () { if (!menu.hasAttribute('hidden')) { menu.setAttribute('hidden', ''); btn.setAttribute('aria-expanded', 'false'); } });
+    }
+  })();
 
   // ---- favorites (saved cars): heart on cards + header badge + saved panel ----
   (function () {
