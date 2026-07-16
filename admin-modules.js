@@ -111,10 +111,9 @@
           var l = leads.filter(function (x) { return String(x.id) === b.dataset.send; })[0]; if (!l) return;
           var text = fill(msg.value, l);
           var url;
-          if (channel === 'whatsapp') url = 'https://wa.me/' + intlPhone(l.phone) + '?text=' + encodeURIComponent(text);
-          else if (channel === 'sms') url = 'sms:' + (l.phone || '') + '?&body=' + encodeURIComponent(text);
-          else url = 'mailto:' + (l.email || '') + '?subject=' + encodeURIComponent(($('cmSubj') && $('cmSubj').value) || 'Car2Buy') + '&body=' + encodeURIComponent(text);
-          window.open(url, channel === 'emails' ? '_self' : '_blank', 'noopener');
+          if (channel === 'whatsapp') { url = 'https://wa.me/' + intlPhone(l.phone) + '?text=' + encodeURIComponent(text); window.open(url, '_blank', 'noopener'); }
+          else if (channel === 'sms') { url = 'sms:' + (l.phone || '') + '?body=' + encodeURIComponent(text); window.location.href = url; }
+          else { url = 'mailto:' + (l.email || '') + '?subject=' + encodeURIComponent(($('cmSubj') && $('cmSubj').value) || 'Car2Buy') + '&body=' + encodeURIComponent(text); window.location.href = url; }
           logAct(l.id, channel === 'emails' ? 'email' : channel === 'sms' ? 'sms' : 'whatsapp', 'נשלחה הודעת ' + cfg.title + ': ' + text.slice(0, 80));
           b.textContent = '✓ נשלח'; b.disabled = true; setTimeout(function () { b.textContent = cfg.icon + ' שלח'; b.disabled = false; }, 2500);
         });

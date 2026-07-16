@@ -96,7 +96,8 @@
   // screens the admin can grant when creating a user (label + key)
   var GRANTABLE_VIEWS = [
     ['dashboard', 'דשבורד'], ['leads', 'לידים'], ['files', 'תיקי לקוחות'], ['accounting', 'הנהלת חשבונות'],
-    ['cars', 'רכבים'], ['appointments', 'יומן פגישות'], ['tasks', 'משימות'], ['analytics', 'אנליטיקס'], ['reports', 'דוחות']
+    ['cars', 'רכבים'], ['appointments', 'יומן פגישות'], ['tasks', 'משימות'], ['analytics', 'אנליטיקס'], ['reports', 'דוחות'],
+    ['quotes', 'הצעות מחיר'], ['documents', 'מסמכים והסכמים'], ['whatsapp', 'WhatsApp'], ['emails', 'מיילים'], ['sms', 'SMS']
   ];
   function navAllowed(nav, role) {
     if (role === 'admin' || !role) return true;
@@ -186,10 +187,10 @@
   // ---------- global search ----------
   var gsT;
   $('gsearch').addEventListener('input', function () {
-    var q = this.value.trim(); clearTimeout(gsT);
+    var q = this.value.trim().replace(/[(),*]/g, ' ').trim(); clearTimeout(gsT);   // strip PostgREST filter-grammar chars
     if (q.length < 2) { $('gsres').classList.add('hidden'); return; }
     gsT = setTimeout(function () {
-      db.from('leads').select('id,name,phone,car,status').or('name.ilike.%' + q + '%,phone.ilike.%' + q + '%').limit(8).then(function (r) {
+      db.from('leads').select('id,name,phone,car,status').or('name.ilike.%' + q + '%,phone.ilike.%' + q + '%,car.ilike.%' + q + '%').limit(8).then(function (r) {
         var rows = (r.data || []).map(function (l) { return '<div class="sr" data-lead="' + l.id + '"><b>' + esc(l.name) + '</b> <span class="muted">· ' + esc(l.phone) + (l.car ? ' · ' + esc(l.car) : '') + '</span></div>'; }).join('');
         $('gsres').innerHTML = rows || '<div class="sr muted">אין תוצאות</div>';
         $('gsres').classList.remove('hidden');
@@ -483,9 +484,10 @@
       var doneDeals = deals.filter(isDone);
       var revenue = deals.reduce(function (a, d) { return a + (+d.total || 0); }, 0);
       var profit = deals.reduce(function (a, d) { return a + (+d.commission || 0); }, 0);
+      var doneProfit = doneDeals.reduce(function (a, d) { return a + (+d.commission || 0); }, 0);
       var collected = pays.filter(function (p) { return p.kind !== 'invoice'; }).reduce(function (a, p) { return a + (+p.amount || 0); }, 0);
       var avgDeal = deals.length ? revenue / deals.length : 0;
-      var avgProfit = doneDeals.length ? profit / doneDeals.length : 0;
+      var avgProfit = doneDeals.length ? doneProfit / doneDeals.length : 0;   // avg over completed deals only (consistent numerator/denominator)
       var closeRate = leads.length ? doneDeals.length / leads.length * 100 : 0;
       // time-to-close (lead → deal) for done deals
       var ttc = doneDeals.map(function (d) { var l = leadById[d.lead_id]; return l && l.created_at ? (new Date(d.created_at) - new Date(l.created_at)) / 86400000 : null; }).filter(function (x) { return x != null && x >= 0; });

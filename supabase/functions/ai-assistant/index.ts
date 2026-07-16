@@ -13,7 +13,7 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 
 // Models tried in order — the first one your account accepts is used.
-const MODELS = ["claude-sonnet-5", "claude-sonnet-4-5", "claude-3-7-sonnet-latest", "claude-3-5-sonnet-latest"];
+const MODELS = ["claude-sonnet-5", "claude-opus-4-8", "claude-haiku-4-5-20251001"];
 const SYSTEM =
   "אתה עוזר AI בכיר ומנוסה למנהלי סוכנות רכב ישראלית בשם Car2Buy (ליסינג מימוני פרטי, עבודה מול כל היבואנים בישראל, מימון עד 100%, טרייד-אין, מעטפת מלאה). " +
   "אתה מקבל תקציר נתוני CRM אמיתיים (לידים, אחוז סגירה, זמן תגובה, מקורות, כספים, שלבי תיקים). " +
@@ -27,7 +27,7 @@ async function callClaude(key: string, system: string, prompt: string) {
     const resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model, max_tokens: 1500, system, messages: [{ role: "user", content: prompt }] }),
+      body: JSON.stringify({ model, max_tokens: 4000, system, messages: [{ role: "user", content: prompt }] }),
     });
     const data = await resp.json().catch(() => ({}));
     if (resp.ok) {
@@ -55,6 +55,10 @@ Deno.serve(async (req) => {
     );
     const { data: { user } } = await supa.auth.getUser();
     if (!user) return json({ error: "unauthorized" }, 401);
+    // AI is a manager tool — verify role server-side (UI hiding is not a real guard)
+    const { data: prof } = await supa.from("profiles").select("role,active").eq("user_id", user.id).single();
+    if (!prof || prof.active === false) return json({ error: "unauthorized" }, 401);
+    if (prof.role !== "admin") return json({ error: "עוזר ה-AI זמין למנהל בלבד" }, 403);
 
     const key = Deno.env.get("ANTHROPIC_API_KEY");
     if (!key) return json({ error: "חסר מפתח ANTHROPIC_API_KEY ב-Secrets" }, 200);

@@ -8,6 +8,9 @@
   var C = window.C2B;
   if (!C) return;
   var db = C.db, esc = C.esc, fmt = C.fmt, nis = C.nis, view = C.view, loading = C.loading, errBox = C.errBox;
+  // single delegated auto-save handler for the deal form — points at the CURRENT form only
+  // (prevents old listeners from stacking on the persistent #view and overwriting other deals).
+  var _activeAutoSave = null, _autoSaveWired = false;
 
   var STATUSES = [
     { k: 'new', label: 'חדש', icon: '🆕', color: '#3b82f6', flow: true },
@@ -107,6 +110,7 @@
   }
   function changeStatus(leadId, to, lead, after) {
     var from = lead && lead.status;
+    if (from === to) { if (after) after(); return; }   // no-op: don't log/patch a status that didn't change
     var patch = { status: to, status_changed_at: new Date().toISOString() };
     if (to === 'in_progress' && (!lead || !lead.first_response_at)) patch.first_response_at = new Date().toISOString();
     db.from('leads').update(patch).eq('id', leadId).then(function (u) {
@@ -916,8 +920,13 @@
       });
     }
     function autoSave() { clearTimeout(saveTimer); setState('…'); saveTimer = setTimeout(doSave, 700); }
-    C.$('view').addEventListener('input', function (e) { if (e.target.id && e.target.id.indexOf('dl_') === 0) autoSave(); });
-    C.$('view').addEventListener('change', function (e) { if (e.target.id && e.target.id.indexOf('dl_') === 0) autoSave(); });
+    _activeAutoSave = autoSave;   // this form is now the active one
+    if (!_autoSaveWired) {
+      _autoSaveWired = true;
+      var onFieldEdit = function (e) { if (_activeAutoSave && e.target.id && e.target.id.indexOf('dl_') === 0) _activeAutoSave(); };
+      C.$('view').addEventListener('input', onFieldEdit);
+      C.$('view').addEventListener('change', onFieldEdit);
+    }
     $('dlContract').addEventListener('click', function () { contractView(lead, Object.assign({ id: deal.id, order_no: deal.order_no }, readForm())); });
     // trade-in: pull vehicle details by plate number from the Ministry of Transport open dataset
     if ($('dlPlateLookup')) $('dlPlateLookup').addEventListener('click', function () {
