@@ -162,6 +162,13 @@
     if (nav === 'reports') return renderReports();
     if (nav === 'ai') return renderAI();
     if (nav === 'settings') return renderSettings();
+    if (nav === 'quotes') return window.C2B_renderQuotes && window.C2B_renderQuotes();
+    if (nav === 'documents') return window.C2B_renderDocuments && window.C2B_renderDocuments();
+    if (nav === 'whatsapp') return window.C2B_renderComms && window.C2B_renderComms('whatsapp');
+    if (nav === 'emails') return window.C2B_renderComms && window.C2B_renderComms('emails');
+    if (nav === 'sms') return window.C2B_renderComms && window.C2B_renderComms('sms');
+    if (nav === 'automations') return window.C2B_renderAutomations && window.C2B_renderAutomations();
+    if (nav === 'branches') return window.C2B_renderBranches && window.C2B_renderBranches();
     if (nav.indexOf('soon:') === 0) return renderSoon(nav.slice(5));
     return window.C2B_renderDashboard && window.C2B_renderDashboard();
   }
