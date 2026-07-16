@@ -108,6 +108,30 @@
       window.C2B_renderLeads(curFilter);
     });
   }
+  // ---- automation engine: run active rules whose trigger status matches the new status ----
+  function runAutomations(leadId, newStatus, lead) {
+    db.from('automations').select('name,action,params').eq('active', true).eq('trigger_status', newStatus).then(function (r) {
+      var rules = (r.data || []); if (!rules.length) return;
+      rules.forEach(function (a) {
+        var p = a.params || {}, nm = a.name || 'אוטומציה';
+        if (a.action === 'note') {
+          logActivity(leadId, 'note', p.text || ('🤖 ' + nm));
+        } else if (a.action === 'whatsapp') {
+          var soon = new Date(Date.now() + 3600000).toISOString();
+          db.from('tasks').insert({ lead_id: leadId, title: '📱 לשלוח WhatsApp ל' + ((lead && lead.name) || 'ליד'), due_at: soon, notes: p.text || null });
+          logActivity(leadId, 'system', '🤖 אוטומציה: תזכורת לשלוח WhatsApp — ' + nm);
+        } else { // 'task' (default): open a follow-up task
+          var days = (p.days != null ? +p.days : 1);
+          var due = new Date(Date.now() + days * 86400000).toISOString();
+          db.from('tasks').insert({ lead_id: leadId, title: p.text || ('מעקב: ' + nm), due_at: due, notes: null });
+          logActivity(leadId, 'system', '🤖 אוטומציה: נפתחה משימת מעקב — ' + nm);
+        }
+      });
+      if (C.refreshBadges) C.refreshBadges();
+    }).catch(function () {});
+  }
+  C.runAutomations = runAutomations;   // reusable from other status-change paths
+
   function changeStatus(leadId, to, lead, after) {
     var from = lead && lead.status;
     if (from === to) { if (after) after(); return; }   // no-op: don't log/patch a status that didn't change
@@ -116,6 +140,7 @@
     db.from('leads').update(patch).eq('id', leadId).then(function (u) {
       if (u.error) return alert('שגיאה: ' + u.error.message);
       logActivity(leadId, 'status_change', from ? ('סטטוס: ' + stDef(from).label + ' → ' + stDef(to).label) : ('סטטוס שונה ל: ' + stDef(to).label)).then(function () { if (after) after(); });
+      runAutomations(leadId, to, lead);   // fire matching automation rules on the new status
     });
   }
 
@@ -911,9 +936,9 @@
         if (!dealLogged) { dealLogged = true; logActivity(lead.id, 'quote', 'נוצרה עסקה: ' + (payload.car_make + ' ' + payload.car_model)); }
         // keep the lead status in sync when the order status changes — silently, no re-render
         if (payload.status !== lastStatus) {
-          lastStatus = payload.status;
+          var prevLeadStatus = lead.status; lastStatus = payload.status;
           var ns = payload.status === 'ordered' ? 'won' : (payload.status === 'cancelled' ? 'lost' : 'quote_sent');
-          db.from('leads').update({ status: ns }).eq('id', lead.id).then(function () { if (C.refreshBadges) C.refreshBadges(); });
+          if (ns !== prevLeadStatus) db.from('leads').update({ status: ns }).eq('id', lead.id).then(function () { lead.status = ns; if (C.refreshBadges) C.refreshBadges(); runAutomations(lead.id, ns, lead); });
         }
         setState('✓ נשמר');
         if (dirtyAgain) { dirtyAgain = false; doSave(); }

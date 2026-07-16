@@ -125,7 +125,7 @@
   window.C2B_renderAutomations = function () {
     view('<div class="loading">טוען אוטומציות…</div>');
     var STAT = (window.C2B_STATUSES || []).map(function (s) { return [s.k, s.label]; });
-    var ACTIONS = [['task', 'פתח משימה מעקב'], ['note', 'רשום הערה בציר הזמן'], ['whatsapp', 'סמן לשליחת WhatsApp']];
+    var ACTIONS = [['task', 'פתח משימת מעקב'], ['note', 'רשום הערה בציר הזמן'], ['whatsapp', 'פתח משימת "שלח WhatsApp"']];
     db.from('automations').select('*').order('created_at', { ascending: false }).then(function (r) {
       if (r.error) {
         return view('<h2 style="margin:0 0 12px">🤖 אוטומציות</h2><div class="card"><h3>נדרשת הקמה חד-פעמית</h3><p class="muted">כדי לשמור ולהריץ אוטומציות, צרו את הטבלה ב-Supabase (SQL Editor):</p>' +
@@ -136,19 +136,24 @@
       var list = rules.length ? rules.map(function (a) {
         var st = (STAT.filter(function (s) { return s[0] === a.trigger_status; })[0] || [a.trigger_status, a.trigger_status])[1];
         var ac = (ACTIONS.filter(function (x) { return x[0] === a.action; })[0] || [a.action, a.action])[1];
-        return '<tr><td><b>' + esc(a.name || 'חוק') + '</b></td><td>כשסטטוס → <b>' + esc(st) + '</b></td><td>' + esc(ac) + '</td><td><label class="switch-sm"><input type="checkbox" data-toggle="' + a.id + '"' + (a.active ? ' checked' : '') + '> ' + (a.active ? 'פעיל' : 'כבוי') + '</label></td><td><button class="btn btn-ghost btn-sm" data-del="' + a.id + '">🗑️</button></td></tr>';
+        var pd = a.params || {};
+        var detail = (pd.text ? ' <span class="muted">("' + esc(pd.text) + '")</span>' : '') + (a.action === 'task' && pd.days != null ? ' <span class="muted">· בעוד ' + esc(pd.days) + ' ימים</span>' : '');
+        return '<tr><td><b>' + esc(a.name || 'חוק') + '</b></td><td>כשסטטוס → <b>' + esc(st) + '</b></td><td>' + esc(ac) + detail + '</td><td><label class="switch-sm"><input type="checkbox" data-toggle="' + a.id + '"' + (a.active ? ' checked' : '') + '> ' + (a.active ? 'פעיל' : 'כבוי') + '</label></td><td><button class="btn btn-ghost btn-sm" data-del="' + a.id + '">🗑️</button></td></tr>';
       }).join('') : '<tr><td colspan="5" class="empty">אין עדיין חוקים. הוסיפו חוק ראשון למטה.</td></tr>';
       view('<h2 style="margin:0 0 12px">🤖 אוטומציות</h2>' +
         '<div class="card"><h3>חוק חדש</h3><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">' +
           '<div class="field" style="margin:0;flex:1;min-width:150px"><label>שם החוק</label><input class="inp" id="auName" placeholder="למשל: מעקב אחרי הצעה"></div>' +
           '<div class="field" style="margin:0"><label>כאשר הסטטוס הופך ל…</label><select class="inp" id="auTrig">' + STAT.map(function (s) { return '<option value="' + s[0] + '">' + esc(s[1]) + '</option>'; }).join('') + '</select></div>' +
           '<div class="field" style="margin:0"><label>בצע פעולה</label><select class="inp" id="auAct">' + ACTIONS.map(function (a) { return '<option value="' + a[0] + '">' + esc(a[1]) + '</option>'; }).join('') + '</select></div>' +
+          '<div class="field" style="margin:0;flex:1;min-width:170px"><label>טקסט מותאם (אופציונלי)</label><input class="inp" id="auText" placeholder="כותרת המשימה / תוכן ההערה"></div>' +
+          '<div class="field" style="margin:0;width:120px"><label>בעוד (ימים)</label><input class="inp" id="auDays" type="number" min="0" value="1"></div>' +
           '<button class="btn" id="auAdd">➕ הוסף חוק</button></div></div>' +
         '<div class="card"><h3>חוקים פעילים (' + rules.length + ')</h3><div class="table-scroll"><table><thead><tr><th>שם</th><th>תנאי</th><th>פעולה</th><th>מצב</th><th></th></tr></thead><tbody>' + list + '</tbody></table></div>' +
-        '<p class="muted" style="font-size:12px;margin-top:10px">💡 החוקים נשמרים ומנהלים את הלוגיקה. הרצה אוטומטית בזמן אמת (שליחת הודעות) דורשת חיבור ל-Edge Function של Supabase — נשמח להקים.</p></div>');
+        '<p class="muted" style="font-size:12px;margin-top:10px">✅ <b>המנוע פעיל.</b> כשסטטוס של ליד משתנה ב-CRM, החוקים המתאימים רצים אוטומטית — פותחים משימת מעקב, רושמים הערה בציר הזמן, או פותחים תזכורת "שלח WhatsApp". (שליחת WhatsApp/מייל אוטומטית לגמרי, בלי משימה, תתאפשר לאחר חיבור ה-Meta API.)</p></div>');
       $('auAdd').addEventListener('click', function () {
         var name = $('auName').value.trim(); if (!name) { $('auName').focus(); return; }
-        db.from('automations').insert({ name: name, trigger_status: $('auTrig').value, action: $('auAct').value, active: true }).then(function (u) { if (u.error) return alert('שגיאה: ' + u.error.message); window.C2B_renderAutomations(); });
+        var params = { text: ($('auText').value || '').trim() || null, days: (+$('auDays').value || 1) };
+        db.from('automations').insert({ name: name, trigger_status: $('auTrig').value, action: $('auAct').value, active: true, params: params }).then(function (u) { if (u.error) return alert('שגיאה: ' + u.error.message); window.C2B_renderAutomations(); });
       });
       $('view').querySelectorAll('[data-del]').forEach(function (b) { b.addEventListener('click', function () { db.from('automations').delete().eq('id', b.dataset.del).then(function () { window.C2B_renderAutomations(); }); }); });
       $('view').querySelectorAll('[data-toggle]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('automations').update({ active: cb.checked }).eq('id', cb.dataset.toggle).then(function () { window.C2B_renderAutomations(); }); }); });
