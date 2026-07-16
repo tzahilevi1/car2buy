@@ -1117,6 +1117,21 @@
     { k: 'paid', label: 'שולם ונסגר', color: '#16a34a' }
   ];
   var acctTab = 'deals', selectedAcct = {};
+  var ACCT_COLS = [
+    { key: 'order', label: '#', fixed: true, cell: function (d) { return '<td><b>#' + esc(d.order_no) + '</b></td>'; } },
+    { key: 'client', label: 'לקוח', fixed: true, cell: function (d) { return '<td>' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td>'; } },
+    { key: 'invoice', label: 'קבלה על שם', cell: function (d) { return '<td>' + esc(d.invoice_name || d.client_name || '—') + '</td>'; } },
+    { key: 'car', label: 'מה נקנה', cell: function (d) { return '<td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim() || '—') + '</td>'; } },
+    { key: 'total', label: 'סכום', cell: function (d) { return '<td>' + nis(d._tot) + '</td>'; } },
+    { key: 'paid', label: 'שולם', cell: function (d) { return '<td>' + nis(d._paid) + '</td>'; } },
+    { key: 'balance', label: 'יתרה', cell: function (d) { return '<td style="color:' + (d._bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(d._bal) + '</td>'; } },
+    { key: 'salesperson', label: 'סוכן', cell: function (d) { return '<td>' + esc(d.salesperson || '—') + '</td>'; } },
+    { key: 'commission', label: 'עמלה', cell: function (d) { return '<td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td>'; } },
+    { key: 'acct_status', label: 'סטטוס', cell: function (d) { return '<td>' + acctStatusSel(d.id, d.acct_status) + '</td>'; } },
+    { key: 'brand', label: 'מותג', def: false, cell: function (d) { return '<td>' + esc(d.brand || '—') + '</td>'; } },
+    { key: 'phone', label: 'טלפון', def: false, cell: function (d) { return '<td>' + esc(d.client_phone || '—') + '</td>'; } }
+  ];
+  var acctCols = null;
   window.C2B_renderAccounting = function () {
     selectedAcct = {};
     loading();
@@ -1145,18 +1160,13 @@
     deals.forEach(function (d) { var tot = +d.total || 0, paid = paidByDeal[d.id] || 0; revenue += tot; collected += paid; open += Math.max(0, tot - paid); commTotal += (+d.commission || 0); });
 
     // TAB 1 — deals + receipts (what bought, invoice name, balance, commission, status, issue)
+    if (!acctCols) acctCols = C.colPicker('accounting', ACCT_COLS, function () { window.C2B_renderAccounting(); });
+    deals.forEach(function (d) { var tot = +d.total || 0, paid = paidByDeal[d.id] || 0; d._tot = tot; d._paid = paid; d._bal = tot - paid; });
     var dealRows = deals.map(function (d) {
-      var tot = +d.total || 0, paid = paidByDeal[d.id] || 0, bal = tot - paid;
-      return '<tr data-lead="' + (d.lead_id || '') + '"><td style="width:28px;text-align:center"><input type="checkbox" data-asel="' + d.id + '"' + (selectedAcct[d.id] ? ' checked' : '') + '></td><td><b>#' + esc(d.order_no) + '</b></td>' +
-        '<td>' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td>' +
-        '<td>' + esc(d.invoice_name || d.client_name || '—') + '</td>' +
-        '<td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim() || '—') + '</td>' +
-        '<td>' + nis(tot) + '</td><td>' + nis(paid) + '</td><td style="color:' + (bal > 0 ? 'var(--danger)' : 'var(--ok)') + '">' + nis(bal) + '</td>' +
-        '<td>' + esc(d.salesperson || '—') + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td>' +
-        '<td>' + acctStatusSel(d.id, d.acct_status) + '</td></tr>';
+      return '<tr data-lead="' + (d.lead_id || '') + '"><td style="width:28px;text-align:center"><input type="checkbox" data-asel="' + d.id + '"' + (selectedAcct[d.id] ? ' checked' : '') + '></td>' + acctCols.cells(d) + '</tr>';
     }).join('');
     var aBulk = '<div id="aBulk" class="filterbar" style="display:none;background:var(--brand-soft);align-items:center"><b id="aBulkCount" style="color:var(--brand)">נבחרו 0</b><select id="aBulkStatus"><option value="">🏷️ שנה סטטוס…</option>' + ACCT_STATUSES.map(function (s) { return '<option value="' + s.k + '">' + esc(s.label) + '</option>'; }).join('') + '</select><button class="btn btn-sm" id="aBulkApply">החל על הנבחרים</button><button class="btn btn-ghost btn-sm" id="aBulkClear">בטל בחירה</button></div>';
-    var dealsPanel = '<div class="card"><h3>עסקאות · קבלות · חשבוניות <span class="muted" style="font-size:12px">(סמנו לפעולה גורפת · לחצו על שורה לפתיחת תיק החשבונות)</span></h3>' + aBulk + '<div class="table-scroll"><table><thead><tr><th style="width:28px;text-align:center"><input type="checkbox" id="aSelAll"></th><th>#</th><th>לקוח</th><th>קבלה על שם</th><th>מה נקנה</th><th>סכום</th><th>שולם</th><th>יתרה</th><th>סוכן</th><th>עמלה</th><th>סטטוס</th></tr></thead><tbody>' + (dealRows || '<tr><td colspan="11" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div></div>';
+    var dealsPanel = '<div class="card"><div class="row-between"><h3 style="margin:0">עסקאות · קבלות · חשבוניות <span class="muted" style="font-size:12px">(סמנו לפעולה גורפת · לחצו על שורה לפתיחת תיק החשבונות)</span></h3>' + acctCols.button() + '</div>' + aBulk + '<div class="table-scroll"><table><thead><tr><th style="width:28px;text-align:center"><input type="checkbox" id="aSelAll"></th>' + acctCols.thead() + '</tr></thead><tbody>' + (dealRows || '<tr><td colspan="' + (acctCols.colCount() + 1) + '" class="empty">אין עסקאות</td></tr>') + '</tbody></table></div></div>';
 
     // TAB 2 — commission per agent (frozen values)
     var byAgent = {}; deals.forEach(function (d) { var a = d.salesperson || 'לא שויך'; byAgent[a] = byAgent[a] || { n: 0, comm: 0, total: 0 }; byAgent[a].n++; byAgent[a].comm += (+d.commission || 0); byAgent[a].total += (+d.total || 0); });
@@ -1180,6 +1190,7 @@
 
     function bindPanel() {
       var P = C.$('acctPanel');
+      if (acctCols) acctCols.bind();   // column chooser (present only on the deals panel)
       P.querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function (e) { if (e.target.closest('select,button,a,input')) return; if (tr.dataset.lead) openAcctLeadView(tr.dataset.lead); }); });
       P.querySelectorAll('.acct-st').forEach(function (s) { s.addEventListener('change', function () { db.from('deals').update({ acct_status: s.value }).eq('id', s.dataset.acct); }); });
       // bulk selection + status change

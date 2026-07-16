@@ -300,6 +300,21 @@
   // ---------- CARS (read-only from the Google Sheet → cars.json) ----------
   var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1LiK--j3BCPnHO4rZQj7N2RetdnExEmwimWTwn7kmWe8/edit';
   var CAR_COLS = 12;
+  var CAR_COL_DEFS = [
+    { key: 'img', label: 'תמונה', cell: function (c) { return '<td>' + (c.img ? '<img src="' + esc(c.img) + '" style="width:52px;height:34px;object-fit:cover;border-radius:8px" onerror="this.style.display=\'none\'">' : '') + '</td>'; } },
+    { key: 'brand', label: 'מותג', fixed: true, cell: function (c) { return '<td><b>' + esc(c.brand) + '</b></td>'; } },
+    { key: 'name', label: 'דגם', fixed: true, cell: function (c) { return '<td>' + esc(c.name) + (c.nameEn ? '<div class="muted" style="font-size:11px">' + esc(c.nameEn) + '</div>' : '') + '</td>'; } },
+    { key: 'trim', label: 'גרסה', cell: function (c) { return '<td class="muted">' + esc(c.trim || '—') + '</td>'; } },
+    { key: 'engine', label: 'מנוע', cell: function (c) { return '<td class="muted">' + esc(c.engine || '—') + '</td>'; } },
+    { key: 'seats', label: 'מושבים', cell: function (c) { return '<td>' + esc(c.seats || '—') + '</td>'; } },
+    { key: 'colors', label: 'צבעים', cell: function (c) { return '<td class="muted" style="white-space:normal;max-width:120px">' + esc(c.colors || '—') + '</td>'; } },
+    { key: 'm', label: 'החזר', cell: function (c) { return '<td>' + nis(c.m) + '</td>'; } },
+    { key: 'p', label: 'מחיר', cell: function (c) { return '<td>' + nis(c.p) + '</td>'; } },
+    { key: 'commission', label: 'עמלת סוכן', cell: function (c) { return '<td style="color:var(--ok);font-weight:700">' + nis(c.commission) + '</td>'; } },
+    { key: 'down', label: 'מקדמה', cell: function (c) { return '<td class="muted">' + esc(c.down ? nis(c.down) : '—') + '</td>'; } },
+    { key: 'code', label: 'קוד', cell: function (c) { return '<td class="muted">' + esc(c.code || '—') + '</td>'; } }
+  ];
+  var carCols = null;
   function carRows(list) {
     return list.map(function (c) {
       return '<tr><td>' + (c.img ? '<img src="' + esc(c.img) + '" style="width:52px;height:34px;object-fit:cover;border-radius:8px" onerror="this.style.display=\'none\'">' : '') +
@@ -322,7 +337,8 @@
         { key: 'colors', label: 'צבע' }, { key: 'code', label: 'קוד דגם' },
         { key: 'p', label: 'מחיר' }, { key: 'm', label: 'החזר חודשי' }, { key: 'commission', label: 'עמלת סוכן' }, { key: 'seats', label: 'מושבים' }
       ], draw);
-      view('<div class="card"><div class="row-between"><h3>רכבים חדשים <span class="muted" id="ccount"></span></h3><div><input class="inp" id="cq" placeholder="חיפוש חופשי…" style="width:180px"> <a class="btn btn-sm" href="' + SHEET_URL + '" target="_blank" rel="noopener">✎ פתח את הגיליון</a></div></div>' +
+      if (!carCols) carCols = window.C2B.colPicker('cars', CAR_COL_DEFS, draw);
+      view('<div class="card"><div class="row-between"><h3>רכבים חדשים <span class="muted" id="ccount"></span></h3><div><input class="inp" id="cq" placeholder="חיפוש חופשי…" style="width:180px"> <a class="btn btn-sm" href="' + SHEET_URL + '" target="_blank" rel="noopener">✎ פתח את הגיליון</a> ' + carCols.button() + '</div></div>' +
         '<p class="muted" style="font-size:13px">מנוהל ב-Google Sheet, מתעדכן אוטומטית (~15 דק\'). כל הפרטים — כולל עמלת סוכן — נמשכים מהגיליון.</p>' +
         '<div id="carsBody"></div></div>');
       function list() {
@@ -334,12 +350,14 @@
       }
       function draw() {
         var rows = list();
+        var body = rows.map(function (c) { return '<tr>' + carCols.cells(c) + '</tr>'; }).join('');
         $('carsBody').innerHTML = filter.render() +
-          '<div class="table-scroll"><table><thead><tr><th>תמונה</th><th>מותג</th><th>דגם</th><th>גרסה</th><th>מנוע</th><th>מושבים</th><th>צבעים</th><th>החזר</th><th>מחיר</th><th>עמלת סוכן</th><th>מקדמה</th><th>קוד</th></tr></thead><tbody>' +
-          (carRows(rows) || '<tr><td colspan="' + CAR_COLS + '" class="empty">אין תואמים</td></tr>') + '</tbody></table></div>';
+          '<div class="table-scroll"><table><thead><tr>' + carCols.thead() + '</tr></thead><tbody>' +
+          (body || '<tr><td colspan="' + carCols.colCount() + '" class="empty">אין תואמים</td></tr>') + '</tbody></table></div>';
         if ($('ccount')) $('ccount').textContent = '(' + rows.length + ')';
         filter.bind();
       }
+      carCols.bind();
       $('cq').addEventListener('input', draw);
       draw();
     }).catch(function (e) { errBox(e.message || e); });
