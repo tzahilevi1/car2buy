@@ -1141,7 +1141,7 @@
     var ad = d.addons || {};
     var addTxt = [ad.charging ? 'עמדת טעינה' : '', ad.armor ? 'מיגון' : '', ad.accessories ? 'אביזרים' : '', ad.addons_amount ? nis(ad.addons_amount) : ''].filter(Boolean).join(', ') || '—';
     var owner = (window.C2B && C2B.userName) || '';
-    function row(k, v) { return '<tr><td style="padding:5px 8px;border-bottom:1px solid #eee;white-space:nowrap;color:#555">' + k + '</td><td style="padding:5px 8px;border-bottom:1px solid #eee"><b>' + (v == null || v === '' ? '—' : esc(v)) + '</b></td></tr>'; }
+    function row(k, v) { return '<tr><td style="padding:7px 10px;border-bottom:1px solid #eee;white-space:nowrap;color:#555;width:34%">' + k + '</td><td style="padding:7px 10px;border-bottom:1px solid #eee"><b><bdi>' + (v == null || v === '' ? '—' : esc(v)) + '</bdi></b></td></tr>'; }
     var C = [
       '10. הרכב ירשם ברישיון הרכב על שם הלקוח כבעלים ' + own + '.',
       'המחיר הנקוב לעיל הינו לפי המחירון התקף של היבואן נכון למועד ההזמנה, והינו המחיר למשלם במועד ביצוע ההזמנה. המחיר למשלם בכל מועד לאחר מועד ההזמנה ובתוך 7 ימים לכל היותר מיום קבלת הודעה כי הרכב מוכן לשחרור מהמכס יהיה בהתאם למחיר הרכב במחירון התקף של היבואן ביום התשלום.',
@@ -1166,21 +1166,22 @@
       'על הצהרה זו ו/או ההסכם המקורי, פרשנותם ו/או ביצועם יחולו אך ורק דיני מדינת ישראל. סמכות השיפוט הבלעדית בכל הקשור ו/או הנובע מהם תהא נתונה לבית המשפט המוסמך במחוז המרכז.',
       'כתובות הצדדים להזמנה זאת הן כקבוע במבוא לה, זאת כל עוד לא הודיע צד למשנהו על שינוי בכתובת. כל הודעה או התראה שתישלח על-ידי צד למשנהו על פי כתובתו כאמור בדואר רשום, תיחשב כאילו התקבלה על-ידי הנמען 72 שעות לאחר מסירתה למשרד הדואר; אם נמסרה ביד — מעת מסירתה. הודעה שנשלחה בפקס תחשב כאילו התקבלה בשעה הרשומה על גבי אישור העברת הפקס בתנאי שנשלחה ביום עבודה (א׳–ה׳) בין השעות 09:00–17:00 (זמן ישראל).'
     ];
-    return '<div style="font-family:Arial,sans-serif;line-height:1.65;max-width:760px;margin:auto;color:#111;font-size:13.5px">' +
-      '<h2 style="text-align:center;color:#F5691E;margin:0 0 2px">הסכם הזמנת רכב' + (d.brand ? ' — ' + esc(d.brand) : '') + '</h2>' +
-      '<p style="text-align:center;color:#555;margin:0 0 4px">buy 2 Car באמצעות גלובל דרייב ח.פ 516685898 (להלן: "גלובל דרייב")</p>' +
-      '<p style="text-align:center;color:#888;margin:0 0 10px;font-size:12.5px">מספר הזמנה: ' + esc(d.order_no || '—') + ' · תאריך: ' + today + '</p><hr>' +
-      '<table style="width:100%;border-collapse:collapse;margin:10px 0">' +
+    return '<div style="font-family:Arial,sans-serif;line-height:1.75;max-width:720px;margin:auto;color:#111;font-size:13px;padding:6px 4px">' +
+      '<h1 style="text-align:center;color:#F5691E;margin:0 0 10px;font-size:22px;line-height:1.35;font-weight:800">הסכם הזמנת רכב' + (d.brand ? ' — ' + esc(d.brand) : '') + '</h1>' +
+      '<p style="text-align:center;color:#444;margin:0 0 6px;font-size:13px"><bdi>Car2Buy</bdi> באמצעות גלובל דרייב ח.פ <bdi>516685898</bdi> (להלן: "גלובל דרייב")</p>' +
+      '<p style="text-align:center;color:#888;margin:0 0 14px;font-size:12.5px">מספר הזמנה: <bdi>' + esc(d.order_no || '—') + '</bdi> &nbsp;·&nbsp; תאריך: <bdi>' + today + '</bdi></p>' +
+      '<hr style="border:0;border-top:1px solid #ddd;margin:0 0 14px">' +
+      '<table style="width:100%;border-collapse:collapse;margin:0 0 16px">' +
         row('שם המזמין', d.client_name) + row('ת.ז / ח.פ', d.client_id) + row('כתובת', d.client_address) + row('טלפון', d.client_phone) +
         row('סוג הרכב', d.car_make) + row('דגם', d.car_model) + row('רמת גימור', d.car_trim) + row('נפח מנוע', d.car_engine) +
         row('צבע הרכב', d.car_color) + row('שנת ייצור', d.car_year) + row('תוספות', addTxt) +
         row('מקדמה', nis(d.down_total) + ' *') + row('יתרה לתשלום', nis(d.balance_to_pay) + ' **') +
       '</table>' +
-      '<ol style="padding-inline-start:20px;margin:8px 0">' + C.map(function (t) { return '<li style="margin-bottom:7px">' + t + '</li>'; }).join('') + '</ol>' +
-      '<p style="font-weight:700;margin:12px 0 4px">כללי:</p>' +
-      '<ol style="padding-inline-start:20px;margin:0" type="a">' + gen.map(function (t, i) { return '<li style="margin-bottom:7px">' + t + '</li>'; }).join('') + '</ol>' +
-      '<p style="font-size:12px;color:#555;margin-top:12px">* הקונה מצהיר בזאת כי קרא את סעיפי ההסכם והבין את משמעותם ותוכנם.</p>' +
-      '<div style="margin-top:30px;display:flex;justify-content:space-between;align-items:flex-end">' +
+      '<ol style="padding-inline-start:22px;margin:6px 0 14px;line-height:1.75">' + C.map(function (t) { return '<li style="margin-bottom:9px;page-break-inside:avoid">' + t + '</li>'; }).join('') + '</ol>' +
+      '<p style="font-weight:700;margin:16px 0 6px;font-size:14px">כללי:</p>' +
+      '<ol style="padding-inline-start:22px;margin:0;line-height:1.75" type="a">' + gen.map(function (t) { return '<li style="margin-bottom:9px;page-break-inside:avoid">' + t + '</li>'; }).join('') + '</ol>' +
+      '<p style="font-size:12px;color:#555;margin-top:14px">* הקונה מצהיר בזאת כי קרא את סעיפי ההסכם והבין את משמעותם ותוכנם.</p>' +
+      '<div style="margin-top:36px;display:flex;justify-content:space-between;align-items:flex-end;page-break-inside:avoid">' +
         '<div>חתימת הרוכש:<br>' + (sig ? '<img src="' + sig + '" style="height:70px">' : '________________________') + '</div>' +
         '<div style="text-align:left">בברכה,<br><b>צוות Car2Buy</b><br>' + esc(owner || '054-470-0706') + '</div>' +
       '</div></div>';
@@ -1290,25 +1291,31 @@
     var wrap = document.createElement('div');
     wrap.style.cssText = 'height:0;overflow:hidden';   // static (in-flow), hidden — do NOT use absolute/fixed
     var holder = document.createElement('div');
-    holder.style.cssText = 'width:760px;background:#fff;color:#111;padding:16px';
+    holder.style.cssText = 'width:760px;background:#fff;color:#111;padding:4px 8px';
     holder.innerHTML = contractHTML(deal, deal.signature || null);
     wrap.appendChild(holder); document.body.appendChild(wrap); document.body.appendChild(ov);
     window.scrollTo(0, 0);
     function done(blob) { window.scrollTo(sx, sy); [wrap, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); onBlob(blob); }
-    window.html2pdf().set({ margin: 8, image: { type: 'jpeg', quality: 0.96 }, html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true }, jsPDF: { unit: 'mm', format: 'a4' } }).from(holder).outputPdf('blob').then(done).catch(function () { done(null); });
+    window.html2pdf().set({
+      margin: [14, 12, 16, 12],
+      image: { type: 'jpeg', quality: 0.96 },
+      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: 820, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['li', 'tr'] }
+    }).from(holder).outputPdf('blob').then(done).catch(function () { done(null); });
   }
   // generate + save the signed contract PDF ONCE → shows in documents + timeline (both views)
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
-    var path = lead.id + '/signed_' + deal.id + '_v2.pdf';       // v2 = the fixed generator
-    var oldPath = lead.id + '/signed_' + deal.id + '.pdf';       // v1 could be a blank PDF from old code
+    var path = lead.id + '/signed_' + deal.id + '_v3.pdf';       // v3 = tidy layout (margins/spacing/bidi)
+    var oldPaths = [lead.id + '/signed_' + deal.id + '.pdf', lead.id + '/signed_' + deal.id + '_v2.pdf'];
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
-      if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v2)
-      // clean up a possible blank v1 once, then generate the correct v2
-      db.from('lead_documents').delete().eq('storage_path', oldPath);
-      db.storage.from('lead-docs').remove([oldPath]);
+      if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v3)
+      // clean up older/blank versions once, then generate the tidy v3
+      db.from('lead_documents').delete().in('storage_path', oldPaths);
+      db.storage.from('lead-docs').remove(oldPaths);
       genContractPdf(deal, function (blob) {
         if (!blob) { pdfGenerating[deal.id] = false; return; }
         db.storage.from('lead-docs').upload(path, blob, { contentType: 'application/pdf', upsert: true }).then(function (u) {
