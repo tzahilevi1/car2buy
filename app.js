@@ -1071,14 +1071,8 @@
       for (const k in map) { if (b.indexOf(k) >= 0 && IMG[map[k]]) return IMG[map[k]]; }
       return IMG.silverRoad || IMG.suvSilver || (MODELS[0] && MODELS[0].img);
     }
-    // real photo of the actual make+model (imagin.studio), so the wizard shows the true car
-    const IMAGIN_MAKE = { 'יונדאי': 'hyundai', 'קיה': 'kia', 'טויוטה': 'toyota', 'טסלה': 'tesla', 'ב.מ.וו': 'bmw', 'במוו': 'bmw', 'מרצדס': 'mercedes-benz', 'מרצדס-בנץ': 'mercedes-benz', 'אאודי': 'audi', 'פולקסווגן': 'volkswagen', 'סקודה': 'skoda', 'סיאט': 'seat', 'קופרה': 'cupra', 'מאזדה': 'mazda', 'הונדה': 'honda', 'ניסאן': 'nissan', 'סוזוקי': 'suzuki', 'מיצובישי': 'mitsubishi', 'פיגו': 'peugeot', "פיג'ו": 'peugeot', 'רנו': 'renault', 'סיטרואן': 'citroen', 'אופל': 'opel', 'וולוו': 'volvo', 'מיני': 'mini', 'יגואר': 'jaguar', 'פיאט': 'fiat', 'סובארו': 'subaru', "דאצ'יה": 'dacia', 'קאדילק': 'cadillac', 'לנד רובר': 'land-rover', 'ריינג׳ רובר': 'land-rover', 'פורד': 'ford', 'שברולט': 'chevrolet', 'ב.י.ד': 'byd', 'ביד': 'byd', 'אמ.ג׳י': 'mg', 'ג׳ילי': 'geely', "צ'רי": 'chery', 'ג׳יפ': 'jeep', 'לקסוס': 'lexus', 'אלפא רומיאו': 'alfa-romeo', 'פורשה': 'porsche', 'מזראטי': 'maserati', 'סמארט': 'smart', 'דונגפנג': 'dongfeng' };
-    function realCarImg(makeHe, modelName) {
-      const mk = IMAGIN_MAKE[String(makeHe || '').trim()];
-      const mf = String(modelName || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
-      if (!mk || !mf) return '';
-      return 'https://cdn.imagin.studio/getimage?customer=img&make=' + mk + '&modelFamily=' + encodeURIComponent(mf) + '&angle=23&width=560';
-    }
+    // imagin.studio disabled — its free tier stamps a watermark; the wizard falls back to the clean brand image
+    function realCarImg() { return ''; }
     function realLookup(plate, cb) {
       const digits = (plate.match(/\d/g) || []).join('');
       const base = 'https://data.gov.il/api/3/action/datastore_search';

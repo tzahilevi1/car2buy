@@ -768,9 +768,9 @@ function renderCarDetail() {
   var galleryImgs = [];
   if (car.gallery && car.gallery.length) {
     galleryImgs = car.gallery.map(function (sx) { return { src: sx, contain: false }; });
-  } else {
-    if (car.img) galleryImgs.push({ src: car.img, contain: true });
-    if (car.imaginMake && car.imaginModel) GALLERY_ANGLES.forEach(function (a) { galleryImgs.push({ src: imaginUrl(a), contain: true }); });
+  } else if (car.img) {
+    // clean image only (icar) — imagin.studio renders were dropped because their free tier stamps a watermark
+    galleryImgs.push({ src: car.img, contain: true });
   }
   var galleryHtml = galleryImgs.length
     ? '<div class="cd-mgrid">' + galleryImgs.map(function (g, i) {

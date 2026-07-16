@@ -372,14 +372,8 @@
   var GAL_ANGLES = ['23', '29', '05', '09', '13', '17', '21', '01'];   // front-3/4, front, side, rear-3/4, rear, high...
   function imaginUrl(mk, md, a) { return 'https://cdn.imagin.studio/getimage?customer=img&make=' + encodeURIComponent(mk) + '&modelFamily=' + encodeURIComponent(md) + '&angle=' + a + '&width=1000'; }
   function uniq(arr) { return arr.filter(function (u, i) { return u && arr.indexOf(u) === i; }); }
-  var staticImgs = uniq(models.map(function (m) { return m.img; }));
-  var angleImgs = [];
-  models.forEach(function (m) {
-    var mk = IMAGIN_MAKE[m.brand] || '', md = IMAGIN_MODEL[m.name] || '';
-    if (mk && md) GAL_ANGLES.forEach(function (a) { angleImgs.push(imaginUrl(mk, md, a)); });
-  });
-  // local static image first (guaranteed to load), then the varied studio angles
-  var imgs = uniq(staticImgs.concat(angleImgs));
+  // clean local images only (one per model) — imagin.studio angles dropped (their free tier stamps a watermark)
+  var imgs = uniq(models.map(function (m) { return m.img; }));
 
   // ---- intersperse model images between H2 sections ----
   var bodyParts = art.bodyHtml.split('<h2>');
