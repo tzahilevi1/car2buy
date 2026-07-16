@@ -728,6 +728,7 @@
     deal = deal || {}; var ad = deal.addons || {};
     var curStage = deal.stage || 'initial';
     var checklist = {}; CHECKLIST_ITEMS.forEach(function (it) { checklist[it] = !!(deal.checklist || {})[it]; });
+    if (deal.checklist && deal.checklist._ownership) checklist._ownership = deal.checklist._ownership;
     var G = function (label, name, val, type) { return '<div class="field" style="margin:0"><label>' + label + '</label><input class="inp" id="dl_' + name + '" type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '" style="width:100%"></div>'; };
     var grid = function (inner) { return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' + inner + '</div>'; };
     var statusSel = '<div class="field" style="margin:0"><label>סטטוס הזמנה</label><select class="inp" id="dl_status" style="width:100%">' + [['quote', 'הצעת מחיר'], ['ordered', 'הזמנה'], ['cancelled', 'בוטל']].map(function (s) { return '<option value="' + s[0] + '"' + ((deal.status || 'quote') === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('') + '</select></div>';
@@ -1134,14 +1135,15 @@
   }
 
   // ---------- CONTRACT (auto-filled + browser signature) ----------
-  function contractHTML(d, sig) {
+  function contractHTML(d, sig, ownership) {
     var today = new Date().toLocaleDateString('he-IL');
+    var own = ownership || (d.checklist && d.checklist._ownership) || '01';
     var ad = d.addons || {};
     var addTxt = [ad.charging ? 'עמדת טעינה' : '', ad.armor ? 'מיגון' : '', ad.accessories ? 'אביזרים' : '', ad.addons_amount ? nis(ad.addons_amount) : ''].filter(Boolean).join(', ') || '—';
     var owner = (window.C2B && C2B.userName) || '';
     function row(k, v) { return '<tr><td style="padding:5px 8px;border-bottom:1px solid #eee;white-space:nowrap;color:#555">' + k + '</td><td style="padding:5px 8px;border-bottom:1px solid #eee"><b>' + (v == null || v === '' ? '—' : esc(v)) + '</b></td></tr>'; }
     var C = [
-      '10. הרכב ירשם ברישיון הרכב על שם הלקוח כבעלים 01.',
+      '10. הרכב ירשם ברישיון הרכב על שם הלקוח כבעלים ' + own + '.',
       'המחיר הנקוב לעיל הינו לפי המחירון התקף של היבואן נכון למועד ההזמנה, והינו המחיר למשלם במועד ביצוע ההזמנה. המחיר למשלם בכל מועד לאחר מועד ההזמנה ובתוך 7 ימים לכל היותר מיום קבלת הודעה כי הרכב מוכן לשחרור מהמכס יהיה בהתאם למחיר הרכב במחירון התקף של היבואן ביום התשלום.',
       'הזמנה זו מהווה את התנאים הכלליים לרכישת הרכב בלבד.',
       'מחיר הרכב — תשומת לב המזמין מופנית לכך שהמחיר עשוי להשתנות בין מועד ההזמנה לבין מועד מסירת הרכב למזמין. כל שינוי במחיר הרכב, בין לאור שינוי במיסוי ובין לאור שינוי מחיר מכל סיבה שהיא, יחול על המזמין בלבד וישולם על ידו. מחירו הסופי של רכב חשמלי יהיה בהתאמה לאחוז המיסוי לתאריך הרישוי של הרכב ועלול להשתנות לפי שינוי אחוזי המס.',
@@ -1194,9 +1196,12 @@
       return;
     }
     var signed = !!deal.signature;
+    var curOwn = (deal.checklist && deal.checklist._ownership) || '01';
     view(
       '<div class="lead-top"><button class="btn btn-ghost btn-sm" id="cBack">→ לעסקה</button><h3 style="margin:0">הסכם' + (deal.brand ? ' · ' + esc(deal.brand) : '') + ' — ' + esc(deal.client_name || '') + (signed ? ' <span class="tag" style="border-color:var(--ok);color:var(--ok);background:rgba(22,163,74,.1)">✅ נחתם</span>' : '') + '</h3>' +
-        '<div><button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button>' + (signed ? ' <button class="btn btn-sm" id="cPdf">📄 הורד PDF חתום</button>' : ' <button class="btn btn-sm" id="cSend">💾 שמור הסכם</button>') + '</div></div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          (signed ? '' : '<label style="font-size:12.5px;color:var(--muted)">בעלות:</label><select class="inp" id="cOwnership" style="width:auto;padding:5px 8px"><option value="01"' + (curOwn === '01' ? ' selected' : '') + '>בעלים 01</option><option value="00"' + (curOwn === '00' ? ' selected' : '') + '>בעלים 00</option></select>') +
+          '<button class="btn btn-ghost btn-sm" id="cPrint">🖨️ הדפס</button>' + (signed ? '<button class="btn btn-sm" id="cPdf">📄 הורד PDF חתום</button>' : '<button class="btn btn-sm" id="cSend">💾 שמור הסכם</button>') + '</div></div>' +
       (signed ? '<div class="card" style="border:1px solid var(--ok);background:rgba(22,163,74,.06)"><b style="color:var(--ok)">✅ ההסכם נחתם על ידי הלקוח' + (deal.signed_at ? ' בתאריך ' + fmt(deal.signed_at) : '') + '</b><span class="muted"> — למטה ההסכם המלא עם חתימת הלקוח.</span></div>' : '') +
       '<div class="card" id="cDoc" style="background:#fff;color:#111">' + contractHTML(deal, deal.signature || null) + '</div>' +
       (signed ? '' :
@@ -1208,6 +1213,11 @@
     );
     var $ = C.$;
     $('cBack').addEventListener('click', function () { dealForm(lead, deal); });
+    if ($('cOwnership')) $('cOwnership').addEventListener('change', function () {
+      deal.checklist = deal.checklist || {}; deal.checklist._ownership = this.value;
+      $('cDoc').innerHTML = contractHTML(deal, deal.signature || null);
+      if (deal.id) db.from('deals').update({ checklist: deal.checklist }).eq('id', deal.id);
+    });
     $('cPrint').addEventListener('click', function () { var w = window.open('', '_blank'); if (!w) return; w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>הסכם</title></head><body>' + $('cDoc').innerHTML + '</body></html>'); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250); });
     if (signed) {
       if ($('cPdf')) $('cPdf').addEventListener('click', function () { if (!window.html2pdf) return alert('הורדת PDF אינה זמינה'); genContractPdf(deal, function (blob) { if (!blob) return alert('יצירת PDF נכשלה'); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'הסכם_' + (deal.order_no || deal.id) + '.pdf'; a.click(); }); });
