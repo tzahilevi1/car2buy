@@ -841,7 +841,7 @@
           '<div style="margin:10px 0;line-height:2.2">' + chips + '</div>' +
           '<div style="display:flex;gap:8px"><input class="inp" data-add="' + key + '" placeholder="ערך חדש…" style="flex:1"><button class="btn btn-sm" data-addbtn="' + key + '">+ הוסף</button></div></div>';
       }).join('');
-      view('<h2 style="margin:0 0 6px">הגדרות ורשימות</h2><p class="muted" style="font-size:13px;margin-bottom:16px">ערכי הרשימות שמופיעים כאפשרויות בחירה בשדות (מותג, מקור הגעה, חברת שיווק, utm_source) — בטופס עריכת ליד ובסינון.</p>' + warn + actionEditorCard() + cards);
+      view('<h2 style="margin:0 0 6px">הגדרות ורשימות</h2><p class="muted" style="font-size:13px;margin-bottom:12px">ערכי הרשימות שמופיעים כאפשרויות בחירה בשדות (מותג, מקור הגעה, חברת שיווק, utm_source) — בטופס עריכת ליד ובסינון.</p><div style="margin-bottom:16px"><button class="btn btn-sm" id="seedSources">🎯 טען מקורות מומלצים (מצומצם — מקור הגעה + utm_source)</button></div>' + warn + actionEditorCard() + cards);
       bindActionEditor();
       $('view').querySelectorAll('[data-addbtn]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -851,6 +851,20 @@
         });
       });
       $('view').querySelectorAll('[data-del]').forEach(function (b) { b.addEventListener('click', function () { db.from('field_options').delete().eq('id', b.dataset.del).then(function () { loadLists(); renderSettings(); }); }); });
+      if ($('seedSources')) $('seedSources').addEventListener('click', function () {
+        if (!confirm('פעולה זו תחליף את הרשימות "מקור הגעה" ו-"utm_source" בערכים מומלצים ומצומצמים.\nהערכים הקיימים בשני השדות האלה יימחקו. להמשיך?')) return;
+        // curated, most-relevant sources — Hebrew display sources + technical utm_source values
+        var SRC = ['פייסבוק', 'אינסטגרם', 'טיקטוק', 'גוגל', 'וואטסאפ', 'טופס אתר', 'שיחה נכנסת', 'הפניה', 'יד2', 'ManyChat', 'ידני'];
+        var UTM = ['facebook', 'instagram', 'tiktok', 'google', 'taboola', 'whatsapp', 'manychat', 'direct', 'referral'];
+        var rows = SRC.map(function (v) { return { field: 'source', value: v }; }).concat(UTM.map(function (v) { return { field: 'utm_source', value: v }; }));
+        db.from('field_options').delete().in('field', ['source', 'utm_source']).then(function (dr) {
+          if (dr.error) return alert('שגיאה במחיקה: ' + dr.error.message);
+          db.from('field_options').insert(rows).then(function (ir) {
+            if (ir.error) return alert('שגיאה בהוספה: ' + ir.error.message);
+            loadLists(); renderSettings();
+          });
+        });
+      });
       if ($('impBrands')) $('impBrands').addEventListener('click', function () {
         fetch('cars.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (cars) {
           var brands = Object.keys((cars || []).reduce(function (a, c) { if (c.brand) a[c.brand] = 1; return a; }, {}));

@@ -860,7 +860,6 @@
       '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">' + ((C.role || '') === 'files' ? '→ לרשימת התיקים' : '→ לכרטיס') + '</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
         '<div style="display:flex;align-items:center;gap:10px"><button class="btn btn-ghost btn-sm" id="dlContract">✍ הסכם לחתימה</button> <button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <span id="dlSaveState" style="font-size:12.5px;color:var(--muted);white-space:nowrap">💾 נשמר אוטומטית</span></div></div>' +
       (fileMode ? '<div class="card" style="padding:12px"><h3 style="margin:0 0 8px;font-size:13px">שלב התיק (מנהלת תיקי לקוחות)</h3><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' : '') +
-      fileNotesCard +
       '<nav class="tabs" id="dlTabs" style="margin-bottom:14px;flex-wrap:wrap">' +
         dTab('client', '👤 פרטי הלקוח', true) + dTab('deal', '📋 פרטי העסקה') + dTab('car', '🚗 פרטי הרכב המוזמן') + dTab('fin', '🏦 מקטע מימון') + dTab('trade', '🔁 מקטע טרייד-אין') + dTab('record', '🗂️ פרטי רשומה') +
       '</nav>' +
@@ -869,7 +868,8 @@
       dPanel('car', false, carCard + specCard) +
       dPanel('fin', false, finCard) +
       dPanel('trade', false, tradeCard) +
-      dPanel('record', false, '<div class="grid2">' + checklistCard + recordCard + '</div>' + (fileMode ? '' : paymentsCard))
+      dPanel('record', false, '<div class="grid2">' + checklistCard + recordCard + '</div>' + (fileMode ? '' : paymentsCard)) +
+      fileNotesCard   // הערות על הלקוח — הכי למטה, מתחת להכל (מנהלת תיקי לקוחות)
     );
     var $ = C.$;
     $('dlBack').addEventListener('click', function () { if ((C.role || '') === 'files') return window.C2B_renderFiles(); window.C2B_openLeadCard(lead.id); });

@@ -33,7 +33,7 @@
           '<td>' + esc(((d.car_make || d.brand || '') + ' ' + (d.car_model || '')).trim() || '—') + '</td>' +
           '<td>' + money(d.total) + '</td>' +
           '<td>' + money(d.monthly) + ' / חודש</td>' +
-          '<td><span class="tag" style="color:' + st[1] + ';border-color:' + st[1] + '">' + st[0] + '</span></td>' +
+          '<td onclick="event.stopPropagation()"><select class="inp" data-qstatus="' + esc(d.id) + '" style="padding:5px 8px;font-size:12.5px;width:auto;font-weight:700;color:' + st[1] + '">' + ['quote', 'ordered', 'cancelled'].map(function (k) { return '<option value="' + k + '"' + ((d.status || 'quote') === k ? ' selected' : '') + '>' + STAT[k][0] + '</option>'; }).join('') + '</select></td>' +
           '<td>' + when(d.created_at) + '</td></tr>';
       }).join('') : '<tr><td colspan="7" class="empty">אין הצעות מחיר עדיין. צרו הצעה מתוך כרטיס ליד → "עסקה".</td></tr>';
       view('<div class="row-between" style="align-items:center;margin-bottom:12px"><h2 style="margin:0">📄 הצעות מחיר <span class="muted" style="font-size:14px">(' + filtered.length + ')</span></h2>' +
@@ -43,6 +43,18 @@
         '<div class="card"><div class="table-scroll"><table><thead><tr><th>מס\' הזמנה</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>החזר חודשי</th><th>סטטוס</th><th>תאריך</th></tr></thead><tbody>' + body + '</tbody></table></div></div>');
       $('view').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function () { openLead(tr.dataset.lead); }); });
       $('view').querySelectorAll('[data-qf]').forEach(function (b) { b.addEventListener('click', function () { window.C2B_renderQuotes(b.dataset.qf || null); }); });
+      // change a quote's status inline → also syncs the sales lead status
+      $('view').querySelectorAll('[data-qstatus]').forEach(function (sel) {
+        sel.addEventListener('change', function () {
+          var id = sel.dataset.qstatus, st = sel.value;
+          db.from('deals').update({ status: st }).eq('id', id).then(function (rr) {
+            if (rr.error) return alert('שגיאה: ' + rr.error.message);
+            var d = rows.filter(function (x) { return String(x.id) === String(id); })[0];
+            if (d && d.lead_id) { var ns = st === 'ordered' ? 'won' : (st === 'cancelled' ? 'lost' : 'quote_sent'); db.from('leads').update({ status: ns }).eq('id', d.lead_id); }
+            window.C2B_renderQuotes(statusFilter);
+          });
+        });
+      });
       if ($('qExport')) $('qExport').addEventListener('click', function () { C.exportCsv(filtered, ['order_no', 'client_name', 'car_make', 'car_model', 'total', 'monthly', 'status', 'created_at'], 'הצעות-מחיר'); });
     });
   };
