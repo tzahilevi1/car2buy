@@ -874,8 +874,20 @@
     var $ = C.$;
     $('dlBack').addEventListener('click', function () { if ((C.role || '') === 'files') return window.C2B_renderFiles(); window.C2B_openLeadCard(lead.id); });
     $('dlTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-dtab]'); if (!b) return; $('dlTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); C.$('view').querySelectorAll('[data-dpanel]').forEach(function (p) { p.classList.toggle('hidden', p.dataset.dpanel !== b.dataset.dtab); }); });
-    // stage bar (shown to file manager / admin only)
-    if ($('dlStageBar')) $('dlStageBar').addEventListener('click', function (e) { var st = e.target.closest('[data-stage]'); if (!st) return; curStage = st.dataset.stage; $('dlStageBar').innerHTML = stageBar(curStage); if ($('dlRecStage')) $('dlRecStage').innerHTML = stageBadge(curStage); if (deal.id) { deal.stage = curStage; db.from('deals').update({ stage: curStage }).eq('id', deal.id); logActivity(lead.id, 'system', 'שלב עסקה: ' + stageDef(curStage).label); syncLeadFromStage(lead, curStage); } });
+    // stage bar (shown to file manager / admin only) — persist first, re-render only on success so it never silently drifts
+    if ($('dlStageBar')) $('dlStageBar').addEventListener('click', function (e) {
+      var st = e.target.closest('[data-stage]'); if (!st) return;
+      var stg = st.dataset.stage; if ((deal.stage || 'initial') === stg) return;
+      if (!deal.id) { alert('שמרו את התיק תחילה (הזינו פרט כלשהו) לפני שינוי השלב.'); return; }
+      db.from('deals').update({ stage: stg }).eq('id', deal.id).then(function (r) {
+        if (r.error) { alert('שמירת השלב נכשלה: ' + r.error.message); return; }
+        curStage = stg; deal.stage = stg;
+        $('dlStageBar').innerHTML = stageBar(curStage);
+        if ($('dlRecStage')) $('dlRecStage').innerHTML = stageBadge(curStage);
+        logActivity(lead.id, 'system', 'שלב תיק: ' + stageDef(stg).label);
+        syncLeadFromStage(lead, stg);
+      });
+    });
     // client notes (file manager) — timestamped, saved as note activities
     if ($('dlAddNote')) {
       var loadNotes = function () {

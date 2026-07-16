@@ -351,6 +351,7 @@
   }
 
   // ---------- TASKS (all open) ----------
+  var taskFilter = 'all';
   function renderTasks() {
     loading();
     Promise.all([
@@ -362,33 +363,25 @@
       (res[1].data || []).forEach(function (l) { lmap[l.id] = l; });
       var openList = tasks.filter(function (t) { return !t.done; });
       var doneList = tasks.filter(function (t) { return t.done; });
-      var open = openList.length, doneN = doneList.length;
-      // one task as a compact card (used inside each column)
-      function taskCard(t) {
+      var lst = taskFilter === 'open' ? openList : taskFilter === 'done' ? doneList : tasks;
+      var rows = lst.map(function (t) {
         var over = !t.done && t.due_at && new Date(t.due_at).getTime() < now;
+        var flag = t.done ? '<span class="done-badge">✓ בוצע</span>' : '<span class="task-open">● פתוחה</span>';
         var l = lmap[t.lead_id];
-        var client = l ? '<b>' + esc(l.name || '—') + '</b>' + (l.phone ? ' · <span class="muted">' + esc(l.phone) + '</span>' : '') + (l.car ? '<div class="muted" style="font-size:11px">' + esc(l.car) + '</div>' : '') : '<span class="muted">—</span>';
-        return '<div class="task-card" style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:' + (t.done ? 'rgba(22,163,74,.06)' : 'var(--surface)') + '">' +
-          '<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer"><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + ' style="margin-top:3px">' +
-            '<span style="flex:1;font-weight:600' + (t.done ? ';text-decoration:line-through;color:var(--muted)' : '') + '">' + esc(t.title) + '</span></label>' +
-          '<div style="font-size:12.5px;margin:7px 0 4px">' + client + '</div>' +
-          '<div class="muted" style="font-size:11.5px' + (over ? ';color:var(--danger);font-weight:700' : '') + '">📅 ' + (t.due_at ? fmtDateTime(t.due_at) : 'ללא מועד') + (over ? ' · באיחור' : '') + '</div>' +
-          '<input class="inp" data-tnote="' + t.id + '" value="' + esc(t.notes || '') + '" placeholder="הוסף הערה…" style="width:100%;font-size:12.5px;margin-top:8px">' +
-          (t.lead_id ? '<a href="#" data-lead="' + t.lead_id + '" style="font-size:12.5px;display:inline-block;margin-top:8px">פתח ליד →</a>' : '') +
-          '</div>';
-      }
-      function col(title, icon, list, accent) {
-        var body = list.length ? list.map(taskCard).join('') : '<div class="empty" style="padding:24px 0;font-size:13px">אין משימות</div>';
-        return '<div class="card" style="align-self:start">' +
-          '<h3 style="display:flex;align-items:center;gap:7px;border-bottom:2px solid ' + accent + ';padding-bottom:8px">' + icon + ' ' + title + ' <span class="muted" style="font-size:13px;font-weight:600">(' + list.length + ')</span></h3>' +
-          '<div style="margin-top:12px">' + body + '</div></div>';
-      }
-      view('<div class="row-between"><h2 style="margin:0">משימות</h2><span class="muted">' + open + ' פתוחות · ' + doneN + ' בוצעו</span></div>' +
-        '<div class="tasks-board" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start">' +
-          col('כל המשימות', '📋', tasks, 'var(--muted)') +
-          col('משימות פתוחות', '●', openList, 'var(--brand,#F5691E)') +
-          col('משימות שבוצעו', '✓', doneList, 'var(--ok,#16a34a)') +
-        '</div>');
+        var client = l ? '<b>' + esc(l.name || '—') + '</b>' + (l.phone ? '<div class="muted" style="font-size:11px">' + esc(l.phone) + (l.car ? ' · ' + esc(l.car) : '') + '</div>' : '') : '<span class="muted">—</span>';
+        return '<tr' + (t.done ? ' style="background:rgba(22,163,74,.05)"' : '') + '><td><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '></td>' +
+          '<td>' + flag + '</td>' +
+          '<td' + (t.done ? ' class="muted" style="text-decoration:line-through"' : '') + '>' + esc(t.title) + '</td>' +
+          '<td>' + client + '</td>' +
+          '<td class="muted">' + (t.created_at ? fmtDateTime(t.created_at) : '—') + '</td>' +
+          '<td' + (over ? ' style="color:var(--danger);font-weight:600"' : ' class="muted"') + '>' + (t.due_at ? fmtDateTime(t.due_at) : '—') + '</td>' +
+          '<td><input class="inp" data-tnote="' + t.id + '" value="' + esc(t.notes || '') + '" placeholder="הוסף הערה…" style="width:100%;min-width:160px;font-size:13px"></td>' +
+          '<td>' + (t.lead_id ? '<a href="#" data-lead="' + t.lead_id + '">פתח ליד →</a>' : '') + '</td></tr>';
+      }).join('');
+      function tab(k, label, n) { return '<button data-tf="' + k + '"' + (taskFilter === k ? ' class="active"' : '') + '>' + label + ' (' + n + ')</button>'; }
+      view('<div class="card"><h3>✅ משימות</h3><nav class="tabs" id="taskTabs" style="margin-bottom:12px;flex-wrap:wrap">' + tab('all', 'הכל', tasks.length) + tab('open', 'פתוחות', openList.length) + tab('done', 'בוצעו', doneList.length) + '</nav>' +
+        '<div class="table-scroll"><table><thead><tr><th></th><th>סטטוס</th><th>משימה</th><th>לקוח</th><th>נוצרה</th><th>מועד</th><th>הערות</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="empty">אין משימות</td></tr>') + '</tbody></table></div></div>');
+      $('taskTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tf]'); if (b) { taskFilter = b.dataset.tf; renderTasks(); } });
       $('view').querySelectorAll('input[data-tnote]').forEach(function (inp) { inp.addEventListener('change', function () { db.from('tasks').update({ notes: inp.value.trim() || null }).eq('id', inp.dataset.tnote); }); });
       $('view').querySelectorAll('input[data-task]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('tasks').update({ done: cb.checked }).eq('id', cb.dataset.task).then(function () { refreshBadges(); renderTasks(); }); }); });
       $('view').querySelectorAll('a[data-lead]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); window.C2B_openLeadCard(a.dataset.lead); }); });
