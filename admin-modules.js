@@ -125,7 +125,7 @@
   window.C2B_renderAutomations = function () {
     view('<div class="loading">טוען אוטומציות…</div>');
     var STAT = (window.C2B_STATUSES || []).map(function (s) { return [s.k, s.label]; });
-    var ACTIONS = [['task', 'פתח משימת מעקב'], ['note', 'רשום הערה בציר הזמן'], ['whatsapp', 'פתח משימת "שלח WhatsApp"']];
+    var ACTIONS = [['task', 'פתח משימת מעקב'], ['note', 'רשום הערה בציר הזמן'], ['whatsapp', 'פתח משימת "שלח WhatsApp"'], ['email', '📧 שלח מייל ללקוח (אוטומטי)'], ['whatsapp_send', '📱 שלח WhatsApp ללקוח (אוטומטי)']];
     // recommended starter pack — one-click load (deduped by name)
     var PACK = [
       { name: 'ליד חדש — יצירת קשר', trigger_status: 'new', action: 'task', params: { text: 'ליצור קשר ראשוני עם הליד החדש', days: 0 } },
@@ -133,8 +133,11 @@
       { name: 'פגישה — תזכורת יום לפני', trigger_status: 'meeting_set', action: 'task', params: { text: 'תזכורת: להתקשר יום לפני הפגישה', days: 1 } },
       { name: 'הצעה נשלחה — מעקב WhatsApp', trigger_status: 'quote_sent', action: 'whatsapp', params: { text: 'מעקב אחרי הצעת המחיר', days: 2 } },
       { name: 'בטיפול — הערת מעקב', trigger_status: 'in_progress', action: 'note', params: { text: '🔥 ליד בטיפול — לא לשכוח לחזור אליו', days: 1 } },
+      { name: 'התחלנו לטפל — מייל ברוכים הבאים + טיפים', trigger_status: 'in_progress', action: 'email', params: { subject: 'קיבלנו את פנייתך — Car2Buy 🚗', text: 'שלום {name},\nתודה שבחרת ב-Car2Buy! קיבלנו את פנייתך לגבי {car} ואנחנו כבר עובדים על ההצעה המשתלמת ביותר עבורך.\n\n3 טיפים שיחסכו לך כסף:\n1. החזר חודשי נמוך לא תמיד = עסקה זולה — תמיד בדקו את העלות הכוללת.\n2. יש רכב ישן? טרייד-אין מקזז ישירות מההחזר החודשי.\n3. מקדמה גמישה (גם 0 ₪) — נתאים לכם בדיוק.\n\nיועץ אישי יחזור אליך בהקדם.\nצוות Car2Buy' } },
+      { name: 'הצעה נשלחה — מייל מעקב', trigger_status: 'quote_sent', action: 'email', params: { subject: 'ההצעה שלך מ-Car2Buy מחכה לך', text: 'שלום {name},\nשלחנו לך הצעת מחיר ל{car}. ההצעה כוללת מימון עד 100% ואפשרות טרייד-אין.\nיש שאלות? אנחנו כאן. ההצעה בתוקף מוגבל — נשמח להתקדם יחד.\n\nצוות Car2Buy' } },
       { name: 'חיתום — בדיקת סטטוס מימון', trigger_status: 'underwriting', action: 'task', params: { text: 'לבדוק סטטוס בקשת המימון מול הבנק', days: 3 } },
       { name: 'עסקה נסגרה — מסירה והמלצה', trigger_status: 'won', action: 'task', params: { text: 'לתאם מסירה + לבקש המלצה מהלקוח', days: 1 } },
+      { name: 'נחתם! — מייל ברכות ושלבים הבאים', trigger_status: 'won', action: 'email', params: { subject: 'ברכות! העסקה שלך נסגרה 🎉 — Car2Buy', text: 'שלום {name}, ברכות! 🎉\nהעסקה על {car} נסגרה. הנה השלבים הבאים:\n1. נתאם איתך מסירה בהקדם.\n2. נסגור את הביטוח והרישוי — הכל עלינו.\n3. תקבל את המפתח לרכב החדש!\n\nתודה שבחרת ב-Car2Buy — אנחנו כאן לכל שאלה.\nצוות Car2Buy' } },
       { name: 'ליד אבוד — תיעוד סיבה', trigger_status: 'lost', action: 'note', params: { text: '❌ ליד אבוד — לוודא שתועדה הסיבה', days: 1 } }
     ];
     db.from('automations').select('*').order('created_at', { ascending: false }).then(function (r) {

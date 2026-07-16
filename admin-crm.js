@@ -109,26 +109,39 @@
     });
   }
   // ---- automation engine: run active rules whose trigger status matches the new status ----
-  function runAutomations(leadId, newStatus, lead) {
-    db.from('automations').select('name,action,params').eq('active', true).eq('trigger_status', newStatus).then(function (r) {
-      var rules = (r.data || []); if (!rules.length) return;
+  function fillMsg(t, lead) { return String(t || '').replace(/\{name\}/g, (lead && lead.name) || '').replace(/\{firstname\}/g, (((lead && lead.name) || '').split(' ')[0])).replace(/\{car\}/g, (lead && lead.car) || ''); }
+  // real customer send via the "send-message" Edge Function (email = Resend, whatsapp = Meta)
+  function sendCustomerMsg(channel, lead, p) {
+    var to = channel === 'email' ? (lead && lead.email) : (lead && lead.phone);
+    if (!to) return Promise.resolve(false);
+    var payload = { channel: channel, to: to, text: fillMsg(p.text || '', lead) };
+    if (channel === 'email') payload.subject = p.subject || 'עדכון מ-Car2Buy';
+    return db.functions.invoke('send-message', { body: payload }).then(function (r) { return !(r.error || (r.data && r.data.error)); }, function () { return false; });
+  }
+  function runAutomations(leadId, newStatus, lead, done) {
+    return db.from('automations').select('name,action,params').eq('active', true).eq('trigger_status', newStatus).then(function (r) {
+      var rules = (r.data || []), ops = [];
       rules.forEach(function (a) {
         var p = a.params || {}, nm = a.name || 'אוטומציה';
         if (a.action === 'note') {
-          logActivity(leadId, 'note', p.text || ('🤖 ' + nm));
+          ops.push(logActivity(leadId, 'note', p.text || ('🤖 ' + nm)));
+        } else if (a.action === 'email') {
+          ops.push(sendCustomerMsg('email', lead, p).then(function (ok) { return logActivity(leadId, 'email', '🤖 אוטומציה — מייל ללקוח (' + nm + '): ' + (ok ? 'נשלח ✓' : 'לא נשלח (חסר אימייל/הגדרה)')); }));
+        } else if (a.action === 'whatsapp_send') {
+          ops.push(sendCustomerMsg('whatsapp', lead, p).then(function (ok) { return logActivity(leadId, 'whatsapp', '🤖 אוטומציה — WhatsApp ללקוח (' + nm + '): ' + (ok ? 'נשלח ✓' : 'לא נשלח (הגדרת Meta חסרה)')); }));
         } else if (a.action === 'whatsapp') {
           var soon = new Date(Date.now() + 3600000).toISOString();
-          db.from('tasks').insert({ lead_id: leadId, title: '📱 לשלוח WhatsApp ל' + ((lead && lead.name) || 'ליד'), due_at: soon, notes: p.text || null });
-          logActivity(leadId, 'system', '🤖 אוטומציה: תזכורת לשלוח WhatsApp — ' + nm);
+          ops.push(db.from('tasks').insert({ lead_id: leadId, title: '📱 לשלוח WhatsApp ל' + ((lead && lead.name) || 'ליד'), due_at: soon, notes: p.text || null }));
+          ops.push(logActivity(leadId, 'system', '🤖 אוטומציה: תזכורת לשלוח WhatsApp — ' + nm));
         } else { // 'task' (default): open a follow-up task
           var days = (p.days != null ? +p.days : 1);
           var due = new Date(Date.now() + days * 86400000).toISOString();
-          db.from('tasks').insert({ lead_id: leadId, title: p.text || ('מעקב: ' + nm), due_at: due, notes: null });
-          logActivity(leadId, 'system', '🤖 אוטומציה: נפתחה משימת מעקב — ' + nm);
+          ops.push(db.from('tasks').insert({ lead_id: leadId, title: p.text || ('מעקב: ' + nm), due_at: due, notes: null }));
+          ops.push(logActivity(leadId, 'system', '🤖 אוטומציה: נפתחה משימת מעקב — ' + nm));
         }
       });
-      if (C.refreshBadges) C.refreshBadges();
-    }).catch(function () {});
+      return Promise.all(ops).then(function () { if (C.refreshBadges) C.refreshBadges(); if (done) done(); }, function () { if (done) done(); });
+    }, function () { if (done) done(); });
   }
   C.runAutomations = runAutomations;   // reusable from other status-change paths
 
@@ -139,8 +152,9 @@
     if (to === 'in_progress' && (!lead || !lead.first_response_at)) patch.first_response_at = new Date().toISOString();
     db.from('leads').update(patch).eq('id', leadId).then(function (u) {
       if (u.error) return alert('שגיאה: ' + u.error.message);
-      logActivity(leadId, 'status_change', from ? ('סטטוס: ' + stDef(from).label + ' → ' + stDef(to).label) : ('סטטוס שונה ל: ' + stDef(to).label)).then(function () { if (after) after(); });
-      runAutomations(leadId, to, lead);   // fire matching automation rules on the new status
+      logActivity(leadId, 'status_change', from ? ('סטטוס: ' + stDef(from).label + ' → ' + stDef(to).label) : ('סטטוס שונה ל: ' + stDef(to).label)).then(function () {
+        runAutomations(leadId, to, lead, after);   // fire rules, THEN re-render so the timeline shows them
+      });
     });
   }
 
