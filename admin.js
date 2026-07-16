@@ -346,6 +346,19 @@
   }
 
   // ---------- APPOINTMENTS (calendar) ----------
+  var APPT_MODES = ['פרונטלי', 'טלפוני', 'וידאו', 'בסניף'];
+  var APPT_COLS = [
+    { key: 'status', label: 'סטטוס', cell: function (a) { return '<td>' + (a._handled ? '<span class="done-badge">✓ בוצעה</span>' : a._soon ? '<span class="task-open">● עתידית</span>' : '<span class="tag">חדשה</span>') + '</td>'; } },
+    { key: 'name', label: 'שם', fixed: true, cell: function (a) { return '<td><b>' + esc(a.name) + '</b>' + (a._lid ? ' <span class="muted" style="font-size:11px">→ לכרטיס</span>' : '') + '</td>'; } },
+    { key: 'phone', label: 'טלפון', cell: function (a) { return '<td>' + esc(a.phone || '—') + '</td>'; } },
+    { key: 'when', label: 'מועד', cell: function (a) { return '<td><input type="datetime-local" class="inp" data-appt-when="' + a.id + '" value="' + a._dt + '" onclick="event.stopPropagation()" style="font-size:12.5px"></td>'; } },
+    { key: 'mode', label: 'אופן', cell: function (a) { return '<td><select class="inp" data-appt-mode="' + a.id + '" onclick="event.stopPropagation()" style="width:auto;font-size:12.5px"><option value="">אופן…</option>' + APPT_MODES.map(function (m) { return '<option' + (a.appt_mode === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select></td>'; } },
+    { key: 'brand', label: 'מותג', cell: function (a) { return '<td><input class="inp" data-appt-brand="' + a.id + '" list="apBrand" value="' + esc(a.brand || '') + '" placeholder="מותג" onclick="event.stopPropagation()" style="width:110px;font-size:12.5px"></td>'; } },
+    { key: 'note', label: 'הערות', cell: function (a) { return '<td><input class="inp" data-appt-note="' + a.id + '" value="' + esc(a.note || '') + '" placeholder="הערות…" onclick="event.stopPropagation()" style="width:100%;min-width:150px;font-size:12.5px"></td>'; } },
+    { key: 'type', label: 'עניין', def: false, cell: function (a) { return '<td>' + esc(a.type || '—') + '</td>'; } },
+    { key: 'action', label: 'פעולה', cell: function (a) { return '<td><button class="btn btn-sm ' + (a._handled ? 'btn-ghost' : '') + '" data-appt="' + a.id + '" data-to="' + (a._handled ? 'new' : 'handled') + '" onclick="event.stopPropagation()">' + (a._handled ? 'החזר' : 'סמן כבוצעה') + '</button></td>'; } }
+  ];
+  var apptCols = null;
   var apptFilter = 'all';
   function renderAppointments() {
     loading();
@@ -363,25 +376,17 @@
       var past = appts.filter(function (a) { return a.status === 'handled' || whenMs(a) < now; });
       var list = apptFilter === 'upcoming' ? upcoming : apptFilter === 'past' ? past : appts;
       function tab(k, label, n) { return '<button data-af="' + k + '"' + (apptFilter === k ? ' class="active"' : '') + '>' + label + ' (' + n + ')</button>'; }
-      var MODES = ['פרונטלי', 'טלפוני', 'וידאו', 'בסניף'];
       var brandOpts = ((window.C2B.lists && window.C2B.lists.brand) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
       function dtLocal(a) { var t = a.appt_at ? new Date(a.appt_at) : null; if (!t || isNaN(t)) return ''; var p = function (n) { return ('0' + n).slice(-2); }; return t.getFullYear() + '-' + p(t.getMonth() + 1) + '-' + p(t.getDate()) + 'T' + p(t.getHours()) + ':' + p(t.getMinutes()); }
+      list.forEach(function (a) { a._handled = a.status === 'handled'; a._lid = leadOf(a); a._soon = !a._handled && whenMs(a) >= now; a._dt = dtLocal(a); });
+      if (!apptCols) apptCols = window.C2B.colPicker('appointments', APPT_COLS, renderAppointments);
       var rows = list.map(function (a) {
-        var handled = a.status === 'handled', lid = leadOf(a), soon = !handled && whenMs(a) >= now;
-        return '<tr' + (lid ? ' data-lead="' + lid + '" title="פתח כרטיס לקוח"' : '') + ' style="' + (lid ? 'cursor:pointer;' : '') + (handled ? 'background:rgba(22,163,74,.06)' : '') + '">' +
-          '<td>' + (handled ? '<span class="done-badge">✓ בוצעה</span>' : soon ? '<span class="task-open">● עתידית</span>' : '<span class="tag">חדשה</span>') + '</td>' +
-          '<td><b>' + esc(a.name) + '</b>' + (lid ? ' <span class="muted" style="font-size:11px">→ לכרטיס</span>' : '') + '</td>' +
-          '<td>' + esc(a.phone) + '</td>' +
-          '<td><input type="datetime-local" class="inp" data-appt-when="' + a.id + '" value="' + dtLocal(a) + '" onclick="event.stopPropagation()" style="font-size:12.5px"></td>' +
-          '<td><select class="inp" data-appt-mode="' + a.id + '" onclick="event.stopPropagation()" style="width:auto;font-size:12.5px"><option value="">אופן…</option>' + MODES.map(function (m) { return '<option' + (a.appt_mode === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select></td>' +
-          '<td><input class="inp" data-appt-brand="' + a.id + '" list="apBrand" value="' + esc(a.brand || '') + '" placeholder="מותג" onclick="event.stopPropagation()" style="width:110px;font-size:12.5px"></td>' +
-          '<td><input class="inp" data-appt-note="' + a.id + '" value="' + esc(a.note || '') + '" placeholder="הערות…" onclick="event.stopPropagation()" style="width:100%;min-width:150px;font-size:12.5px"></td>' +
-          '<td>' + esc(a.type || '') + '</td>' +
-          '<td><button class="btn btn-sm ' + (handled ? 'btn-ghost' : '') + '" data-appt="' + a.id + '" data-to="' + (handled ? 'new' : 'handled') + '" onclick="event.stopPropagation()">' + (handled ? 'החזר' : 'סמן כבוצעה') + '</button></td></tr>';
+        return '<tr' + (a._lid ? ' data-lead="' + a._lid + '" title="פתח כרטיס לקוח"' : '') + ' style="' + (a._lid ? 'cursor:pointer;' : '') + (a._handled ? 'background:rgba(22,163,74,.06)' : '') + '">' + apptCols.cells(a) + '</tr>';
       }).join('');
-      view('<div class="card"><h3>📅 יומן פגישות</h3><nav class="tabs" id="apptTabs" style="margin-bottom:12px;flex-wrap:wrap">' + tab('all', 'הכל', appts.length) + tab('upcoming', 'עתידיות', upcoming.length) + tab('past', 'בוצעו / עברו', past.length) + '</nav>' +
+      view('<div class="card"><div class="row-between"><h3 style="margin:0">📅 יומן פגישות</h3>' + apptCols.button() + '</div><nav class="tabs" id="apptTabs" style="margin:10px 0 12px;flex-wrap:wrap">' + tab('all', 'הכל', appts.length) + tab('upcoming', 'עתידיות', upcoming.length) + tab('past', 'בוצעו / עברו', past.length) + '</nav>' +
         '<datalist id="apBrand">' + brandOpts + '</datalist>' +
-        '<div class="table-scroll"><table><thead><tr><th>סטטוס</th><th>שם</th><th>טלפון</th><th>מועד (ניתן לשינוי)</th><th>אופן</th><th>מותג</th><th>הערות</th><th>עניין</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="9" class="empty">אין פגישות</td></tr>') + '</tbody></table></div></div>');
+        '<div class="table-scroll"><table><thead><tr>' + apptCols.thead() + '</tr></thead><tbody>' + (rows || '<tr><td colspan="' + apptCols.colCount() + '" class="empty">אין פגישות</td></tr>') + '</tbody></table></div></div>');
+      apptCols.bind();
       $('apptTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-af]'); if (b) { apptFilter = b.dataset.af; renderAppointments(); } });
       $('view').querySelectorAll('tr[data-lead]').forEach(function (tr) { tr.addEventListener('click', function () { window.C2B_openLeadCard(tr.dataset.lead); }); });
       $('view').querySelectorAll('[data-appt-when]').forEach(function (inp) { inp.addEventListener('change', function () { var v = inp.value ? new Date(inp.value) : null; var patch = { appt_at: v ? v.toISOString() : null }; if (v) { patch.appt_date = v.toLocaleDateString('he-IL'); patch.appt_time = ('0' + v.getHours()).slice(-2) + ':' + ('0' + v.getMinutes()).slice(-2); } db.from('appointments').update(patch).eq('id', inp.dataset.apptWhen).then(renderAppointments); }); });
@@ -393,6 +398,16 @@
   }
 
   // ---------- TASKS (all open) ----------
+  var TASK_COLS = [
+    { key: 'status', label: 'סטטוס', cell: function (t) { return '<td>' + (t.done ? '<span class="done-badge">✓ בוצע</span>' : '<span class="task-open">● פתוחה</span>') + '</td>'; } },
+    { key: 'title', label: 'משימה', fixed: true, cell: function (t) { return '<td' + (t.done ? ' class="muted" style="text-decoration:line-through"' : '') + '>' + esc(t.title) + '</td>'; } },
+    { key: 'client', label: 'לקוח', cell: function (t) { var l = t._lead; return '<td>' + (l ? '<b>' + esc(l.name || '—') + '</b>' + (l.phone ? '<div class="muted" style="font-size:11px">' + esc(l.phone) + (l.car ? ' · ' + esc(l.car) : '') + '</div>' : '') : '<span class="muted">—</span>') + '</td>'; } },
+    { key: 'created', label: 'נוצרה', cell: function (t) { return '<td class="muted">' + (t.created_at ? fmtDateTime(t.created_at) : '—') + '</td>'; } },
+    { key: 'due', label: 'מועד', cell: function (t) { var over = !t.done && t.due_at && new Date(t.due_at).getTime() < Date.now(); return '<td' + (over ? ' style="color:var(--danger);font-weight:600"' : ' class="muted"') + '>' + (t.due_at ? fmtDateTime(t.due_at) : '—') + '</td>'; } },
+    { key: 'notes', label: 'הערות', cell: function (t) { return '<td><input class="inp" data-tnote="' + t.id + '" value="' + esc(t.notes || '') + '" placeholder="הוסף הערה…" style="width:100%;min-width:150px;font-size:13px"></td>'; } },
+    { key: 'open', label: 'פעולות', cell: function (t) { return '<td>' + (t.lead_id ? '<a href="#" data-lead="' + t.lead_id + '">פתח ליד →</a>' : '') + '</td>'; } }
+  ];
+  var taskCols = null;
   var taskFilter = 'all';
   function renderTasks() {
     loading();
@@ -406,23 +421,15 @@
       var openList = tasks.filter(function (t) { return !t.done; });
       var doneList = tasks.filter(function (t) { return t.done; });
       var lst = taskFilter === 'open' ? openList : taskFilter === 'done' ? doneList : tasks;
+      lst.forEach(function (t) { t._lead = lmap[t.lead_id]; });
+      if (!taskCols) taskCols = window.C2B.colPicker('tasks', TASK_COLS, renderTasks);
       var rows = lst.map(function (t) {
-        var over = !t.done && t.due_at && new Date(t.due_at).getTime() < now;
-        var flag = t.done ? '<span class="done-badge">✓ בוצע</span>' : '<span class="task-open">● פתוחה</span>';
-        var l = lmap[t.lead_id];
-        var client = l ? '<b>' + esc(l.name || '—') + '</b>' + (l.phone ? '<div class="muted" style="font-size:11px">' + esc(l.phone) + (l.car ? ' · ' + esc(l.car) : '') + '</div>' : '') : '<span class="muted">—</span>';
-        return '<tr' + (t.done ? ' style="background:rgba(22,163,74,.05)"' : '') + '><td><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '></td>' +
-          '<td>' + flag + '</td>' +
-          '<td' + (t.done ? ' class="muted" style="text-decoration:line-through"' : '') + '>' + esc(t.title) + '</td>' +
-          '<td>' + client + '</td>' +
-          '<td class="muted">' + (t.created_at ? fmtDateTime(t.created_at) : '—') + '</td>' +
-          '<td' + (over ? ' style="color:var(--danger);font-weight:600"' : ' class="muted"') + '>' + (t.due_at ? fmtDateTime(t.due_at) : '—') + '</td>' +
-          '<td><input class="inp" data-tnote="' + t.id + '" value="' + esc(t.notes || '') + '" placeholder="הוסף הערה…" style="width:100%;min-width:160px;font-size:13px"></td>' +
-          '<td>' + (t.lead_id ? '<a href="#" data-lead="' + t.lead_id + '">פתח ליד →</a>' : '') + '</td></tr>';
+        return '<tr' + (t.done ? ' style="background:rgba(22,163,74,.05)"' : '') + '><td><input type="checkbox" data-task="' + t.id + '"' + (t.done ? ' checked' : '') + '></td>' + taskCols.cells(t) + '</tr>';
       }).join('');
       function tab(k, label, n) { return '<button data-tf="' + k + '"' + (taskFilter === k ? ' class="active"' : '') + '>' + label + ' (' + n + ')</button>'; }
-      view('<div class="card"><h3>✅ משימות</h3><nav class="tabs" id="taskTabs" style="margin-bottom:12px;flex-wrap:wrap">' + tab('all', 'הכל', tasks.length) + tab('open', 'פתוחות', openList.length) + tab('done', 'בוצעו', doneList.length) + '</nav>' +
-        '<div class="table-scroll"><table><thead><tr><th></th><th>סטטוס</th><th>משימה</th><th>לקוח</th><th>נוצרה</th><th>מועד</th><th>הערות</th><th></th></tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="empty">אין משימות</td></tr>') + '</tbody></table></div></div>');
+      view('<div class="card"><div class="row-between"><h3 style="margin:0">✅ משימות</h3>' + taskCols.button() + '</div><nav class="tabs" id="taskTabs" style="margin:10px 0 12px;flex-wrap:wrap">' + tab('all', 'הכל', tasks.length) + tab('open', 'פתוחות', openList.length) + tab('done', 'בוצעו', doneList.length) + '</nav>' +
+        '<div class="table-scroll"><table><thead><tr><th></th>' + taskCols.thead() + '</tr></thead><tbody>' + (rows || '<tr><td colspan="' + (taskCols.colCount() + 1) + '" class="empty">אין משימות</td></tr>') + '</tbody></table></div></div>');
+      taskCols.bind();
       $('taskTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tf]'); if (b) { taskFilter = b.dataset.tf; renderTasks(); } });
       $('view').querySelectorAll('input[data-tnote]').forEach(function (inp) { inp.addEventListener('change', function () { db.from('tasks').update({ notes: inp.value.trim() || null }).eq('id', inp.dataset.tnote); }); });
       $('view').querySelectorAll('input[data-task]').forEach(function (cb) { cb.addEventListener('change', function () { db.from('tasks').update({ done: cb.checked }).eq('id', cb.dataset.task).then(function () { refreshBadges(); renderTasks(); }); }); });

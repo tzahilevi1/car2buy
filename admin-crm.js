@@ -1527,6 +1527,20 @@
     if ($('fBulkDel')) $('fBulkDel').addEventListener('click', function () { var list = ids(); if (!list.length) return; if (!confirm('למחוק ' + list.length + ' תיקים/הסכמים? פעולה בלתי הפיכה.')) return; db.from('deals').delete().in('id', list).then(function (r) { if (r.error) { alert('שגיאה: ' + r.error.message); return; } reRender(); }); });
     update();
   }
+  var FILE_COLS = [
+    { key: 'order', label: '#', fixed: true, th: 'style="width:70px"', cell: function (d) { return '<td data-open="1" style="cursor:pointer"><b>#' + esc(d.order_no) + '</b></td>'; } },
+    { key: 'client', label: 'לקוח', fixed: true, cell: function (d) { return '<td data-open="1" style="cursor:pointer">' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td>'; } },
+    { key: 'car', label: 'רכב', cell: function (d) { return '<td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim() || '—') + '</td>'; } },
+    { key: 'total', label: 'סכום', cell: function (d) { return '<td>' + nis(d.total) + '</td>'; } },
+    { key: 'commission', label: 'עמלת סוכן', cell: function (d) { return '<td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td>'; } },
+    { key: 'stage', label: 'שלב', cell: function (d) { return '<td><span class="stage-click" data-stagesel="' + d.id + '" title="לחצו לשינוי שלב" style="cursor:pointer;display:inline-flex;align-items:center;gap:3px">' + stageBadge(d.stage || 'initial') + '<span class="muted" style="font-size:10px">▾</span></span></td>'; } },
+    { key: 'checklist', label: 'צ\'קליסט', cell: function (d) { var chk = d.checklist || {}, done = CHECKLIST_ITEMS.filter(function (k) { return chk[k]; }).length, tot = CHECKLIST_ITEMS.length; return '<td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td>'; } },
+    { key: 'salesperson', label: 'איש מכירות', def: false, cell: function (d) { return '<td>' + esc(d.salesperson || '—') + '</td>'; } },
+    { key: 'brand', label: 'מותג', def: false, cell: function (d) { return '<td>' + esc(d.brand || '—') + '</td>'; } },
+    { key: 'phone', label: 'טלפון', def: false, cell: function (d) { return '<td>' + esc(d.client_phone || '—') + '</td>'; } },
+    { key: 'created', label: 'נוצר', def: false, cell: function (d) { return '<td class="muted">' + fmt(d.created_at) + '</td>'; } }
+  ];
+  var fileCols = null;
   window.C2B_renderFiles = function (stageFilter) {
     loading(); selectedDeals = {};
     db.from('deals').select('*').order('created_at', { ascending: false }).then(function (r) {
@@ -1541,19 +1555,20 @@
         { key: 'stage', label: 'שלב', options: DEAL_STAGES.map(function (s) { return { v: s.k, l: s.label }; }) },
         { key: 'total', label: 'סכום עסקה' }, { key: 'commission', label: 'עמלת סוכן' }, { key: 'salesperson', label: 'איש מכירות' }
       ], function () { drawF(); });
+      if (!fileCols) fileCols = C.colPicker('files', FILE_COLS, function () { drawF(); });
       function tab(k, label, n) { return '<button data-fstage="' + k + '"' + (f === k ? ' class="active"' : '') + '>' + label + ' (' + n + ')</button>'; }
-      view('<div class="card"><h3>תיקי לקוחות</h3><nav class="tabs" id="fTabs" style="margin-bottom:12px;flex-wrap:wrap">' + tab('all', 'הכל', counts.all) + DEAL_STAGES.map(function (s) { return tab(s.k, s.label, counts[s.k] || 0); }).join('') + '</nav><div id="filesBody"></div></div>');
+      view('<div class="card"><div class="row-between"><h3 style="margin:0">תיקי לקוחות</h3>' + fileCols.button() + '</div><nav class="tabs" id="fTabs" style="margin:10px 0 12px;flex-wrap:wrap">' + tab('all', 'הכל', counts.all) + DEAL_STAGES.map(function (s) { return tab(s.k, s.label, counts[s.k] || 0); }).join('') + '</nav><div id="filesBody"></div></div>');
+      fileCols.bind();
       function drawF() {
         var lst = (f === 'all' ? deals : deals.filter(function (d) { return (d.stage || 'initial') === f; })).filter(function (d) { return fileFilter.match(d); });
         var rows = lst.map(function (d) {
-          var chk = d.checklist || {}, done = CHECKLIST_ITEMS.filter(function (k) { return chk[k]; }).length, tot = CHECKLIST_ITEMS.length;
-          return '<tr data-deal="' + d.id + '"><td style="width:30px;text-align:center"><input type="checkbox" data-fsel="' + d.id + '"' + (selectedDeals[d.id] ? ' checked' : '') + ' onclick="event.stopPropagation()"></td><td data-open="1" style="cursor:pointer"><b>#' + esc(d.order_no) + '</b></td><td data-open="1" style="cursor:pointer">' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(d.total) + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td><td><span class="stage-click" data-stagesel="' + d.id + '" title="לחצו לשינוי שלב" style="cursor:pointer;display:inline-flex;align-items:center;gap:3px">' + stageBadge(d.stage || 'initial') + '<span class="muted" style="font-size:10px">▾</span></span></td><td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td></tr>';
+          return '<tr data-deal="' + d.id + '"><td style="width:30px;text-align:center"><input type="checkbox" data-fsel="' + d.id + '"' + (selectedDeals[d.id] ? ' checked' : '') + ' onclick="event.stopPropagation()"></td>' + fileCols.cells(d) + '</tr>';
         }).join('');
         var bulk = '<div id="fBulk" class="filterbar" style="display:none;background:var(--brand-soft);align-items:center"><b id="fBulkCount" style="color:var(--brand)">נבחרו 0</b>' +
           '<select id="fBulkStage"><option value="">🏷️ שנה שלב…</option>' + DEAL_STAGES.map(function (s) { return '<option value="' + s.k + '">' + esc(s.label) + '</option>'; }).join('') + '</select>' +
           '<button class="btn btn-sm" id="fBulkApply">החל</button><button class="btn btn-ghost btn-sm" id="fBulkDel" style="color:var(--danger);border-color:var(--danger)">🗑️ מחק נבחרים</button><button class="btn btn-ghost btn-sm" id="fBulkClear">בטל בחירה</button></div>';
         C.$('filesBody').innerHTML = fileFilter.render() + bulk +
-          '<div class="table-scroll"><table><thead><tr><th style="width:30px;text-align:center"><input type="checkbox" id="fSelAll"></th><th>#</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>עמלת סוכן</th><th>שלב</th><th>צ\'קליסט</th></tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="empty">אין תיקים</td></tr>') + '</tbody></table></div>';
+          '<div class="table-scroll"><table><thead><tr><th style="width:30px;text-align:center"><input type="checkbox" id="fSelAll"></th>' + fileCols.thead() + '</tr></thead><tbody>' + (rows || '<tr><td colspan="' + (fileCols.colCount() + 1) + '" class="empty">אין תיקים</td></tr>') + '</tbody></table></div>';
         fileFilter.bind();
         C.$('filesBody').querySelectorAll('td[data-open]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openDeal(td.parentNode.dataset.deal); }); });
         // change a file's stage directly from the "שלב" column → updates DB + pipeline + the file view inside
