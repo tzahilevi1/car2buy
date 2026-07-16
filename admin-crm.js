@@ -1270,7 +1270,7 @@
     var owner = (window.C2B && C2B.userName) || '';
     // NOTE: no white-space:nowrap on the label cell — html2canvas swallows the spaces with it (turned "צבע הרכב" into "צבעהרכב").
     // &nbsp; keeps each label on one line AND renders the spaces reliably.
-    function row(k, v) { return '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#555;width:34%">' + String(k).replace(/ /g, String.fromCharCode(160)) + '</td><td style="padding:8px 12px;border-bottom:1px solid #eee"><b><bdi>' + (v == null || v === '' ? '—' : esc(v)) + '</bdi></b></td></tr>'; }
+    function row(k, v) { return '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#555;width:34%;direction:rtl;text-align:right">' + String(k).replace(/ /g, String.fromCharCode(160)) + '</td><td style="padding:8px 12px;border-bottom:1px solid #eee;direction:rtl;text-align:right"><b><bdi>' + (v == null || v === '' ? '—' : esc(v)) + '</bdi></b></td></tr>'; }
     var C = [
       '10. הרכב ירשם ברישיון הרכב על שם הלקוח כבעלים ' + own + '.',
       'המחיר הנקוב לעיל הינו לפי המחירון התקף של היבואן נכון למועד ההזמנה, והינו המחיר למשלם במועד ביצוע ההזמנה. המחיר למשלם בכל מועד לאחר מועד ההזמנה ובתוך 7 ימים לכל היותר מיום קבלת הודעה כי הרכב מוכן לשחרור מהמכס יהיה בהתאם למחיר הרכב במחירון התקף של היבואן ביום התשלום.',
@@ -1444,8 +1444,8 @@
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
-    var path = lead.id + '/signed_' + deal.id + '_v8.pdf';       // v8 = deterministic explicit capture rectangle (fixes clipping on narrow windows / HiDPI scaling)
-    var oldPaths = ['', '_v2', '_v3', '_v4', '_v5', '_v6', '_v7'].map(function (s) { return lead.id + '/signed_' + deal.id + s + '.pdf'; });
+    var path = lead.id + '/signed_' + deal.id + '_v9.pdf';       // v9 = explicit RTL alignment on contract cells (fixes clipping on narrow windows / HiDPI scaling)
+    var oldPaths = ['', '_v2', '_v3', '_v4', '_v5', '_v6', '_v7', '_v8'].map(function (s) { return lead.id + '/signed_' + deal.id + s + '.pdf'; });
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
       if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v3)
