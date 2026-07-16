@@ -1189,7 +1189,9 @@
     var ad = d.addons || {};
     var addTxt = [ad.charging ? 'עמדת טעינה' : '', ad.armor ? 'מיגון' : '', ad.accessories ? 'אביזרים' : '', ad.addons_amount ? nis(ad.addons_amount) : ''].filter(Boolean).join(', ') || '—';
     var owner = (window.C2B && C2B.userName) || '';
-    function row(k, v) { return '<tr><td style="padding:7px 10px;border-bottom:1px solid #eee;white-space:nowrap;color:#555;width:34%">' + k + '</td><td style="padding:7px 10px;border-bottom:1px solid #eee"><b><bdi>' + (v == null || v === '' ? '—' : esc(v)) + '</bdi></b></td></tr>'; }
+    // NOTE: no white-space:nowrap on the label cell — html2canvas swallows the spaces with it (turned "צבע הרכב" into "צבעהרכב").
+    // &nbsp; keeps each label on one line AND renders the spaces reliably.
+    function row(k, v) { return '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#555;width:34%">' + String(k).replace(/ /g, String.fromCharCode(160)) + '</td><td style="padding:8px 12px;border-bottom:1px solid #eee"><b><bdi>' + (v == null || v === '' ? '—' : esc(v)) + '</bdi></b></td></tr>'; }
     var C = [
       '10. הרכב ירשם ברישיון הרכב על שם הלקוח כבעלים ' + own + '.',
       'המחיר הנקוב לעיל הינו לפי המחירון התקף של היבואן נכון למועד ההזמנה, והינו המחיר למשלם במועד ביצוע ההזמנה. המחיר למשלם בכל מועד לאחר מועד ההזמנה ובתוך 7 ימים לכל היותר מיום קבלת הודעה כי הרכב מוכן לשחרור מהמכס יהיה בהתאם למחיר הרכב במחירון התקף של היבואן ביום התשלום.',
@@ -1339,7 +1341,7 @@
     wrap.style.cssText = 'position:fixed;top:0;left:0;width:' + W + 'px;background:#fff;z-index:90000;overflow:visible';
     var holder = document.createElement('div');
     holder.setAttribute('dir', 'rtl');
-    holder.style.cssText = 'width:' + W + 'px;box-sizing:border-box;background:#fff;color:#111;padding:28px 34px;direction:rtl;text-align:right;font-family:Arial,sans-serif';
+    holder.style.cssText = 'width:' + W + 'px;box-sizing:border-box;background:#fff;color:#111;padding:34px 50px;direction:rtl;text-align:right;font-family:Arial,sans-serif';
     holder.innerHTML = contractHTML(deal, deal.signature || null);
     var ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:99999;display:flex;align-items:center;justify-content:center;color:#F5691E;font-weight:800;font-size:18px';
@@ -1361,8 +1363,8 @@
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
-    var path = lead.id + '/signed_' + deal.id + '_v5.pdf';       // v5 = removed html2canvas width/windowWidth (was rendering a narrow column)
-    var oldPaths = [lead.id + '/signed_' + deal.id + '.pdf', lead.id + '/signed_' + deal.id + '_v2.pdf', lead.id + '/signed_' + deal.id + '_v3.pdf', lead.id + '/signed_' + deal.id + '_v4.pdf'];
+    var path = lead.id + '/signed_' + deal.id + '_v6.pdf';       // v6 = label spacing (no nowrap) + wider padding so text isn't clipped at edges
+    var oldPaths = [lead.id + '/signed_' + deal.id + '.pdf', lead.id + '/signed_' + deal.id + '_v2.pdf', lead.id + '/signed_' + deal.id + '_v3.pdf', lead.id + '/signed_' + deal.id + '_v4.pdf', lead.id + '/signed_' + deal.id + '_v5.pdf'];
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
       if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v3)
