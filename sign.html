@@ -97,7 +97,8 @@
         '<h3>פרטי הרכב</h3><table>'+row('יצרן ודגם',esc(((d.car_make||'')+' '+(d.car_model||'')).trim())+' '+esc(d.car_trim||''))+row('שנה',esc(d.car_year||''))+row('צבע',esc(d.car_color||''))+row('מנוע',esc(d.car_engine||''))+row('תיבת הילוכים',esc(d.car_gearbox||''))+'</table>'+
         '<h3>תנאי העסקה</h3><table>'+row('מחיר הרכב',nis(d.car_price))+row('מקדמה כוללת',nis(d.down_total))+row('החזר חודשי משוער',nis(d.monthly))+row('זמן אספקה משוער',(d.delivery_days||'—')+' ימים')+row('סכום כולל',nis(d.total))+row('יתרה לתשלום',nis(d.balance_to_pay))+'</table>'+
         (d.spec?'<h3>מפרט והערות</h3><p>'+esc(d.spec)+'</p>':'')+
-        '<p class="note">ההחזר החודשי משוער בלבד וכפוף לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. חתימת הלקוח מהווה אישור להזמנה בכפוף לתנאים.</p>'+
+        '<h3>תנאי ההזמנה וההסכם</h3>'+clausesHtml(d)+
+        '<p class="note">ההחזר החודשי משוער בלבד וכפוף לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. חתימת הלקוח מהווה אישור להזמנה בכפוף לתנאים ולכל הסעיפים לעיל.</p>'+
       '</div>'+
       '<div class="card"><h3>חתימת הלקוח</h3><p class="sub" style="text-align:right;margin-bottom:8px">חתמו באזור הלבן (עכבר / אצבע):</p>'+
         '<canvas id="sig"></canvas>'+

@@ -1332,16 +1332,18 @@
   // wrapper hides it, and a white overlay masks the brief scroll reset.
   function genContractPdf(deal, onBlob) {
     if (!window.html2pdf) { onBlob(null); return; }
+    var W = 820;
     var sx = window.scrollX, sy = window.scrollY;
+    var wrap = document.createElement('div');
+    // position:fixed + explicit width so the page grid/flex layout can never squish the holder into a narrow column
+    wrap.style.cssText = 'position:fixed;top:0;left:0;width:' + W + 'px;background:#fff;z-index:90000;overflow:visible';
+    var holder = document.createElement('div');
+    holder.setAttribute('dir', 'rtl');
+    holder.style.cssText = 'width:' + W + 'px;box-sizing:border-box;background:#fff;color:#111;padding:28px 34px;direction:rtl;text-align:right;font-family:Arial,sans-serif';
+    holder.innerHTML = contractHTML(deal, deal.signature || null);
     var ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.97);z-index:99999;display:flex;align-items:center;justify-content:center;color:#F5691E;font-weight:800;font-size:18px';
     ov.textContent = 'מכין מסמך…';
-    var wrap = document.createElement('div');
-    wrap.style.cssText = 'height:0;overflow:hidden';   // static (in-flow), hidden — do NOT use absolute/fixed
-    var holder = document.createElement('div');
-    var W = 800;
-    holder.style.cssText = 'width:' + W + 'px;box-sizing:border-box;background:#fff;color:#111;padding:30px 36px;direction:rtl;text-align:right';
-    holder.innerHTML = contractHTML(deal, deal.signature || null);
     wrap.appendChild(holder); document.body.appendChild(wrap); document.body.appendChild(ov);
     window.scrollTo(0, 0);
     function done(blob) { window.scrollTo(sx, sy); [wrap, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); onBlob(blob); }
