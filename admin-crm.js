@@ -1545,7 +1545,7 @@
     { key: 'total', label: 'סכום', cell: function (d) { return '<td>' + nis(d.total) + '</td>'; } },
     { key: 'commission', label: 'עמלת סוכן', cell: function (d) { return '<td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td>'; } },
     { key: 'stage', label: 'שלב', cell: function (d) { return '<td><span class="stage-click" data-stagesel="' + d.id + '" title="לחצו לשינוי שלב" style="cursor:pointer;display:inline-flex;align-items:center;gap:3px">' + stageBadge(d.stage || 'initial') + '<span class="muted" style="font-size:10px">▾</span></span></td>'; } },
-    { key: 'checklist', label: 'צ\'קליסט', cell: function (d) { var chk = d.checklist || {}, done = CHECKLIST_ITEMS.filter(function (k) { return chk[k]; }).length, tot = CHECKLIST_ITEMS.length; return '<td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td>'; } },
+    { key: 'checklist', label: 'צ\'קליסט', cell: function (d) { var chk = d.checklist || {}, done = FILE_CHECKLIST_ITEMS.filter(function (k) { return chk[k]; }).length, tot = FILE_CHECKLIST_ITEMS.length; return '<td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td>'; } },
     { key: 'salesperson', label: 'איש מכירות', def: false, cell: function (d) { return '<td>' + esc(d.salesperson || '—') + '</td>'; } },
     { key: 'brand', label: 'מותג', def: false, cell: function (d) { return '<td>' + esc(d.brand || '—') + '</td>'; } },
     { key: 'phone', label: 'טלפון', def: false, cell: function (d) { return '<td>' + esc(d.client_phone || '—') + '</td>'; } },
@@ -1739,9 +1739,10 @@
   }
   function svgBars(days) {
     var max = Math.max(1, Math.max.apply(null, days.map(function (d) { return d.v; }))), W = 100 / days.length;
-    var bars = days.map(function (d, i) { var h = d.v / max * 90; return '<rect x="' + (i * W + W * 0.15) + '" y="' + (100 - h) + '" width="' + (W * 0.7) + '" height="' + h + '" rx="1.5" fill="var(--brand)"><title>' + d.d + ': ' + d.v + '</title></rect>'; }).join('');
-    var labels = days.map(function (d, i) { return i % 2 === 0 ? '<text x="' + (i * W + W / 2) + '" y="99" font-size="3" fill="var(--muted)" text-anchor="middle">' + d.d.slice(5) + '</text>' : ''; }).join('');
-    return '<svg viewBox="0 0 100 108" preserveAspectRatio="none" style="width:100%;height:180px">' + bars + labels + '</svg>';
+    var bars = days.map(function (d, i) { var h = d.v / max * 92; return '<rect x="' + (i * W + W * 0.15) + '" y="' + (100 - h) + '" width="' + (W * 0.7) + '" height="' + h + '" rx="1.5" fill="var(--brand)"><title>' + esc(d.d) + ': ' + d.v + '</title></rect>'; }).join('');
+    // date labels as HTML below the bars (LTR, evenly spaced) — not inside the stretched SVG, so they don't distort
+    var labs = days.map(function (d, i) { return '<div style="flex:1;min-width:0;text-align:center;font-size:11px;color:var(--muted);white-space:nowrap">' + (i % 2 === 0 ? esc(d.d.slice(5)) : '') + '</div>'; }).join('');
+    return '<div><svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:160px;display:block">' + bars + '</svg><div style="display:flex;direction:ltr;margin-top:6px">' + labs + '</div></div>';
   }
 
   // expose the status model for admin.js (bell, reports)
