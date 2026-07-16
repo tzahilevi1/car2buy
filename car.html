@@ -759,7 +759,7 @@ function renderCarDetail() {
 
   // ----- media gallery: real multi-angle studio renders (imagin.studio) so users see the car from every side -----
   function imaginUrl(a) {
-    return 'https://cdn.imagin.studio/getimage?customer=img&make=' +
+    return 'https://cdn.imagin.studio/getimage?customer=' + encodeURIComponent(window.C2B_IMAGIN_KEY || 'img') + '&make=' +
       encodeURIComponent(car.imaginMake || '') + '&modelFamily=' + encodeURIComponent(car.imaginModel || '') +
       '&angle=' + a + '&width=1000';
   }
@@ -769,8 +769,9 @@ function renderCarDetail() {
   if (car.gallery && car.gallery.length) {
     galleryImgs = car.gallery.map(function (sx) { return { src: sx, contain: false }; });
   } else if (car.img) {
-    // clean image only (icar) — imagin.studio renders were dropped because their free tier stamps a watermark
     galleryImgs.push({ src: car.img, contain: true });
+    // multi-angle clean renders — ONLY when a paid imagin.studio key is set (else the free tier watermarks)
+    if (window.C2B_IMAGIN_KEY && car.imaginMake && car.imaginModel) GALLERY_ANGLES.forEach(function (a) { galleryImgs.push({ src: imaginUrl(a), contain: true }); });
   }
   var galleryHtml = galleryImgs.length
     ? '<div class="cd-mgrid">' + galleryImgs.map(function (g, i) {

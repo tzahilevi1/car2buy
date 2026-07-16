@@ -3,6 +3,12 @@
    every page. Set <body data-page="models"> to mark the active
    nav item. Keeps nav/footer edits in one place.
    ============================================================ */
+/* ⬇️⬇️⬇️  גלריית זוויות מרובות (imagin.studio)  ⬇️⬇️⬇️
+   הדביקו כאן את מפתח הלקוח (customer) שקיבלתם מ-imagin.studio בתשלום —
+   וכל האתר יציג אוטומטית 6-8 זוויות נקיות (חזית/צד/אחור/3-4) באותו צבע, ללא סימן מים.
+   השאירו ריק ('') = תמונה נקייה אחת לכל רכב (המצב הנוכחי, ללא עלות וללא סימן מים). */
+window.C2B_IMAGIN_KEY = '';
+
 (function () {
   // anti-clickjacking: CSP frame-ancestors is ignored in <meta>, so break out of a
   // cross-origin frame here (a same-origin embed is left intact).
