@@ -96,9 +96,12 @@
     m.querySelectorAll('.si[data-uid]').forEach(function (si) { si.addEventListener('click', function (e) { e.stopPropagation(); onPick(si.dataset.uid); closeAssignMenu(); }); });
     setTimeout(function () { document.addEventListener('click', closeAssignMenu, { once: true }); }, 0);
   }
+  // ליד ללא שיוך מוצג כברירת מחדל כשייך למנהל הראשי (המשתמש admin המחובר)
+  function mainManagerUid() { return (C.role === 'admin' && profiles[C.userId]) ? C.userId : ''; }
   function assignChip(l) {
-    var name = profiles[l.assigned_to];
-    var inner = name ? '<span class="avatar">' + esc(initials(name)) + '</span> ' + esc(name) : '<span class="muted">🔗 שייך לסוכן</span>';
+    var eff = l.assigned_to || mainManagerUid();
+    var name = profiles[eff];
+    var inner = name ? '<span class="avatar">' + esc(initials(name)) + '</span> ' + esc(name) + (!l.assigned_to ? ' <span class="muted" style="font-size:10px">(מנהל)</span>' : '') : '<span class="muted">🔗 שייך לסוכן</span>';
     return '<span class="assign-chip" data-assign="' + l.id + '" data-cur="' + (l.assigned_to || '') + '" title="שיוך לסוכן מכירות">' + inner + ' <span class="muted">▾</span></span>';
   }
   function assignLead(leadId, uid) {
@@ -456,7 +459,8 @@
   function leadInfo(lead, deals, pays, lastTs) {
     var role = C.role || 'admin', deal = deals[0];
     var brandOpts = ((C.lists && C.lists.brand) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
-    var staff = '<option value="">— לא שויך —</option>' + Object.keys(profiles).map(function (uid) { return '<option value="' + uid + '"' + (lead.assigned_to === uid ? ' selected' : '') + '>' + esc(profiles[uid]) + '</option>'; }).join('');
+    var effOwner = lead.assigned_to || mainManagerUid();
+    var staff = '<option value="">— לא שויך —</option>' + Object.keys(profiles).map(function (uid) { return '<option value="' + uid + '"' + (effOwner === uid ? ' selected' : '') + '>' + esc(profiles[uid]) + '</option>'; }).join('');
     function ei(label, field, val, type) { return '<div class="lf"><span class="k">' + label + '</span><input class="lf-edit" type="' + (type || 'text') + '" data-field="' + field + '" data-label="' + esc(label) + '" value="' + esc(val == null ? '' : val) + '"></div>'; }
     var html = '<div class="lead-fields">';
     html += '<div class="lf"><span class="k">סטטוס לקוח</span><span class="v" id="lpStatusInline">' + badge(lead.status || 'new', true, lead.id) + '</span></div>';
@@ -466,6 +470,7 @@
     html += lf('עודכן בתאריך', fmt(lastTs || lead.updated_at || lead.status_changed_at || lead.created_at));
     html += ei('שם לקוח', 'name', lead.name);
     html += ei('טלפון ראשי', 'phone', lead.phone, 'tel');
+    html += ei('ת.ז / ח.פ', 'id_num', lead.id_num);
     html += ei('דואר אלקטרוני', 'email', lead.email, 'email');
     html += '<div class="lf"><span class="k">באיזה רכב מתעניין</span><div id="carPick" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-start;max-width:64%"><span class="muted" style="font-size:12px">טוען מלאי…</span></div></div>';
     html += '<div class="lf"><span class="k">מותג</span><input class="lf-edit" data-field="brand" data-label="מותג" list="ld_brandOpts" value="' + esc(lead.brand || '') + '"><datalist id="ld_brandOpts">' + brandOpts + '</datalist></div>';
@@ -705,10 +710,19 @@
       var d = this.date.value, t = this.time.value; if (!d || !t) return;
       var appt_at = new Date(d + 'T' + t).toISOString();
       var disp = new Date(d + 'T' + t).toLocaleDateString('he-IL');
-      db.from('appointments').insert({ lead_id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, type: lead.car || 'פגישה', brand: lead.brand || null, appt_mode: this.mode.value, branch: '', note: this.note.value.trim() || null, appt_date: disp, appt_time: t, appt_at: appt_at, status: 'new' }).then(function (r) {
-        if (r.error) return alert('שגיאה: ' + r.error.message);
+      var full = { lead_id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, type: lead.car || 'פגישה', brand: lead.brand || null, appt_mode: this.mode.value, branch: '', note: this.note.value.trim() || null, appt_date: disp, appt_time: t, appt_at: appt_at, status: 'new' };
+      var core = { lead_id: lead.id, name: lead.name, phone: lead.phone, appt_date: disp, appt_time: t, appt_at: appt_at, status: 'new' };
+      function afterSave() {
         logActivity(lead.id, 'meeting', 'נקבעה פגישה: ' + disp + ' ' + t);
         changeStatus(lead.id, 'meeting_set', lead, function () { window.C2B_openLeadCard(lead.id); });
+      }
+      db.from('appointments').insert(full).then(function (r) {
+        if (!r.error) return afterSave();
+        // some deployments miss optional columns — retry with the core set so the meeting still lands in the calendar
+        db.from('appointments').insert(core).then(function (r2) {
+          if (r2.error) return alert('שמירת הפגישה נכשלה: ' + r2.error.message);
+          afterSave();
+        });
       });
     });
   }
@@ -781,7 +795,13 @@
     var clientCard = '<div class="card"><h3>👤 פרטי הלקוח</h3>' + grid(G('שם לקוח', 'client_name', deal.client_name || lead.name) + G('טלפון נייד', 'client_phone', deal.client_phone || lead.phone) + G('דוא"ל', 'client_email', deal.client_email || lead.email) + G('כתובת', 'client_address', deal.client_address || lead.city) + G('ת.ז / ח.פ', 'client_id', deal.client_id) + G('שם לחשבונית', 'invoice_name', deal.invoice_name || lead.name)) + '</div>';
     var brandDl = ((C.lists && C.lists.brand) || []).map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
     var brandField = '<div class="field" style="margin:0"><label>מותג</label><input class="inp" id="dl_brand" list="dl_brandOpts" value="' + esc(deal.brand || lead.brand || '') + '" placeholder="שם המותג" style="width:100%"><datalist id="dl_brandOpts">' + brandDl + '</datalist></div>';
-    var formCard = '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', deal.form_type || 'חוזה קאר פלוס') + statusSel + brandField + G('מנהל מכירות / נציג משוייך', 'salesperson', deal.salesperson || '')) + '</div>';
+    var ownVal = checklist._ownership || '01';
+    var ownSel = '<div class="field" style="margin:0"><label>סוג הסכם (בעלות)</label><select class="inp" id="dl_ownership" style="width:100%"><option value="01"' + (ownVal === '01' ? ' selected' : '') + '>בעלים 01 (הרכב על שם הלקוח)</option><option value="00"' + (ownVal === '00' ? ' selected' : '') + '>בעלים 00 (בעלות קודמת)</option></select></div>';
+    var autoBrand = deal.brand || lead.brand || '';
+    var defFormType = deal.form_type || (autoBrand ? 'חוזה ' + autoBrand : 'חוזה');
+    // מנהל מכירות מתמלא אוטומטית מהסוכן שהליד משויך אליו (או המנהל הראשי אם לא שויך)
+    var defSalesperson = deal.salesperson || profiles[lead.assigned_to || mainManagerUid()] || '';
+    var formCard = '<div class="card"><h3>בחירת טופס</h3>' + grid(G('סוג טופס', 'form_type', defFormType) + statusSel + brandField + ownSel + G('מנהל מכירות / נציג משוייך', 'salesperson', defSalesperson)) + '</div>';
     var carCard = '<div class="card ac-box"><h3>🚗 פרטי הרכב המוזמן</h3>' +
       '<input class="inp" id="dl_carSearch" placeholder="🔎 חפש רכב מהקטלוג (עברית/אנגלית) — ימלא אוטומטית" style="width:100%;margin-bottom:10px"><div class="ac-res hidden" id="dl_carRes"></div>' +
       grid(G('יצרן', 'car_make', deal.car_make) + G('דגם', 'car_model', deal.car_model) + G('שנת ייצור', 'car_year', deal.car_year || 2026, 'number') + G('רמת גימור', 'car_trim', deal.car_trim) + G('נפח מנוע', 'car_engine', deal.car_engine) + gearboxSel(deal.car_gearbox) + G('צבע מבוקש', 'car_color', deal.car_color) + G('מחיר הרכב ₪', 'car_price', deal.car_price, 'number') + '<div class="field" style="margin:0"><label>עמלת סוכן ₪ (אוטומטי · קריאה בלבד)</label><input class="inp" id="dl_commission" type="number" value="' + esc(deal.commission == null ? '' : deal.commission) + '" readonly tabindex="-1" style="width:100%;background:var(--surface-2);cursor:not-allowed;color:var(--muted)"></div>') + '</div>';
@@ -960,6 +980,12 @@
     }
     function autoSave() { clearTimeout(saveTimer); setState('…'); saveTimer = setTimeout(doSave, 700); }
     _activeAutoSave = autoSave;   // this form is now the active one
+    // סוג הטופס עוקב אחרי המותג שנבחר; בעלות 00/01 נשמרת ל-checklist
+    (function () {
+      var be = $('dl_brand'), fe = $('dl_form_type'), oe = $('dl_ownership');
+      if (be && fe) be.addEventListener('input', function () { fe.value = be.value ? 'חוזה ' + be.value : 'חוזה'; });
+      if (oe) oe.addEventListener('change', function () { checklist._ownership = oe.value; });
+    })();
     if (!_autoSaveWired) {
       _autoSaveWired = true;
       var onFieldEdit = function (e) { if (_activeAutoSave && e.target.id && e.target.id.indexOf('dl_') === 0) _activeAutoSave(); };
