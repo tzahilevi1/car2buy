@@ -1348,13 +1348,15 @@
     ov.textContent = 'מכין מסמך…';
     wrap.appendChild(holder); document.body.appendChild(wrap); document.body.appendChild(ov);
     window.scrollTo(0, 0);
+    var H = holder.scrollHeight;   // capture the full holder height explicitly
     function done(blob) { window.scrollTo(sx, sy); [wrap, ov].forEach(function (e) { if (e.parentNode) e.parentNode.removeChild(e); }); onBlob(blob); }
     window.html2pdf().set({
       margin: [10, 10, 12, 10],
       image: { type: 'jpeg', quality: 0.95 },
-      // Do NOT pass html2canvas width/windowWidth — they made the content render in a tiny left column.
-      // The holder has a fixed inline width, so html2pdf measures it and scales it to fill the page.
-      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, scrollX: 0, scrollY: 0 },
+      // Explicit capture rectangle (x/y/width/height) + a fixed windowWidth make the render
+      // DETERMINISTIC — independent of the user's window width and display scaling (DPR).
+      // Without it, html2canvas clipped the left edge of RTL lines on narrow windows / 125-150% scaling.
+      html2canvas: { scale: 2, backgroundColor: '#ffffff', useCORS: true, scrollX: 0, scrollY: 0, windowWidth: 900, width: W, height: H, x: 0, y: 0 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['css', 'legacy'], avoid: ['li', 'tr'] }
     }).from(holder).outputPdf('blob').then(done).catch(function () { done(null); });
@@ -1363,8 +1365,8 @@
   var pdfGenerating = {};
   function ensureSignedPdf(lead, deal, onSaved) {
     if (!window.html2pdf || !deal || !deal.id || !deal.signature || pdfGenerating[deal.id]) return;
-    var path = lead.id + '/signed_' + deal.id + '_v7.pdf';       // v7 = large 70px side buffer + word-break so RTL line-ends never clip
-    var oldPaths = ['', '_v2', '_v3', '_v4', '_v5', '_v6'].map(function (s) { return lead.id + '/signed_' + deal.id + s + '.pdf'; });
+    var path = lead.id + '/signed_' + deal.id + '_v8.pdf';       // v8 = deterministic explicit capture rectangle (fixes clipping on narrow windows / HiDPI scaling)
+    var oldPaths = ['', '_v2', '_v3', '_v4', '_v5', '_v6', '_v7'].map(function (s) { return lead.id + '/signed_' + deal.id + s + '.pdf'; });
     pdfGenerating[deal.id] = true;
     db.from('lead_documents').select('id').eq('storage_path', path).then(function (chk) {
       if (chk.error || (chk.data && chk.data.length)) { pdfGenerating[deal.id] = false; return; }  // already saved (v3)
