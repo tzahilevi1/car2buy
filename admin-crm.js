@@ -83,6 +83,29 @@
   }
   // ---- quick-assign a lead to a salesperson (from the leads table) ----
   function closeAssignMenu() { var m = document.getElementById('assignmenu'); if (m) m.remove(); }
+  function closeStageMenu() { var m = document.getElementById('stagemenu'); if (m) m.remove(); }
+  // pop-up to change a deal's file stage from anywhere (e.g. the files table)
+  function openStageMenu(anchor, dealObj, after) {
+    closeStageMenu();
+    var m = document.createElement('div'); m.className = 'stmenu'; m.id = 'stagemenu'; m.style.minWidth = '190px';
+    m.innerHTML = DEAL_STAGES.map(function (s) { return '<div class="si" data-stg="' + s.k + '"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + s.color + ';margin-inline-end:7px;vertical-align:middle"></span>' + esc(s.label) + ((dealObj.stage || 'initial') === s.k ? ' ✓' : '') + '</div>'; }).join('');
+    document.body.appendChild(m);
+    var r = anchor.getBoundingClientRect();
+    m.style.top = (r.bottom + window.scrollY + 4) + 'px'; m.style.left = (r.left + window.scrollX) + 'px';
+    m.addEventListener('click', function (e) {
+      var it = e.target.closest('[data-stg]'); if (!it) return; var stg = it.dataset.stg; closeStageMenu();
+      if ((dealObj.stage || 'initial') === stg) return;
+      dealObj.stage = stg;
+      db.from('deals').update({ stage: stg }).eq('id', dealObj.id).then(function (rr) {
+        if (rr.error) return alert('שגיאה: ' + rr.error.message);
+        logActivity(dealObj.lead_id, 'system', 'שלב תיק: ' + stageDef(stg).label);
+        // keep the sales lead in sync (only 'delivered' closes the lead)
+        db.from('leads').select('status').eq('id', dealObj.lead_id).single().then(function (lr) { if (lr.data) syncLeadFromStage({ id: dealObj.lead_id, status: lr.data.status }, stg); });
+        if (after) after();
+      });
+    });
+    setTimeout(function () { document.addEventListener('click', closeStageMenu, { once: true }); }, 0);
+  }
   function openAssignMenu(anchor, leadId, current, onPick) {
     closeAssignMenu();
     var m = document.createElement('div'); m.className = 'stmenu'; m.id = 'assignmenu'; m.style.minWidth = '190px';
@@ -829,12 +852,15 @@
       '<div class="row-between"><h3 style="margin:0">📁 מסמכי הלקוח</h3>' + (lead.id ? '<label class="btn btn-sm" style="cursor:pointer">⬆ העלה מסמכים<input type="file" id="dlDocUp" multiple style="display:none"></label>' : '') + '</div><p class="muted" style="font-size:12px;margin:4px 0 10px">ת"ז · תלושים · דפי בנק · הסכם חתום · כל פורמט (תמונות/PDF/מסמכים)</p><div id="dlDocs">' + (lead.id ? 'טוען…' : 'שמרו את התיק תחילה כדי לצרף מסמכים') + '</div></div>';
     var paymentsCard = '<div class="card"><h3>תשלומים / קבלות / חשבוניות</h3><div id="dlPayList">' + (deal.id ? 'טוען…' : '<p class="muted">שמרו את העסקה כדי לנהל תשלומים</p>') + '</div>' +
       (deal.id ? '<form id="dlPayForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><select class="inp" name="kind"><option value="payment">תשלום</option><option value="receipt">קבלה</option><option value="invoice">חשבונית</option></select><input class="inp" name="amount" type="number" placeholder="סכום ₪" style="width:120px"><input class="inp" name="method" placeholder="אמצעי (מזומן/אשראי)" style="width:150px"><input class="inp" name="ref" placeholder="אסמכתא" style="width:130px"><button class="btn btn-sm">+ הוסף</button></form>' : '') + '</div>';
+    // notes area for the file manager — write client notes to help manage leads from here
+    var fileNotesCard = fileMode ? '<div class="card"><h3>📝 הערות על הלקוח</h3><textarea class="inp" id="dlClientNote" rows="3" placeholder="כתבי הערה על הלקוח / התיק (מתועדת עם תאריך)…" style="width:100%"></textarea><div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-sm" id="dlAddNote">➕ הוסף הערה</button></div><div id="dlNotesList" style="margin-top:12px">טוען הערות…</div></div>' : '';
     function dTab(k, label, active) { return '<button data-dtab="' + k + '"' + (active ? ' class="active"' : '') + '>' + label + '</button>'; }
     function dPanel(k, active, inner) { return '<div class="dl-panel' + (active ? '' : ' hidden') + '" data-dpanel="' + k + '">' + inner + '</div>'; }
     view(
       '<div class="lead-top"><div style="display:flex;align-items:center;gap:8px"><button class="btn btn-ghost btn-sm" id="dlBack">' + ((C.role || '') === 'files' ? '→ לרשימת התיקים' : '→ לכרטיס') + '</button><h3 style="margin:0">' + (deal.id ? 'עסקה #' + esc(deal.order_no) : 'עסקה חדשה') + '</h3></div>' +
         '<div style="display:flex;align-items:center;gap:10px"><button class="btn btn-ghost btn-sm" id="dlContract">✍ הסכם לחתימה</button> <button class="btn btn-ghost btn-sm" id="dlSubmitFin">🏦 הגש למימון</button> <span id="dlSaveState" style="font-size:12.5px;color:var(--muted);white-space:nowrap">💾 נשמר אוטומטית</span></div></div>' +
       (fileMode ? '<div class="card" style="padding:12px"><h3 style="margin:0 0 8px;font-size:13px">שלב התיק (מנהלת תיקי לקוחות)</h3><div class="flow" id="dlStageBar">' + stageBar(curStage) + '</div></div>' : '') +
+      fileNotesCard +
       '<nav class="tabs" id="dlTabs" style="margin-bottom:14px;flex-wrap:wrap">' +
         dTab('client', '👤 פרטי הלקוח', true) + dTab('deal', '📋 פרטי העסקה') + dTab('car', '🚗 פרטי הרכב המוזמן') + dTab('fin', '🏦 מקטע מימון') + dTab('trade', '🔁 מקטע טרייד-אין') + dTab('record', '🗂️ פרטי רשומה') +
       '</nav>' +
@@ -850,6 +876,21 @@
     $('dlTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-dtab]'); if (!b) return; $('dlTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('active', x === b); }); C.$('view').querySelectorAll('[data-dpanel]').forEach(function (p) { p.classList.toggle('hidden', p.dataset.dpanel !== b.dataset.dtab); }); });
     // stage bar (shown to file manager / admin only)
     if ($('dlStageBar')) $('dlStageBar').addEventListener('click', function (e) { var st = e.target.closest('[data-stage]'); if (!st) return; curStage = st.dataset.stage; $('dlStageBar').innerHTML = stageBar(curStage); if ($('dlRecStage')) $('dlRecStage').innerHTML = stageBadge(curStage); if (deal.id) { deal.stage = curStage; db.from('deals').update({ stage: curStage }).eq('id', deal.id); logActivity(lead.id, 'system', 'שלב עסקה: ' + stageDef(curStage).label); syncLeadFromStage(lead, curStage); } });
+    // client notes (file manager) — timestamped, saved as note activities
+    if ($('dlAddNote')) {
+      var loadNotes = function () {
+        db.from('activities').select('body,created_at').eq('lead_id', lead.id).eq('type', 'note').order('created_at', { ascending: false }).limit(30).then(function (r) {
+          var list = r.data || [];
+          $('dlNotesList').innerHTML = list.length ? list.map(function (a) { return '<div style="border-inline-start:3px solid var(--brand);padding:7px 11px;margin-bottom:8px;background:var(--surface-2);border-radius:8px"><div style="font-size:13px;white-space:pre-wrap">' + esc(a.body || '') + '</div><div class="muted" style="font-size:11px;margin-top:3px">' + (a.created_at ? fmt(a.created_at) : '') + '</div></div>'; }).join('') : '<div class="muted" style="font-size:12.5px">אין הערות עדיין.</div>';
+        });
+      };
+      loadNotes();
+      $('dlAddNote').addEventListener('click', function () {
+        var t = $('dlClientNote').value.trim(); if (!t) return;
+        $('dlAddNote').disabled = true;
+        logActivity(lead.id, 'note', t).then(function () { $('dlClientNote').value = ''; $('dlAddNote').disabled = false; loadNotes(); });
+      });
+    }
     // client documents in the record tab: view / upload (any format) / delete
     if (lead.id) {
       var loadDocs = function () {
@@ -1474,7 +1515,7 @@
         var lst = (f === 'all' ? deals : deals.filter(function (d) { return (d.stage || 'initial') === f; })).filter(function (d) { return fileFilter.match(d); });
         var rows = lst.map(function (d) {
           var chk = d.checklist || {}, done = CHECKLIST_ITEMS.filter(function (k) { return chk[k]; }).length, tot = CHECKLIST_ITEMS.length;
-          return '<tr data-deal="' + d.id + '"><td style="width:30px;text-align:center"><input type="checkbox" data-fsel="' + d.id + '"' + (selectedDeals[d.id] ? ' checked' : '') + ' onclick="event.stopPropagation()"></td><td data-open="1" style="cursor:pointer"><b>#' + esc(d.order_no) + '</b></td><td data-open="1" style="cursor:pointer">' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(d.total) + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td><td>' + stageBadge(d.stage || 'initial') + '</td><td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td></tr>';
+          return '<tr data-deal="' + d.id + '"><td style="width:30px;text-align:center"><input type="checkbox" data-fsel="' + d.id + '"' + (selectedDeals[d.id] ? ' checked' : '') + ' onclick="event.stopPropagation()"></td><td data-open="1" style="cursor:pointer"><b>#' + esc(d.order_no) + '</b></td><td data-open="1" style="cursor:pointer">' + esc(d.client_name) + (d.signature ? ' <span style="color:var(--ok)" title="נחתם">✅</span>' : '') + '</td><td>' + esc(((d.car_make || '') + ' ' + (d.car_model || '')).trim()) + '</td><td>' + nis(d.total) + '</td><td style="color:var(--ok);font-weight:700">' + nis(d.commission) + '</td><td><span class="stage-click" data-stagesel="' + d.id + '" title="לחצו לשינוי שלב" style="cursor:pointer;display:inline-flex;align-items:center;gap:3px">' + stageBadge(d.stage || 'initial') + '<span class="muted" style="font-size:10px">▾</span></span></td><td><div class="bar" style="width:80px;display:inline-block;vertical-align:middle"><span style="width:' + Math.round(done / tot * 100) + '%"></span></div> ' + done + '/' + tot + '</td></tr>';
         }).join('');
         var bulk = '<div id="fBulk" class="filterbar" style="display:none;background:var(--brand-soft);align-items:center"><b id="fBulkCount" style="color:var(--brand)">נבחרו 0</b>' +
           '<select id="fBulkStage"><option value="">🏷️ שנה שלב…</option>' + DEAL_STAGES.map(function (s) { return '<option value="' + s.k + '">' + esc(s.label) + '</option>'; }).join('') + '</select>' +
@@ -1483,6 +1524,14 @@
           '<div class="table-scroll"><table><thead><tr><th style="width:30px;text-align:center"><input type="checkbox" id="fSelAll"></th><th>#</th><th>לקוח</th><th>רכב</th><th>סכום</th><th>עמלת סוכן</th><th>שלב</th><th>צ\'קליסט</th></tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="empty">אין תיקים</td></tr>') + '</tbody></table></div>';
         fileFilter.bind();
         C.$('filesBody').querySelectorAll('td[data-open]').forEach(function (td) { td.addEventListener('click', function () { window.C2B_openDeal(td.parentNode.dataset.deal); }); });
+        // change a file's stage directly from the "שלב" column → updates DB + pipeline + the file view inside
+        C.$('filesBody').querySelectorAll('[data-stagesel]').forEach(function (el) {
+          el.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var d = deals.filter(function (x) { return String(x.id) === el.dataset.stagesel; })[0]; if (!d) return;
+            openStageMenu(el, d, function () { window.C2B_renderFiles(stageFilter); });
+          });
+        });
         bindFilesBulk(stageFilter);
       }
       C.$('fTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-fstage]'); if (b) window.C2B_renderFiles(b.dataset.fstage === 'all' ? null : b.dataset.fstage); });
