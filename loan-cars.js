@@ -58,7 +58,7 @@
     { brand:"אמ.ג'י", name:'EHS', trim:'Luxury PHEV', m:1955, p:191610, img:I+'mg-hs-new.jpg' },
     { brand:"אמ.ג'י", name:'HS', trim:'Hybrid+ Luxury', m:1827, p:179610, img:I+'mg-hs-new.jpg' },
     { brand:"אמ.ג'י", name:'ZS', trim:'Luxury Hybrid', m:1594, p:157918, img:I+'mg-zs-new.jpg' },
-    { brand:"אמ.ג'י", name:'MG 3', trim:'Luxury Hybrid', m:1290, p:129595, img:I+'mg-3-new.jpg', gallery:['images/gallery/mg3/mg3-front.jpg','images/gallery/mg3/mg3-side.jpg','images/gallery/mg3/mg3-grille.jpg','images/gallery/mg3/mg3-wheel.jpg','images/gallery/mg3/mg3-interior-seats.jpg','images/gallery/mg3/mg3-interior-screen.jpg'] },
+    { brand:"אמ.ג'י", name:'MG 3', trim:'Luxury Hybrid', m:1290, p:129595, img:I+'mg-3-new.jpg' },
     { brand:"אמ.ג'י", name:'S9', trim:'Comfort', m:1990, p:192610, img:I+'mg-s9-new.jpg' },
     // Škoda
     { brand:'סקודה', name:'סופרב', trim:'L&K 4x4', m:2992, p:288296, img:I+'skoda-superb-new.jpg' },
@@ -114,6 +114,18 @@
     { brand:'אאודי', name:'A3 ספורטבק', trim:'S Line Lux', m:2999, p:290000, img:I+'audi-a3-new.jpg' }
   ];
   C.forEach(function (c, i) { c.id = 'c' + i; });
+
+  // ---- real photo galleries per model (exterior + interior) — one gallery serves all trims of a model ----
+  // helper: 4 exterior + 2 interior files named ext1..ext4, int5..int6 under images/gallery/<folder>/
+  function g6(folder) { return ['images/gallery/' + folder + '/ext1.jpg', 'images/gallery/' + folder + '/ext2.jpg', 'images/gallery/' + folder + '/ext3.jpg', 'images/gallery/' + folder + '/ext4.jpg', 'images/gallery/' + folder + '/int5.jpg', 'images/gallery/' + folder + '/int6.jpg']; }
+  var GALLERIES = {
+    "אמ.ג'י|MG 3": ['images/gallery/mg3/mg3-front.jpg', 'images/gallery/mg3/mg3-side.jpg', 'images/gallery/mg3/mg3-grille.jpg', 'images/gallery/mg3/mg3-wheel.jpg', 'images/gallery/mg3/mg3-interior-seats.jpg', 'images/gallery/mg3/mg3-interior-screen.jpg'],
+    "ב.י.ד|אטו 2": g6('byd-atto2'),
+    "ב.י.ד|סיל 5 DM-i": g6('byd-seal5'),
+    "ב.י.ד|סיל U": g6('byd-sealu'),
+    "ב.י.ד|סיליון 5": g6('byd-sealion5')
+  };
+  C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
   window.Car2Buy.LOAN_CARS = C;
 
   // ---- English display names (nicer card titles) ----
