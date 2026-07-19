@@ -200,7 +200,8 @@
     "אאודי|Q3 ספורטבק 35 TFSI חבילת אבזור Design": ["images/gallery/audi-q3/ext1.jpg","images/gallery/audi-q3/ext2.jpg","images/gallery/audi-q3/ext3.jpg","images/gallery/audi-q3/ext4.jpg","images/gallery/audi-q3/int5.jpg","images/gallery/audi-q3/int6.jpg"],
     "אאודי|A3 ספורטבק חבילת SLINE LUX": ["images/gallery/audi-a3/ext1.jpg","images/gallery/audi-a3/ext2.jpg","images/gallery/audi-a3/ext3.jpg","images/gallery/audi-a3/ext4.jpg","images/gallery/audi-a3/int5.jpg","images/gallery/audi-a3/int6.jpg"],
     "ליפמוטור|C10": ["images/gallery/leapmotor-c10/ext1.jpg","images/gallery/leapmotor-c10/ext2.jpg","images/gallery/leapmotor-c10/ext3.jpg","images/gallery/leapmotor-c10/ext4.jpg","images/gallery/leapmotor-c10/int5.jpg","images/gallery/leapmotor-c10/int6.jpg"],
-    "טויוטה|יאריס קרוס": ["images/gallery/toyota-yariscross/ext2.jpg","images/gallery/toyota-yariscross/ext3.jpg","images/gallery/toyota-yariscross/ext4.jpg"]
+    "טויוטה|יאריס קרוס": ["images/gallery/toyota-yariscross/ext2.jpg","images/gallery/toyota-yariscross/ext3.jpg","images/gallery/toyota-yariscross/ext4.jpg"],
+    "דונפנג|בוקס": ["images/gallery/dongfeng-box/ext1.jpg","images/gallery/dongfeng-box/ext2.jpg","images/gallery/dongfeng-box/ext3.jpg","images/gallery/dongfeng-box/ext4.jpg","images/gallery/dongfeng-box/int5.jpg"]
   };
   C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
   // expose galleries with a normalized key (apostrophes/spaces stripped) so db-cars.js can apply them
