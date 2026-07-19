@@ -180,7 +180,25 @@
     "ב.מ.וו|ix2": g6('bmw-ix2'),
     "ב.מ.וו|IX50": g6('bmw-ix'),
     "אאודי|Q5 40TFSI": g6('audi-q5'),
-    "אומודה|7 הרמוני": g6('omoda-7')
+    "אומודה|7 הרמוני": g6('omoda-7'),
+"ב.י.ד|סיל יו": ["images/gallery/byd-sealu/ext1.jpg","images/gallery/byd-sealu/ext2.jpg","images/gallery/byd-sealu/ext3.jpg","images/gallery/byd-sealu/ext4.jpg","images/gallery/byd-sealu/int5.jpg","images/gallery/byd-sealu/int6.jpg"],
+    "ב.י.ד|סיליון": ["images/gallery/byd-sealion5/ext1.jpg","images/gallery/byd-sealion5/ext2.jpg","images/gallery/byd-sealion5/ext3.jpg","images/gallery/byd-sealion5/ext4.jpg","images/gallery/byd-sealion5/int5.jpg","images/gallery/byd-sealion5/int6.jpg"],
+    "ג'אקו|8": ["images/gallery/jaecoo-8/ext1.jpg","images/gallery/jaecoo-8/ext2.jpg","images/gallery/jaecoo-8/ext3.jpg","images/gallery/jaecoo-8/ext4.jpg","images/gallery/jaecoo-8/int5.jpg","images/gallery/jaecoo-8/int6.jpg"],
+    "ג'אקו|7": ["images/gallery/jaecoo-7/ext1.jpg","images/gallery/jaecoo-7/ext2.jpg","images/gallery/jaecoo-7/ext3.jpg","images/gallery/jaecoo-7/ext4.jpg","images/gallery/jaecoo-7/int5.jpg","images/gallery/jaecoo-7/int6.jpg"],
+    "ג'אקו|5": ["images/gallery/jaecoo-5/ext1.jpg","images/gallery/jaecoo-5/ext2.jpg","images/gallery/jaecoo-5/ext3.jpg","images/gallery/jaecoo-5/ext4.jpg","images/gallery/jaecoo-5/int5.jpg","images/gallery/jaecoo-5/int6.jpg"],
+    "ג'אקו|5 חשמלי": ["images/gallery/jaecoo-5/ext1.jpg","images/gallery/jaecoo-5/ext2.jpg","images/gallery/jaecoo-5/ext3.jpg","images/gallery/jaecoo-5/ext4.jpg","images/gallery/jaecoo-5/int5.jpg","images/gallery/jaecoo-5/int6.jpg"],
+    "מיצובישי|אקליפס": ["images/gallery/mitsubishi-eclipsecross/ext1.jpg","images/gallery/mitsubishi-eclipsecross/ext2.jpg","images/gallery/mitsubishi-eclipsecross/ext3.jpg","images/gallery/mitsubishi-eclipsecross/int5.jpg","images/gallery/mitsubishi-eclipsecross/int6.jpg"],
+    "אמ.ג'י|3": ["images/gallery/mg3/mg3-front.jpg","images/gallery/mg3/mg3-grille.jpg","images/gallery/mg3/mg3-interior-screen.jpg","images/gallery/mg3/mg3-interior-seats.jpg","images/gallery/mg3/mg3-side.jpg","images/gallery/mg3/mg3-wheel.jpg"],
+    "אווטר|11": ["images/gallery/avatr-11/ext1.jpg","images/gallery/avatr-11/ext2.jpg","images/gallery/avatr-11/ext3.jpg","images/gallery/avatr-11/ext4.jpg","images/gallery/avatr-11/int5.jpg","images/gallery/avatr-11/int6.jpg"],
+    "אומודה|7": ["images/gallery/omoda-7/ext1.jpg","images/gallery/omoda-7/ext2.jpg","images/gallery/omoda-7/ext3.jpg","images/gallery/omoda-7/ext4.jpg","images/gallery/omoda-7/int5.jpg","images/gallery/omoda-7/int6.jpg"],
+    "ב.מ.וו|530": ["images/gallery/bmw-5/ext1.jpg","images/gallery/bmw-5/ext2.jpg","images/gallery/bmw-5/ext3.jpg","images/gallery/bmw-5/ext4.jpg","images/gallery/bmw-5/int5.jpg","images/gallery/bmw-5/int6.jpg"],
+    "מאזדה|cx5": ["images/gallery/mazda-cx5/ext1.jpg","images/gallery/mazda-cx5/ext2.jpg","images/gallery/mazda-cx5/ext3.jpg","images/gallery/mazda-cx5/ext4.jpg","images/gallery/mazda-cx5/int5.jpg","images/gallery/mazda-cx5/int6.jpg"],
+    "זיקר|x": ["images/gallery/zeekr-x/ext1.jpg","images/gallery/zeekr-x/ext2.jpg","images/gallery/zeekr-x/ext3.jpg","images/gallery/zeekr-x/ext4.jpg","images/gallery/zeekr-x/int5.jpg","images/gallery/zeekr-x/int6.jpg"],
+    "זיקר|7x": ["images/gallery/zeekr-7x/ext1.jpg","images/gallery/zeekr-7x/ext2.jpg","images/gallery/zeekr-7x/ext3.jpg","images/gallery/zeekr-7x/ext4.jpg","images/gallery/zeekr-7x/int5.jpg","images/gallery/zeekr-7x/int6.jpg"],
+    "סמארט|#5": ["images/gallery/smart-5/ext1.jpg","images/gallery/smart-5/ext2.jpg","images/gallery/smart-5/ext3.jpg","images/gallery/smart-5/ext4.jpg","images/gallery/smart-5/int5.jpg","images/gallery/smart-5/int6.jpg"],
+    "מרצדס|cla 200 סיגניצ'ר AMG LINE": ["images/gallery/mercedes-cla/ext1.jpg","images/gallery/mercedes-cla/ext2.jpg","images/gallery/mercedes-cla/ext3.jpg","images/gallery/mercedes-cla/ext4.jpg","images/gallery/mercedes-cla/int5.jpg","images/gallery/mercedes-cla/int6.jpg"],
+    "אאודי|Q3 ספורטבק 35 TFSI חבילת אבזור Design": ["images/gallery/audi-q3/ext1.jpg","images/gallery/audi-q3/ext2.jpg","images/gallery/audi-q3/ext3.jpg","images/gallery/audi-q3/ext4.jpg","images/gallery/audi-q3/int5.jpg","images/gallery/audi-q3/int6.jpg"],
+    "אאודי|A3 ספורטבק חבילת SLINE LUX": ["images/gallery/audi-a3/ext1.jpg","images/gallery/audi-a3/ext2.jpg","images/gallery/audi-a3/ext3.jpg","images/gallery/audi-a3/ext4.jpg","images/gallery/audi-a3/int5.jpg","images/gallery/audi-a3/int6.jpg"]
   };
   C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
   // expose galleries with a normalized key (apostrophes/spaces stripped) so db-cars.js can apply them
