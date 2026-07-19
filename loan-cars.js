@@ -176,7 +176,11 @@
     "ג'אקו|ג'אקו 5 חשמלי": ["images/gallery/jaecoo-5/ext1.jpg","images/gallery/jaecoo-5/ext2.jpg","images/gallery/jaecoo-5/ext3.jpg","images/gallery/jaecoo-5/ext4.jpg","images/gallery/jaecoo-5/int5.jpg","images/gallery/jaecoo-5/int6.jpg"],
     "סיטרואן|ברלינגו": ["images/gallery/citroen-berlingo/ext1.jpg","images/gallery/citroen-berlingo/ext2.jpg","images/gallery/citroen-berlingo/ext3.jpg","images/gallery/citroen-berlingo/ext4.jpg","images/gallery/citroen-berlingo/int5.jpg"],
     "אווטר|אווטר 11": ["images/gallery/avatr-11/ext1.jpg","images/gallery/avatr-11/ext2.jpg","images/gallery/avatr-11/ext3.jpg","images/gallery/avatr-11/ext4.jpg","images/gallery/avatr-11/int5.jpg","images/gallery/avatr-11/int6.jpg"],
-    "וויה|Free": ["images/gallery/voyah-free/ext1.jpg","images/gallery/voyah-free/ext2.jpg","images/gallery/voyah-free/ext3.jpg","images/gallery/voyah-free/ext4.jpg","images/gallery/voyah-free/int5.jpg","images/gallery/voyah-free/int6.jpg"]
+    "וויה|Free": ["images/gallery/voyah-free/ext1.jpg","images/gallery/voyah-free/ext2.jpg","images/gallery/voyah-free/ext3.jpg","images/gallery/voyah-free/ext4.jpg","images/gallery/voyah-free/int5.jpg","images/gallery/voyah-free/int6.jpg"],
+    "ב.מ.וו|ix2": g6('bmw-ix2'),
+    "ב.מ.וו|IX50": g6('bmw-ix'),
+    "אאודי|Q5 40TFSI": g6('audi-q5'),
+    "אומודה|7 הרמוני": g6('omoda-7')
   };
   C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
   // expose galleries with a normalized key (apostrophes/spaces stripped) so db-cars.js can apply them
