@@ -145,7 +145,31 @@
     "אמ.ג'י|ZS": g6('mg-zs'),
     "ניסאן|ג'וק": g6('nissan-juke'),
     "ניסאן|קשקאי": ["images/gallery/nissan-qashqai/ext1.jpg","images/gallery/nissan-qashqai/ext2.jpg","images/gallery/nissan-qashqai/ext3.jpg","images/gallery/nissan-qashqai/ext4.jpg"],
-    "מאזדה|CX-5": g6('mazda-cx5')
+    "מאזדה|CX-5": g6('mazda-cx5'),
+"ב.מ.וו|X1": ["images/gallery/bmw-x1/ext1.jpg","images/gallery/bmw-x1/ext2.jpg","images/gallery/bmw-x1/ext3.jpg","images/gallery/bmw-x1/ext4.jpg","images/gallery/bmw-x1/int5.jpg","images/gallery/bmw-x1/int6.jpg"],
+    "ב.מ.וו|iX1": ["images/gallery/bmw-ix1/ext1.jpg","images/gallery/bmw-ix1/ext2.jpg","images/gallery/bmw-ix1/ext3.jpg","images/gallery/bmw-ix1/ext4.jpg","images/gallery/bmw-ix1/int5.jpg","images/gallery/bmw-ix1/int6.jpg"],
+    "ב.מ.וו|X2": ["images/gallery/bmw-x2/ext1.jpg","images/gallery/bmw-x2/ext2.jpg","images/gallery/bmw-x2/ext3.jpg","images/gallery/bmw-x2/ext4.jpg","images/gallery/bmw-x2/int5.jpg","images/gallery/bmw-x2/int6.jpg"],
+    "ב.מ.וו|X4": ["images/gallery/bmw-x4/ext1.jpg","images/gallery/bmw-x4/ext2.jpg","images/gallery/bmw-x4/ext3.jpg","images/gallery/bmw-x4/ext4.jpg","images/gallery/bmw-x4/int5.jpg","images/gallery/bmw-x4/int6.jpg"],
+    "ב.מ.וו|X5": ["images/gallery/bmw-x5/ext1.jpg","images/gallery/bmw-x5/ext2.jpg","images/gallery/bmw-x5/ext3.jpg","images/gallery/bmw-x5/ext4.jpg","images/gallery/bmw-x5/int5.jpg","images/gallery/bmw-x5/int6.jpg"],
+    "ב.מ.וו|216": ["images/gallery/bmw-2gc/ext1.jpg","images/gallery/bmw-2gc/ext2.jpg","images/gallery/bmw-2gc/ext3.jpg","images/gallery/bmw-2gc/ext4.jpg","images/gallery/bmw-2gc/int5.jpg","images/gallery/bmw-2gc/int6.jpg"],
+    "ב.מ.וו|530e": ["images/gallery/bmw-5/ext1.jpg","images/gallery/bmw-5/ext2.jpg","images/gallery/bmw-5/ext3.jpg","images/gallery/bmw-5/ext4.jpg","images/gallery/bmw-5/int5.jpg","images/gallery/bmw-5/int6.jpg"],
+    "ב.מ.וו|420i": ["images/gallery/bmw-4gc/ext1.jpg","images/gallery/bmw-4gc/ext2.jpg","images/gallery/bmw-4gc/ext3.jpg","images/gallery/bmw-4gc/ext4.jpg","images/gallery/bmw-4gc/int5.jpg","images/gallery/bmw-4gc/int6.jpg"],
+    "אאודי|Q3 ספורטבק": ["images/gallery/audi-q3/ext1.jpg","images/gallery/audi-q3/ext2.jpg","images/gallery/audi-q3/ext3.jpg","images/gallery/audi-q3/ext4.jpg","images/gallery/audi-q3/int5.jpg","images/gallery/audi-q3/int6.jpg"],
+    "אאודי|A3 ספורטבק": ["images/gallery/audi-a3/ext1.jpg","images/gallery/audi-a3/ext2.jpg","images/gallery/audi-a3/ext3.jpg","images/gallery/audi-a3/ext4.jpg","images/gallery/audi-a3/int5.jpg","images/gallery/audi-a3/int6.jpg"],
+    "סקודה|סופרב": ["images/gallery/skoda-superb/ext1.jpg","images/gallery/skoda-superb/ext2.jpg","images/gallery/skoda-superb/ext3.jpg","images/gallery/skoda-superb/ext4.jpg","images/gallery/skoda-superb/int5.jpg","images/gallery/skoda-superb/int6.jpg"],
+    "סקודה|קאמיק": ["images/gallery/skoda-kamiq/ext1.jpg","images/gallery/skoda-kamiq/ext2.jpg","images/gallery/skoda-kamiq/ext3.jpg","images/gallery/skoda-kamiq/ext4.jpg","images/gallery/skoda-kamiq/int5.jpg","images/gallery/skoda-kamiq/int6.jpg"],
+    "סקודה|אוקטביה": ["images/gallery/skoda-octavia/ext1.jpg","images/gallery/skoda-octavia/ext2.jpg","images/gallery/skoda-octavia/ext3.jpg","images/gallery/skoda-octavia/ext4.jpg","images/gallery/skoda-octavia/int5.jpg","images/gallery/skoda-octavia/int6.jpg"],
+    "סובארו|קרוסטרק": ["images/gallery/subaru-crosstrek/ext1.jpg","images/gallery/subaru-crosstrek/ext2.jpg","images/gallery/subaru-crosstrek/ext3.jpg","images/gallery/subaru-crosstrek/ext4.jpg","images/gallery/subaru-crosstrek/int5.jpg","images/gallery/subaru-crosstrek/int6.jpg"],
+    "זיקר|זיקר X": ["images/gallery/zeekr-x/ext1.jpg","images/gallery/zeekr-x/ext2.jpg","images/gallery/zeekr-x/ext3.jpg","images/gallery/zeekr-x/ext4.jpg","images/gallery/zeekr-x/int5.jpg","images/gallery/zeekr-x/int6.jpg"],
+    "זיקר|זיקר 001": ["images/gallery/zeekr-001/ext1.jpg","images/gallery/zeekr-001/ext2.jpg","images/gallery/zeekr-001/ext3.jpg","images/gallery/zeekr-001/ext4.jpg","images/gallery/zeekr-001/int5.jpg","images/gallery/zeekr-001/int6.jpg"],
+    "זיקר|זיקר 7X": ["images/gallery/zeekr-7x/ext1.jpg","images/gallery/zeekr-7x/ext2.jpg","images/gallery/zeekr-7x/ext3.jpg","images/gallery/zeekr-7x/ext4.jpg","images/gallery/zeekr-7x/int5.jpg","images/gallery/zeekr-7x/int6.jpg"],
+    "סמארט|סמארט #5": ["images/gallery/smart-5/ext1.jpg","images/gallery/smart-5/ext2.jpg","images/gallery/smart-5/ext3.jpg","images/gallery/smart-5/ext4.jpg","images/gallery/smart-5/int5.jpg","images/gallery/smart-5/int6.jpg"],
+    "טויוטה|יאריס": ["images/gallery/toyota-yaris/ext2.jpg","images/gallery/toyota-yaris/ext3.jpg","images/gallery/toyota-yaris/ext4.jpg","images/gallery/toyota-yaris/int5.jpg","images/gallery/toyota-yaris/int6.jpg"],
+    "אומודה|אומודה 7": ["images/gallery/omoda-7/ext1.jpg","images/gallery/omoda-7/ext2.jpg","images/gallery/omoda-7/ext3.jpg","images/gallery/omoda-7/ext4.jpg","images/gallery/omoda-7/int5.jpg","images/gallery/omoda-7/int6.jpg"],
+    "מרצדס|GLA 200": ["images/gallery/mercedes-gla/ext1.jpg","images/gallery/mercedes-gla/ext2.jpg","images/gallery/mercedes-gla/ext3.jpg","images/gallery/mercedes-gla/ext4.jpg","images/gallery/mercedes-gla/int5.jpg","images/gallery/mercedes-gla/int6.jpg"],
+    "מרצדס|GLC 200": ["images/gallery/mercedes-glc/ext1.jpg","images/gallery/mercedes-glc/ext2.jpg","images/gallery/mercedes-glc/ext3.jpg","images/gallery/mercedes-glc/ext4.jpg","images/gallery/mercedes-glc/int5.jpg","images/gallery/mercedes-glc/int6.jpg"],
+    "מרצדס|GLC 300 קופה": ["images/gallery/mercedes-glc-coupe/ext1.jpg","images/gallery/mercedes-glc-coupe/ext2.jpg","images/gallery/mercedes-glc-coupe/ext3.jpg","images/gallery/mercedes-glc-coupe/ext4.jpg","images/gallery/mercedes-glc-coupe/int5.jpg","images/gallery/mercedes-glc-coupe/int6.jpg"],
+    "מרצדס|CLA 200": ["images/gallery/mercedes-cla/ext1.jpg","images/gallery/mercedes-cla/ext2.jpg","images/gallery/mercedes-cla/ext3.jpg","images/gallery/mercedes-cla/ext4.jpg","images/gallery/mercedes-cla/int5.jpg","images/gallery/mercedes-cla/int6.jpg"]
   };
   C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
   window.Car2Buy.LOAN_CARS = C;
