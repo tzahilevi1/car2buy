@@ -281,6 +281,8 @@
 <div id="site-footer"></div>
 
 <script src="models-data.js"></script>
+<script src="used-cars.js"></script>
+<script src="used-galleries.js"></script>
 <script src="cars-data.js"></script>
 <script src="loan-cars.js"></script>
 <script src="customers-data.js"></script>
@@ -326,7 +328,24 @@
     return [...map.values()].sort(function (a, b) { return a.minM - b.minM; });
   }
 
+  // used-car (יד 2) brands are English and live in USED, not LOAN_CARS — build models from there
+  function groupFromUsed(b) {
+    var map = new Map();
+    ((C.USED || []).filter(function (u) { return u.brand === b; })).forEach(function (u) {
+      var key = u.name;
+      var gal = (C.usedGallery ? C.usedGallery(u) : (u.gallery || []));
+      if (!map.has(key)) map.set(key, { brand: u.brand, name: u.name, type: u.type || '', img: u.img || gal[0] || '', fuel: u.type || 'בנזין', year: u.year || 2026, minM: u.monthly, minP: u.price, trims: 0, slug: '' });
+      var g = map.get(key);
+      g.trims++;
+      if (u.monthly && u.monthly < g.minM) { g.minM = u.monthly; g.minP = u.price; }
+      if (!g.img) g.img = u.img || gal[0] || '';
+    });
+    return [...map.values()].sort(function (a, b2) { return a.minM - b2.minM; });
+  }
+
   var models = groupFor(brand);
+  var isUsed = false;
+  if (!models.length) { models = groupFromUsed(brand); isUsed = models.length > 0; }
   if (!brand || !models.length) {
     root.innerHTML = '<section class="section"><div class="wrap" style="text-align:center;padding:100px 0;">'
       + '<h1 style="font-size:34px;">המאמר לא נמצא</h1>'
