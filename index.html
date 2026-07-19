@@ -149,24 +149,18 @@
   </div>
 </section>
 
-<!-- ===== CUSTOMERS ===== -->
+<!-- ===== USED CARS CAROUSEL (יד 2) ===== -->
 <section class="section testi-section" style="padding-top:clamp(20px,3vw,36px);">
   <div class="wrap">
-    <div class="center">
-      <span class="eyebrow reveal">לקוחות מספרים</span>
-      <h2 class="h-sec reveal">הם כבר <span class="gold-text">על הכביש</span></h2>
-      <p class="lead reveal">מאות לקוחות מאושרים שקיבלו את הרכב שחלמו עליו. הצטרפו אליהם.</p>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+      <div>
+        <span class="eyebrow reveal">יד 2 של Car2Buy</span>
+        <h2 class="h-sec reveal">רכבי יד שנייה <span class="gold-text">נבחרים</span></h2>
+      </div>
+      <a href="yad2.html" class="btn btn-ghost reveal">לכל רכבי יד 2 ←</a>
     </div>
   </div>
-  <div class="cmarquee" id="custMarquee" aria-label="תמונות לקוחות"><div class="cmarquee-track" id="custMarqueeTrack"></div></div>
-  <div class="wrap">
-    <div class="vtest reveal" id="vtest">
-      <button class="vtest-nav prev" id="vtPrev" aria-label="הקודם">‹</button>
-      <div class="vtest-viewport"><div class="vtest-track" id="vtTrack"></div></div>
-      <button class="vtest-nav next" id="vtNext" aria-label="הבא">›</button>
-      <div class="vtest-dots" id="vtDots"></div>
-    </div>
-  </div>
+  <div class="used-carousel" id="homeUsedCarousel" aria-label="רכבי יד 2"></div>
 </section>
 
 <!-- ===== PRESS ===== -->
@@ -329,6 +323,15 @@
 <script src="loan-cars.js"></script>
 <script src="site.js"></script>
 <script src="app.js"></script>
+<script>
+// populate the home-page יד 2 carousel from the used inventory
+(function () {
+  var el = document.getElementById('homeUsedCarousel');
+  var C = window.Car2Buy;
+  if (!el || !C || !C.USED || !C.usedCard) return;
+  el.innerHTML = C.USED.slice(0, 10).map(function (u, i) { return C.usedCard(u, i); }).join('');
+})();
+</script>
 
 </body>
 </html>
