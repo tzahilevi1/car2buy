@@ -651,7 +651,7 @@
       : hev ? 'המערכת ההיברידית חוסכת דלק משמעותית בעיר ומעניקה נסיעה חלקה ושקטה.'
       : 'המנוע מספק ביצועים אמינים ותגובתיים עם מעבר הילוכים חלק ותחושת ביטחון בדרך.';
     return {
-      brand: u.brand, model: u.name, trim: 'יד ' + u.hand, type: u.type, cat: u.cat || '',
+      brand: u.brand, model: u.name, trim: u.trim || '', type: u.type, cat: u.cat || '',
       price: u.price, monthly60: u.monthly, year: u.year, img: u.img,
       gallery: (u.gallery && u.gallery.length) ? u.gallery : (u.img ? [u.img] : []),
       km: u.km, hand: u.hand, inStock: true,
