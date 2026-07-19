@@ -399,7 +399,7 @@
   ];
 
   window.Car2Buy = {
-    IMG, MODELS, CATS, BRANDS, BRANDS_ALL, BRAND_HE, FUELS, USED, ARTICLES, PRESS, CUSTOMERS, NIS, LOGO, LOGO_HE, brandEn,
+    IMG, MODELS, CATS, BRANDS, BRANDS_ALL, BRAND_HE, FUELS, USED, ARTICLES, PRESS, CUSTOMERS, TESTIMONIALS: CUSTOMERS, NIS, LOGO, LOGO_HE, brandEn,
     gallery,
     byId: (id) => MODELS.find((m) => m.id === id),
     card(m) {

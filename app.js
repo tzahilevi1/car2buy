@@ -560,7 +560,8 @@
   /* ---------- video testimonials carousel ---------- */
   const vtest = document.getElementById('vtest');
   if (vtest && window.Car2Buy) {
-    const items = window.Car2Buy.CUSTOMERS;
+    // testimonials carry quotes; CUSTOMERS may be overridden with photo-only data (customers-data.js)
+    const items = window.Car2Buy.TESTIMONIALS || window.Car2Buy.CUSTOMERS;
     const track = document.getElementById('vtTrack');
     const dotsWrap = document.getElementById('vtDots');
     track.innerHTML = items.map((c) => `

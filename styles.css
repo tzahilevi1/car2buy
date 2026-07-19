@@ -1005,8 +1005,8 @@ image-slot { display: block; }
 @media (max-width: 880px) { .yad2-do-inner { grid-template-columns: 1fr; } }
 
 /* ===== customer photo marquee ===== */
-.cmarquee { overflow: hidden; width: 100%; margin: 48px 0 8px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.cmarquee-track { display: flex; gap: 16px; width: max-content; animation: cmScroll 48s linear infinite; }
+.cmarquee { overflow: hidden; width: 100%; margin: 48px 0 8px; direction: ltr; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.cmarquee-track { display: flex; gap: 16px; width: max-content; direction: ltr; animation: cmScroll 60s linear infinite; }
 .cmarquee:hover .cmarquee-track { animation-play-state: paused; }
 @keyframes cmScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .cmarquee-track { animation: none; } }

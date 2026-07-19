@@ -157,20 +157,6 @@
   </div>
 </section>
 
-<!-- ===== USED CARS CAROUSEL (יד 2) ===== -->
-<section class="section testi-section" style="padding-top:clamp(20px,3vw,36px);">
-  <div class="wrap">
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;">
-      <div>
-        <span class="eyebrow reveal">יד 2 של Car2Buy</span>
-        <h2 class="h-sec reveal">רכבי יד שנייה <span class="gold-text">נבחרים</span></h2>
-      </div>
-      <a href="yad2.html" class="btn btn-ghost reveal">לכל רכבי יד 2 ←</a>
-    </div>
-  </div>
-  <div class="used-carousel" id="homeUsedCarousel" aria-label="רכבי יד 2"></div>
-</section>
-
 <!-- ===== CUSTOMERS (לקוחות מספרים) ===== -->
 <section class="section testi-section" style="padding-top:clamp(24px,3vw,40px);">
   <div class="wrap">
@@ -181,6 +167,14 @@
     </div>
   </div>
   <div class="cmarquee" id="custMarquee" aria-label="תמונות לקוחות"><div class="cmarquee-track" id="custMarqueeTrack"></div></div>
+  <div class="wrap">
+    <div class="vtest reveal" id="vtest">
+      <button class="vtest-nav prev" id="vtPrev" aria-label="הקודם">‹</button>
+      <div class="vtest-viewport"><div class="vtest-track" id="vtTrack"></div></div>
+      <button class="vtest-nav next" id="vtNext" aria-label="הבא">›</button>
+      <div class="vtest-dots" id="vtDots"></div>
+    </div>
+  </div>
 </section>
 
 <!-- ===== BRANDS ===== -->
@@ -340,12 +334,7 @@
 (function () {
   var C = window.Car2Buy;
   if (!C) return;
-  // 1) home-page יד 2 carousel from the used inventory
-  var el = document.getElementById('homeUsedCarousel');
-  if (el && C.USED && C.usedCard) {
-    el.innerHTML = C.USED.slice(0, 10).map(function (u, i) { return C.usedCard(u, i); }).join('');
-  }
-  // 2) customer-photos marquee — eager-load a subset (app.js uses lazy, which stalls in the animated track)
+  // customer-photos marquee — eager-load a subset (app.js uses lazy, which stalls in the animated track)
   var mt = document.getElementById('custMarqueeTrack');
   if (mt && C.CUSTOMERS && C.CUSTOMERS.length) {
     var pool = C.CUSTOMERS.slice(0, 16);
