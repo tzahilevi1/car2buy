@@ -1779,3 +1779,9 @@ td.cmp-best { background: color-mix(in oklab, var(--gold) 9%, transparent); colo
 .uc-fav:hover { background: #23232a; }
 .uc-fav.is-fav { background: var(--gold-deep); }
 .uc-fav.is-fav svg { fill: #fff; }
+
+/* ===== used-car placeholder (no photo yet) ===== */
+.uc-ph.uc-ph-empty { display: grid; place-content: center; justify-items: center; gap: 12px; padding: 20px; background: linear-gradient(160deg, #f3f5f8, #e4e7ec); text-align: center; }
+.uc-ph-logo { width: clamp(56px, 20%, 88px); max-height: 60px; object-fit: contain; opacity: .92; }
+.uc-ph-model { font-family: var(--display); font-weight: 800; font-size: 18px; color: #2a2f3a; line-height: 1.2; }
+.uc-ph-soon { font-size: 12px; font-weight: 600; color: #8a8f99; }

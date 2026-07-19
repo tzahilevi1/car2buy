@@ -188,28 +188,62 @@
 
   // second-hand inventory (יד 2)
   const USED = [
-    { brand:'BMW',        name:'320i M-Sport',     year:2021, km:62000,  hand:2, price:165000, monthly:1890, cat:'sedan', type:'סדאן',     img:IMG.bmwGT },
-    { brand:'BMW',        name:'X3 xDrive',        year:2020, km:84000,  hand:2, price:178000, monthly:2090, cat:'suv',   type:'רכב פנאי', img:IMG.bmwBlack },
-    { brand:'BMW',        name:'430i Coupé',       year:2022, km:38000,  hand:1, price:215000, monthly:2490, cat:'sport', type:'קופה',     img:IMG.bmw4 },
-    { brand:'Audi',       name:'A5 Sportback',     year:2020, km:78000,  hand:1, price:172000, monthly:1990, cat:'sedan', type:'סדאן',     img:IMG.audiSilver },
-    { brand:'Audi',       name:'Q5 quattro',       year:2021, km:69000,  hand:1, price:198000, monthly:2290, cat:'suv',   type:'רכב פנאי', img:IMG.suvSilver },
-    { brand:'Audi',       name:'A3 Sedan',         year:2019, km:112000, hand:2, price:128000, monthly:1540, cat:'sedan', type:'סדאן',     img:IMG.audiBlack },
-    { brand:'Tesla',      name:'Model 3 LR',       year:2021, km:54000,  hand:1, price:175000, monthly:1990, cat:'ev',    type:'חשמלי',    img:IMG.teslaFront },
-    { brand:'Tesla',      name:'Model Y',          year:2022, km:41000,  hand:1, price:198000, monthly:2290, cat:'ev',    type:'חשמלי',    img:IMG.teslaWhite },
-    { brand:'Lexus',      name:'NX 300h',          year:2020, km:88000,  hand:2, price:168000, monthly:1940, cat:'suv',   type:'היברידי',  img:IMG.suvSilver },
-    { brand:'Lexus',      name:'ES 300h',          year:2019, km:124000, hand:3, price:142000, monthly:1690, cat:'sedan', type:'היברידי',  img:IMG.silverRoad },
-    { brand:'Toyota',     name:'Corolla Hybrid',   year:2022, km:41000,  hand:1, price:118000, monthly:1420, cat:'sedan', type:'היברידי',  img:IMG.silverRoad },
-    { brand:'Toyota',     name:'RAV4 Hybrid',      year:2021, km:73000,  hand:2, price:158000, monthly:1860, cat:'suv',   type:'היברידי',  img:IMG.suvSilver },
-    { brand:'Toyota',     name:'C-HR',             year:2020, km:96000,  hand:2, price:112000, monthly:1360, cat:'suv',   type:'קרוסאובר', img:IMG.jeep },
-    { brand:'Volkswagen', name:'Golf GTI',         year:2021, km:59000,  hand:1, price:138000, monthly:1640, cat:'sport', type:'ספורט',    img:IMG.blackCoupe },
-    { brand:'Volkswagen', name:'Tiguan',           year:2020, km:91000,  hand:2, price:132000, monthly:1580, cat:'suv',   type:'רכב פנאי', img:IMG.jeep },
-    { brand:'Kia',        name:'Sportage GT',      year:2021, km:67000,  hand:2, price:132000, monthly:1580, cat:'suv',   type:'רכב פנאי', img:IMG.jeep },
-    { brand:'Kia',        name:'Niro EV',          year:2022, km:48000,  hand:1, price:126000, monthly:1520, cat:'ev',    type:'חשמלי',    img:IMG.teslaFront },
-    { brand:'Mazda',      name:'6 Signature',      year:2019, km:96000,  hand:2, price:108000, monthly:1320, cat:'sedan', type:'סדאן',     img:IMG.bmwSedan },
-    { brand:'Mazda',      name:'CX-5',             year:2020, km:134000, hand:3, price:118000, monthly:1420, cat:'suv',   type:'רכב פנאי', img:IMG.suvSilver },
-    { brand:'Genesis',    name:'G70',              year:2021, km:61000,  hand:1, price:158000, monthly:1860, cat:'sedan', type:'מנהלים',   img:IMG.genesis },
-    { brand:'Mercedes-AMG',name:'C 200 Coupé',     year:2019, km:142000, hand:3, price:152000, monthly:1790, cat:'sport', type:'קופה',     img:IMG.amgSilver },
-    { brand:'Porsche',    name:'Macan',            year:2019, km:118000, hand:2, price:268000, monthly:3090, cat:'suv',   type:'רכב פנאי', img:IMG.exotic },
+    { brand:'JAC', name:'90', trim:'PRIME 4WD', year:2026, km:7500, hand:2, price:275900, monthly:3200, cat:'ev', type:'חשמלי', color:'אפור', plate:'192-83-304', slug:'jac', img:'' },
+    { brand:'Toyota', name:'קורולה קרוס', trim:'ACTIVE', year:2026, km:500, hand:2, price:175900, monthly:2040, cat:'sedan', type:'בנזין', color:'לבן', plate:'504-51-004', slug:'toyota', img:'' },
+    { brand:'Chery', name:'FX', trim:'COMFORT', year:2026, km:400, hand:2, price:125000, monthly:1450, cat:'sedan', type:'בנזין', color:'כסף מטלי', plate:'617-34-004', slug:'chery', img:'' },
+    { brand:'Mercedes', name:'EQC', trim:'AMG LINE', year:2024, km:18000, hand:2, price:319900, monthly:3710, cat:'ev', type:'חשמלי', color:'שחור', plate:'711-87-303', slug:'mercedes-benz', img:'' },
+    { brand:'Isuzu', name:'2X4 D-MAX', trim:'LSE PREMIUM', year:2024, km:119634, hand:2, price:249900, monthly:2900, cat:'suv', type:'דיזל', color:'שחור', plate:'368-69-203', slug:'isuzu', img:'' },
+    { brand:'Xpeng', name:'G6', trim:'PERF TB', year:2024, km:43800, hand:1, price:199900, monthly:2320, cat:'ev', type:'חשמלי', color:'כסף מטלי', plate:'114-97-204', slug:'xpeng', img:'' },
+    { brand:'Hyundai', name:'טוסון', trim:'CREATIVE', year:2024, km:53910, hand:1, price:179900, monthly:2090, cat:'suv', type:'היברידי', color:'כחול', plate:'603-17-503', slug:'hyundai', img:'' },
+    { brand:'Xpeng', name:'P7', trim:'LONG RANGE', year:2024, km:34205, hand:1, price:154900, monthly:1800, cat:'ev', type:'חשמלי', color:'שנהב לבן', plate:'594-72-303', slug:'xpeng', img:'' },
+    { brand:'Nissan', name:'אקס טרייל', trim:'ACENTA TOP', year:2024, km:29000, hand:2, price:139900, monthly:1620, cat:'suv', type:'בנזין', color:'לבן', plate:'703-05-503', slug:'nissan', img:'' },
+    { brand:'Lynk & Co', name:'01', trim:'LOUDER', year:2024, km:56400, hand:3, price:139900, monthly:1620, cat:'sedan', type:'היברידי', color:'שנהב לבן', plate:'314-11-403', slug:'lynk-co', img:'' },
+    { brand:'Renault', name:'מגאן I', trim:'ICONIC', year:2024, km:81000, hand:2, price:92900, monthly:1080, cat:'sedan', type:'דיזל', color:'שנהב לבן', plate:'703-38-303', slug:'renault', img:'' },
+    { brand:'Mercedes', name:'GLE', trim:'AMG', year:2023, km:130000, hand:1, price:310000, monthly:3600, cat:'suv', type:'בנזין', color:'שחור', plate:'418-14-603', slug:'mercedes-benz', img:'' },
+    { brand:'Isuzu', name:'4X4 D-MAX', trim:'LSE PREMIUM', year:2023, km:161014, hand:2, price:239900, monthly:2780, cat:'suv', type:'דיזל', color:'אפור כהה', plate:'368-18-003', slug:'isuzu', img:'' },
+    { brand:'Tesla', name:'דגם 3', trim:'LONG RANGE', year:2023, km:51671, hand:1, price:138850, monthly:1610, cat:'ev', type:'חשמלי', color:'אפור כהה מטלי', plate:'579-94-603', slug:'tesla', img:'' },
+    { brand:'Chery', name:'TIGGO 7 Pro', trim:'NOBEL', year:2023, km:90000, hand:1, price:119900, monthly:1390, cat:'suv', type:'בנזין', color:'לבן', plate:'508-90-603', slug:'chery', img:'' },
+    { brand:'BYD', name:'ATTO 3', trim:'COMFORT', year:2023, km:52900, hand:1, price:110000, monthly:1280, cat:'ev', type:'חשמלי', color:'אפור כהה', plate:'408-74-303', slug:'byd', img:'' },
+    { brand:'BYD', name:'ATTO 3', trim:'DESIGN', year:2023, km:116950, hand:1, price:109900, monthly:1270, cat:'ev', type:'חשמלי', color:'שנהב לבן', plate:'402-85-403', slug:'byd', img:'' },
+    { brand:'BYD', name:'ATTO 3', trim:'COMFORT', year:2023, km:80451, hand:1, price:109900, monthly:1270, cat:'ev', type:'חשמלי', color:'שנהב לבן', plate:'521-99-103', slug:'byd', img:'' },
+    { brand:'BYD', name:'ATTO 3', trim:'COMFORT', year:2023, km:70000, hand:2, price:85000, monthly:990, cat:'ev', type:'חשמלי', color:'אפור כהה', plate:'613-87-103', slug:'byd', img:'' },
+    { brand:'Mercedes', name:'S-Class', trim:'PLATINUM LON S580', year:2022, km:73000, hand:2, price:610000, monthly:7080, cat:'sedan', type:'היברידי', color:'לבן', plate:'426-18-402', slug:'mercedes-benz', img:'' },
+    { brand:'Isuzu', name:'4X4 D-MAX', trim:'LS PREMIUM', year:2022, km:160015, hand:1, price:214900, monthly:2490, cat:'suv', type:'דיזל', color:'שחור', plate:'518-19-402', slug:'isuzu', img:'' },
+    { brand:'Kia', name:'סורנטו', trim:'URBAN', year:2022, km:132800, hand:2, price:159900, monthly:1850, cat:'suv', type:'בנזין', color:'אפור', plate:'857-13-002', slug:'kia', img:'' },
+    { brand:'Kia', name:'סורנטו', trim:'EX', year:2022, km:121615, hand:2, price:159900, monthly:1850, cat:'suv', type:'בנזין', color:'שנהב לבן', plate:'864-64-802', slug:'kia', img:'' },
+    { brand:'Mitsubishi', name:'אאוטלנדר', trim:'INSTYLE', year:2022, km:53600, hand:2, price:139900, monthly:1620, cat:'suv', type:'בנזין', color:'אפור', plate:'161-40-003', slug:'mitsubishi', img:'' },
+    { brand:'Skoda', name:'קודיאק', trim:'AMBITION', year:2022, km:137000, hand:2, price:129900, monthly:1510, cat:'suv', type:'בנזין', color:'שחור מטלי', plate:'891-29-802', slug:'skoda', img:'' },
+    { brand:'Tesla', name:'דגם 3', trim:'RWD', year:2022, km:135080, hand:1, price:125900, monthly:1460, cat:'ev', type:'חשמלי', color:'אפור כהה מטלי', plate:'853-97-502', slug:'tesla', img:'' },
+    { brand:'Hyundai', name:'טוסון', trim:'PANORAMIC', year:2022, km:85000, hand:2, price:119900, monthly:1390, cat:'suv', type:'בנזין', color:'אפור כהה מטלי', plate:'760-05-202', slug:'hyundai', img:'' },
+    { brand:'Peugeot', name:'3008', trim:'PREMIUM', year:2022, km:138478, hand:2, price:77900, monthly:900, cat:'suv', type:'בנזין', color:'אפור כהה', plate:'683-01-602', slug:'peugeot', img:'' },
+    { brand:'Kia', name:'פיקנטו', trim:'LX', year:2022, km:0, hand:2, price:60900, monthly:710, cat:'sedan', type:'בנזין', color:'שנהב לבן', plate:'857-01-502', slug:'kia', img:'' },
+    { brand:'BMW', name:'X2', trim:'M-SPORT', year:2021, km:79919, hand:3, price:174900, monthly:2030, cat:'suv', type:'היברידי', color:'שנהב לבן', plate:'452-88-502', slug:'bmw', img:'' },
+    { brand:'BMW', name:'X2', trim:'M-SPORT', year:2021, km:45222, hand:2, price:174900, monthly:2030, cat:'suv', type:'היברידי', color:'אפור כהה מטלי', plate:'452-90-702', slug:'bmw', img:'' },
+    { brand:'Toyota', name:'RAV4 ארוך', trim:'E-VOLVE', year:2021, km:198000, hand:2, price:149900, monthly:1740, cat:'suv', type:'בנזין', color:'אפור כהה מטלי', plate:'437-06-702', slug:'toyota', img:'' },
+    { brand:'Tesla', name:'דגם 3', trim:'LONG RANGE', year:2021, km:100145, hand:2, price:135900, monthly:1580, cat:'ev', type:'חשמלי', color:'שחור', plate:'775-59-002', slug:'tesla', img:'' },
+    { brand:'Hyundai', name:'טוסון', trim:'PRESTIGE', year:2021, km:58000, hand:2, price:118900, monthly:1380, cat:'suv', type:'בנזין', color:'לבן', plate:'630-65-002', slug:'hyundai', img:'' },
+    { brand:'Skoda', name:'קודיאק', trim:'AMBITION', year:2021, km:131506, hand:2, price:85000, monthly:990, cat:'suv', type:'בנזין', color:'כסף מטלי', plate:'589-02-102', slug:'skoda', img:'' },
+    { brand:'SEAT', name:'ארונה', trim:'STYLE', year:2021, km:104000, hand:2, price:79900, monthly:930, cat:'suv', type:'בנזין', color:'לבן', plate:'602-14-602', slug:'seat', img:'' },
+    { brand:'Jeep', name:'קומפאס', trim:'LIMITED', year:2021, km:118000, hand:2, price:60000, monthly:700, cat:'sedan', type:'בנזין', color:'שנהב לבן', plate:'267-84-602', slug:'jeep', img:'' },
+    { brand:'Peugeot', name:'2008', trim:'ACTIVE', year:2021, km:215000, hand:3, price:45000, monthly:520, cat:'suv', type:'דיזל', color:'שנהב לבן', plate:'305-34-302', slug:'peugeot', img:'' },
+    { brand:'Toyota', name:'RAV4 ארוך', trim:'E-XPERIENCE', year:2020, km:115000, hand:3, price:159900, monthly:1850, cat:'suv', type:'בנזין', color:'שנהב לבן', plate:'218-50-002', slug:'toyota', img:'' },
+    { brand:'Skoda', name:'קודיאק', trim:'BUSINESS', year:2020, km:42084, hand:3, price:109900, monthly:1270, cat:'suv', type:'בנזין', color:'אפור מטל', plate:'317-99-102', slug:'skoda', img:'' },
+    { brand:'Chevrolet', name:'בלייזר', trim:'PREMIER', year:2020, km:114000, hand:2, price:105900, monthly:1230, cat:'sedan', type:'בנזין', color:'שנהב לבן', plate:'718-24-301', slug:'chevrolet', img:'' },
+    { brand:'Hyundai', name:'טוסון', trim:'PRIME PLUS', year:2020, km:105000, hand:2, price:90900, monthly:1050, cat:'suv', type:'בנזין', color:'שנהב לבן', plate:'849-01-601', slug:'hyundai', img:'' },
+    { brand:'Nissan', name:'קשקאי', trim:'ACENTA', year:2020, km:201000, hand:3, price:55900, monthly:650, cat:'sedan', type:'בנזין', color:'שחור מטלי', plate:'155-86-202', slug:'nissan', img:'' },
+    { brand:'BMW', name:'X5', trim:'EXECUTIVE', year:2019, km:285000, hand:4, price:149900, monthly:1740, cat:'suv', type:'דיזל', color:'שחור מטלי', plate:'342-68-101', slug:'bmw', img:'' },
+    { brand:'Peugeot', name:'2008', trim:'ACTIVE GO', year:2019, km:126600, hand:2, price:30900, monthly:360, cat:'suv', type:'בנזין', color:'אפור כהה', plate:'489-08-101', slug:'peugeot', img:'' },
+    { brand:'Nissan', name:'אינפיניטי', trim:'GT PR', year:2018, km:103000, hand:5, price:75000, monthly:870, cat:'sport', type:'בנזין', color:'שנהב לבן', plate:'215-88-101', slug:'nissan', img:'' },
+    { brand:'Mitsubishi', name:'אאוטלנדר', trim:'INSTYLE', year:2018, km:165000, hand:2, price:50000, monthly:580, cat:'suv', type:'בנזין', color:'כחול', plate:'168-08-901', slug:'mitsubishi', img:'' },
+    { brand:'Volkswagen', name:'פאסאט', trim:'COMFORTLINE', year:2018, km:257000, hand:3, price:33000, monthly:380, cat:'sedan', type:'בנזין', color:'שחור מטלי', plate:'387-12-501', slug:'volkswagen', img:'' },
+    { brand:'Volvo', name:'V40', trim:'KINETIC', year:2018, km:213482, hand:2, price:25000, monthly:300, cat:'sedan', type:'בנזין', color:'שחור', plate:'570-82-701', slug:'volvo', img:'' },
+    { brand:'BMW', name:'סדרה 3', trim:'EXCLUSIVE', year:2016, km:130000, hand:3, price:92900, monthly:1080, cat:'sedan', type:'היברידי', color:'לבן', plate:'26-661-30', slug:'bmw', img:'' },
+    { brand:'Toyota', name:'לנד קרוזר ארוך', trim:'LUXURY', year:2015, km:350300, hand:3, price:179900, monthly:2090, cat:'sedan', type:'דיזל', color:'שנהב לבן', plate:'44-093-32', slug:'toyota', img:'' },
+    { brand:'Audi', name:'A3', trim:'SHARP-SPORT', year:2015, km:146156, hand:2, price:45900, monthly:530, cat:'sedan', type:'בנזין', color:'שנהב לבן', plate:'75-247-53', slug:'audi', img:'' },
+    { brand:'Mitsubishi', name:'אאוטלנדר', trim:'INSTYLE', year:2015, km:242300, hand:3, price:31000, monthly:360, cat:'suv', type:'בנזין', color:'שנהב לבן', plate:'37-713-37', slug:'mitsubishi', img:'' },
+    { brand:'Chevrolet', name:'אימפלה', trim:'LTZ', year:2014, km:133000, hand:4, price:35000, monthly:410, cat:'sedan', type:'בנזין', color:'אפור כהה מטלי', plate:'30-238-32', slug:'chevrolet', img:'' },
+    { brand:'Citroen', name:'ברלינגו החדשה', trim:'COMFORT', year:2013, km:345000, hand:3, price:8000, monthly:300, cat:'sedan', type:'דיזל', color:'שנהב לבן', plate:'75-636-12', slug:'citroen', img:'' },
+    { brand:'Hyundai', name:'i25', trim:'INSPIRE', year:2013, km:0, hand:2, price:2000, monthly:300, cat:'sedan', type:'בנזין', color:'כסף', plate:'12-177-11', slug:'hyundai', img:'' },
   ];
 
   // magazine / blog
@@ -437,9 +471,9 @@
       const pad = (n) => String(n).padStart(2, '0');
       const testDate = pad((u.km % 27) + 1) + '/' + pad(((u.hand + (u.km % 9)) % 12) + 1) + '/2027';
       const photos = (u.km % 8) + 5;
-      const isEV = u.type === 'חשמלי', isHyb = u.type === 'היברידי';
+      const isEV = u.type === 'חשמלי', isHyb = u.type === 'היברידי', isDsl = u.type === 'דיזל';
       const fuelCls = isEV ? 'ev' : isHyb ? 'hyb' : 'gas';
-      const fuelTxt = isEV ? 'חשמלי' : isHyb ? 'היברידי' : 'בנזין';
+      const fuelTxt = isEV ? 'חשמלי' : isHyb ? 'היברידי' : isDsl ? 'דיזל' : 'בנזין';
       const fuelIc = isEV
         ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>'
         : isHyb
@@ -448,13 +482,15 @@
       const href = 'used-car.html?car=u' + i;
       return `<article class="car ucard reveal" data-brand="${u.brand}" data-monthly="${u.monthly}" data-km="${u.km}" data-name="${u.brand} ${u.name}" data-cat="${u.cat}" data-hand="${u.hand}" data-type="${u.type}">
         <a class="uc-hit" href="${href}">
-          <div class="uc-ph">
-            <img loading="lazy" src="${u.img}" alt="${u.brand} ${u.name}">
+          <div class="uc-ph${u.img ? '' : ' uc-ph-empty'}">
+            ${u.img
+              ? `<img loading="lazy" src="${u.img}" alt="${u.brand} ${u.name}">`
+              : `${u.slug ? `<img class="uc-ph-logo" loading="lazy" src="https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/${u.slug}.png" alt="${u.brand}" onerror="this.remove()">` : ''}<span class="uc-ph-model">${u.brand} ${u.name}</span><span class="uc-ph-soon">📷 תמונות בקרוב</span>`}
             <span class="uc-fuel ${fuelCls}">${fuelIc}${fuelTxt}</span>
-            <span class="uc-media">
+            ${u.img ? `<span class="uc-media">
               <span class="uc-chip">וידאו <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
               <span class="uc-chip">${photos} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m21 17-5-5-9 7"/></svg></span>
-            </span>
+            </span>` : ''}
           </div>
           <div class="uc-name">${u.brand} ${u.name}</div>
         </a>

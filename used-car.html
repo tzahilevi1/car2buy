@@ -312,6 +312,10 @@
   .uc-slide { position:absolute; inset:0; opacity:0; transition:opacity .55s ease; }
   .uc-slide.active { opacity:1; }
   .uc-slide img { width:100%; height:100%; object-fit:cover; display:block; }
+  .uc-media-ph { position:absolute; inset:0; display:grid; place-content:center; justify-items:center; gap:10px; text-align:center; padding:30px; background:linear-gradient(160deg,#1b1f2a,#0d1018); }
+  .uc-media-ph-nm { font-family:var(--display); font-weight:900; font-size:clamp(22px,2.6vw,32px); color:#fff; line-height:1.15; }
+  .uc-media-ph-yr { font-size:14px; color:var(--gold-bright); font-weight:700; }
+  .uc-media-ph-soon { margin-top:6px; font-size:13px; color:rgba(255,255,255,.6); }
   .uc-car-nav { position:absolute; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%; border:0; background:rgba(255,255,255,.92); color:#111; display:grid; place-items:center; cursor:pointer; z-index:3; box-shadow:0 8px 20px -8px rgba(0,0,0,.5); transition:.2s; }
   .uc-car-nav:hover { background:#fff; }
   .uc-car-nav svg { width:22px; height:22px; }
@@ -1214,14 +1218,17 @@
           '</div>' +
         '</div>' +
         '<div class="uc-first-media">' +
-          '<div class="uc-carousel" id="ucCarousel">' +
-            heroSlides.map(function (g, i) { return '<div class="uc-slide' + (i === 0 ? ' active' : '') + '"><img src="' + esc(g.src) + '" alt="' + esc(fullName) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '" style="' + (g.style || '') + '"></div>'; }).join('') +
-          '</div>' +
-          '<button type="button" class="uc-car-nav prev" data-car-prev aria-label="הקודם">' + ic('<polyline points="15 18 9 12 15 6"/>') + '</button>' +
-          '<button type="button" class="uc-car-nav next" data-car-next aria-label="הבא">' + ic('<polyline points="9 18 15 12 9 6"/>') + '</button>' +
-          '<button type="button" class="uc-watch" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפה בסרטון</button>' +
-          '<div class="uc-car-count">' + heroSlides.length + ' תמונות • 1 סרטון</div>' +
-          '<div class="uc-car-dots" id="ucDots"></div>' +
+          (heroSlides.length
+            ? ('<div class="uc-carousel" id="ucCarousel">' +
+                heroSlides.map(function (g, i) { return '<div class="uc-slide' + (i === 0 ? ' active' : '') + '"><img src="' + esc(g.src) + '" alt="' + esc(fullName) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '" style="' + (g.style || '') + '"></div>'; }).join('') +
+              '</div>' +
+              '<button type="button" class="uc-car-nav prev" data-car-prev aria-label="הקודם">' + ic('<polyline points="15 18 9 12 15 6"/>') + '</button>' +
+              '<button type="button" class="uc-car-nav next" data-car-next aria-label="הבא">' + ic('<polyline points="9 18 15 12 9 6"/>') + '</button>' +
+              '<button type="button" class="uc-watch" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפה בסרטון</button>' +
+              '<div class="uc-car-count">' + heroSlides.length + ' תמונות • 1 סרטון</div>' +
+              '<div class="uc-car-dots" id="ucDots"></div>')
+            : ('<div class="uc-media-ph"><div class="uc-media-ph-nm">' + esc(fullName) + '</div><div class="uc-media-ph-yr">' + esc(car.type) + ' · ' + esc(car.year) + '</div><div class="uc-media-ph-soon">📷 תמונות הרכב יתווספו בקרוב</div></div>')
+          ) +
         '</div>' +
       '</div>' +
     '</section>' +
