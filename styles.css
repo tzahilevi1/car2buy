@@ -786,7 +786,7 @@ image-slot { display: block; }
 .mh-content { max-width: 600px; padding-block: clamp(40px, 8vh, 90px); }
 /* keep the home hero content (eyebrow/title) clear of the two-tier fixed header */
 .media-hero.home .mh-content { padding-top: max(var(--nav-off), clamp(40px, 8vh, 90px)); }
-.media-hero.home { padding-bottom: clamp(72px, 9vh, 120px); }
+.media-hero.home { padding-bottom: clamp(120px, 15vh, 180px); }
 .media-hero.home .hero-quick { margin-bottom: 8px; }
 .media-hero.home .wrap { max-width: 1440px; }
 .media-hero.home .mh-content.hero-cols { max-width: 1380px; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
