@@ -123,7 +123,29 @@
     "ב.י.ד|אטו 2": g6('byd-atto2'),
     "ב.י.ד|סיל 5 DM-i": g6('byd-seal5'),
     "ב.י.ד|סיל U": g6('byd-sealu'),
-    "ב.י.ד|סיליון 5": g6('byd-sealion5')
+    "ב.י.ד|סיליון 5": g6('byd-sealion5'),
+    "צ'רי|טיגו 8 פרו": g6('chery-tiggo8'),
+    "צ'רי|טיגו 4": g6('chery-tiggo4'),
+    "צ'רי|טיגו 7 פרו": ["images/gallery/chery-tiggo7/ext2.jpg","images/gallery/chery-tiggo7/ext3.jpg","images/gallery/chery-tiggo7/ext4.jpg","images/gallery/chery-tiggo7/int5.jpg","images/gallery/chery-tiggo7/int6.jpg"],
+    "צ'רי|טיגו 9 פרו נובל": g6('chery-tiggo9'),
+    "צ'רי|טיגו 9 לקשרי": g6('chery-tiggo9'),
+    "יונדאי|טוסון": g6('hyundai-tucson'),
+    "יונדאי|וניו": g6('hyundai-venue'),
+    "יונדאי|סונטה": g6('hyundai-sonata'),
+    "יונדאי|אלנטרה": g6('hyundai-elantra'),
+    "יונדאי|קונה": g6('hyundai-kona'),
+    "טויוטה|C-HR": g6('toyota-chr'),
+    "קיה|סלטוס": g6('kia-seltos'),
+    "קיה|פיקנטו": g6('kia-picanto'),
+    "קיה|נירו": ["images/gallery/kia-niro/ext1.jpg","images/gallery/kia-niro/ext2.jpg","images/gallery/kia-niro/ext3.jpg","images/gallery/kia-niro/ext4.jpg"],
+    "מיצובישי|אקליפס קרוס": ["images/gallery/mitsubishi-eclipsecross/ext1.jpg","images/gallery/mitsubishi-eclipsecross/ext2.jpg","images/gallery/mitsubishi-eclipsecross/ext3.jpg","images/gallery/mitsubishi-eclipsecross/int5.jpg","images/gallery/mitsubishi-eclipsecross/int6.jpg"],
+    "מיצובישי|אאוטלנדר": g6('mitsubishi-outlander'),
+    "אמ.ג'י|HS": g6('mg-hs'),
+    "אמ.ג'י|EHS": g6('mg-hs'),
+    "אמ.ג'י|ZS": g6('mg-zs'),
+    "ניסאן|ג'וק": g6('nissan-juke'),
+    "ניסאן|קשקאי": ["images/gallery/nissan-qashqai/ext1.jpg","images/gallery/nissan-qashqai/ext2.jpg","images/gallery/nissan-qashqai/ext3.jpg","images/gallery/nissan-qashqai/ext4.jpg"],
+    "מאזדה|CX-5": g6('mazda-cx5')
   };
   C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
   window.Car2Buy.LOAN_CARS = C;
