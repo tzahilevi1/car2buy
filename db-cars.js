@@ -43,14 +43,11 @@
         // keep the seed (loan-cars.js) inventory so pages still resolve the original cN ids
         if (!C.LOAN_CARS_SEED) C.LOAN_CARS_SEED = C.LOAN_CARS;
         C.LOAN_CARS = rows.map(function (row, i) {
-          // real per-car photos from the sheet: Google-Drive share links -> direct image URLs
-          var gallery = [row.imgL, row.imgB, row.imgR].map(driveUrl).filter(Boolean);
-          // fallback: if the sheet has no per-car photos, use the bundled real-photo gallery for this model
-          if (!gallery.length && C.MODEL_GALLERIES) {
-            var _n = function (s) { return String(s == null ? '' : s).replace(/['׳"`]/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); };
-            var _g = C.MODEL_GALLERIES[_n(row.brand) + '|' + _n(row.name)];
-            if (_g && _g.length) gallery = _g.slice();
-          }
+          // gallery priority (per user): the bundled rich gallery (6 photos incl. interior) FIRST,
+          // then fall back to the sheet's own Drive photos where we don't have one.
+          var _n = function (s) { return String(s == null ? '' : s).replace(/['׳"`]/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); };
+          var _mine = C.MODEL_GALLERIES && C.MODEL_GALLERIES[_n(row.brand) + '|' + _n(row.name)];
+          var gallery = (_mine && _mine.length) ? _mine.slice() : [row.imgL, row.imgB, row.imgR].map(driveUrl).filter(Boolean);
           return {
             brand: clean(row.brand), name: clean(row.name), trim: clean(row.trim),
             nameEn: clean(row.nameEn), engine: clean(row.engine), seats: int(row.seats),
