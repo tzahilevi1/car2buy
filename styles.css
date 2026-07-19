@@ -799,15 +799,15 @@ image-slot { display: block; }
 .media-hero.home .mh-content h1 { font-size: clamp(27px, 3.15vw, 42px); line-height: 1.12; margin-top: 14px; }
 .hero-text h1 { letter-spacing: -0.015em; text-wrap: balance; }
 .hero-text h1 .gold-text { font-style: normal; display: inline-block; }
-.hero-trust { display: flex; gap: 0; margin-top: 30px; }
-.hero-trust .ht-item { display: flex; align-items: center; gap: 11px; padding-inline: 20px; position: relative; }
-.hero-trust .ht-ic { width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; border: 0; background: linear-gradient(150deg, var(--gold-bright), var(--gold-deep)); color: #fff; display: grid; place-items: center; box-shadow: 0 8px 18px -8px rgba(var(--gold-rgb)/0.7); }
-.hero-trust .ht-ic svg { width: 21px; height: 21px; }
-.hero-trust .ht-tx { display: grid; gap: 3px; }
+.hero-trust { display: flex; gap: 0; margin-top: 26px; }
+.hero-trust .ht-item { display: flex; align-items: center; gap: 10px; padding-inline: 16px; position: relative; }
+.hero-trust .ht-ic { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; border: 0; background: linear-gradient(150deg, var(--gold-bright), var(--gold-deep)); color: #fff; display: grid; place-items: center; box-shadow: 0 8px 18px -8px rgba(var(--gold-rgb)/0.7); }
+.hero-trust .ht-ic svg { width: 18px; height: 18px; }
+.hero-trust .ht-tx { display: grid; gap: 2px; }
 .hero-trust .ht-item:first-child { padding-inline-start: 0; }
 .hero-trust .ht-item + .ht-item::before { content: ""; position: absolute; inset-block: 4px; inset-inline-start: 0; width: 1px; background: var(--gold-line); }
-.hero-trust b { font-family: var(--display); font-weight: 700; font-size: clamp(20px, 2.4vw, 26px); color: var(--gold); line-height: 1; }
-.hero-trust span { font-size: 12.5px; color: var(--muted); }
+.hero-trust b { font-family: var(--display); font-weight: 700; font-size: clamp(14.5px, 1.55vw, 17px); color: var(--gold); line-height: 1.15; }
+.hero-trust span { font-size: 11px; color: var(--muted); line-height: 1.3; }
 .media-hero.page .mh-content h1 { font-size: clamp(36px, 5vw, 64px); }
 .mh-content .lead { color: var(--ink-soft); }
 .mh-actions { display: flex; gap: 16px; margin-top: 38px; flex-wrap: wrap; }
