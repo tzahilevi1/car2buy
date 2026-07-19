@@ -586,6 +586,7 @@
 
 <script src="models-data.js"></script>
 <script src="used-cars.js"></script>
+<script src="used-galleries.js"></script>
 <script src="cars-data.js"></script>
 <script src="loan-cars.js"></script>
 <script src="model-specs.js"></script>
@@ -653,7 +654,9 @@
     return {
       brand: u.brand, model: u.name, trim: u.trim || '', type: u.type, cat: u.cat || '',
       price: u.price, monthly60: u.monthly, year: u.year, img: u.img,
-      gallery: (u.gallery && u.gallery.length) ? u.gallery : (u.img ? [u.img] : []),
+      gallery: (window.Car2Buy && window.Car2Buy.usedGallery)
+        ? window.Car2Buy.usedGallery(u)
+        : ((u.gallery && u.gallery.length) ? u.gallery : (u.img ? [u.img] : [])),
       km: u.km, hand: u.hand, inStock: true,
       tagline: u.brand + ' ' + u.name + ' — יד ' + u.hand + ', בדוק ומאומת ומוכן למסירה מיידית.',
       dream: 'ה־' + u.name + ' הזו יכולה להיות שלך',

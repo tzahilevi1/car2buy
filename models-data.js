@@ -480,14 +480,17 @@
           ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C9 6 6 9 6 13a6 6 0 0 0 12 0c0-4-3-7-6-11z"/></svg>'
           : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c3 4 5 6.5 5 9a5 5 0 0 1-10 0c0-2.5 2-5 5-9z"/></svg>';
       const href = 'used-car.html?car=u' + i;
+      // photo priority: the car's own sheet photos → model gallery → branded placeholder
+      const ucGal = (window.Car2Buy && window.Car2Buy.usedGallery) ? window.Car2Buy.usedGallery(u) : (u.gallery || []);
+      const ucImg = u.img || ucGal[0] || '';
       return `<article class="car ucard reveal" data-brand="${u.brand}" data-monthly="${u.monthly}" data-km="${u.km}" data-name="${u.brand} ${u.name}" data-cat="${u.cat}" data-hand="${u.hand}" data-type="${u.type}">
         <a class="uc-hit" href="${href}">
-          <div class="uc-ph${u.img ? '' : ' uc-ph-empty'}">
-            ${u.img
-              ? `<img loading="lazy" src="${u.img}" alt="${u.brand} ${u.name}">`
+          <div class="uc-ph${ucImg ? '' : ' uc-ph-empty'}">
+            ${ucImg
+              ? `<img loading="lazy" src="${ucImg}" alt="${u.brand} ${u.name}">`
               : `${u.slug ? `<img class="uc-ph-logo" loading="lazy" src="https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/${u.slug}.png" alt="${u.brand}" onerror="this.remove()">` : ''}<span class="uc-ph-model">${u.brand} ${u.name}</span><span class="uc-ph-soon">📷 תמונות בקרוב</span>`}
             <span class="uc-fuel ${fuelCls}">${fuelIc}${fuelTxt}</span>
-            ${u.img ? `<span class="uc-media">
+            ${ucImg ? `<span class="uc-media">
               <span class="uc-chip">וידאו <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
               <span class="uc-chip">${photos} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m21 17-5-5-9 7"/></svg></span>
             </span>` : ''}
