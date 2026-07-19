@@ -169,7 +169,14 @@
     "מרצדס|GLA 200": ["images/gallery/mercedes-gla/ext1.jpg","images/gallery/mercedes-gla/ext2.jpg","images/gallery/mercedes-gla/ext3.jpg","images/gallery/mercedes-gla/ext4.jpg","images/gallery/mercedes-gla/int5.jpg","images/gallery/mercedes-gla/int6.jpg"],
     "מרצדס|GLC 200": ["images/gallery/mercedes-glc/ext1.jpg","images/gallery/mercedes-glc/ext2.jpg","images/gallery/mercedes-glc/ext3.jpg","images/gallery/mercedes-glc/ext4.jpg","images/gallery/mercedes-glc/int5.jpg","images/gallery/mercedes-glc/int6.jpg"],
     "מרצדס|GLC 300 קופה": ["images/gallery/mercedes-glc-coupe/ext1.jpg","images/gallery/mercedes-glc-coupe/ext2.jpg","images/gallery/mercedes-glc-coupe/ext3.jpg","images/gallery/mercedes-glc-coupe/ext4.jpg","images/gallery/mercedes-glc-coupe/int5.jpg","images/gallery/mercedes-glc-coupe/int6.jpg"],
-    "מרצדס|CLA 200": ["images/gallery/mercedes-cla/ext1.jpg","images/gallery/mercedes-cla/ext2.jpg","images/gallery/mercedes-cla/ext3.jpg","images/gallery/mercedes-cla/ext4.jpg","images/gallery/mercedes-cla/int5.jpg","images/gallery/mercedes-cla/int6.jpg"]
+    "מרצדס|CLA 200": ["images/gallery/mercedes-cla/ext1.jpg","images/gallery/mercedes-cla/ext2.jpg","images/gallery/mercedes-cla/ext3.jpg","images/gallery/mercedes-cla/ext4.jpg","images/gallery/mercedes-cla/int5.jpg","images/gallery/mercedes-cla/int6.jpg"],
+"ג'אקו|ג'אקו 8": ["images/gallery/jaecoo-8/ext1.jpg","images/gallery/jaecoo-8/ext2.jpg","images/gallery/jaecoo-8/ext3.jpg","images/gallery/jaecoo-8/ext4.jpg","images/gallery/jaecoo-8/int5.jpg","images/gallery/jaecoo-8/int6.jpg"],
+    "ג'אקו|ג'אקו 7": ["images/gallery/jaecoo-7/ext1.jpg","images/gallery/jaecoo-7/ext2.jpg","images/gallery/jaecoo-7/ext3.jpg","images/gallery/jaecoo-7/ext4.jpg","images/gallery/jaecoo-7/int5.jpg","images/gallery/jaecoo-7/int6.jpg"],
+    "ג'אקו|ג'אקו 5": ["images/gallery/jaecoo-5/ext1.jpg","images/gallery/jaecoo-5/ext2.jpg","images/gallery/jaecoo-5/ext3.jpg","images/gallery/jaecoo-5/ext4.jpg","images/gallery/jaecoo-5/int5.jpg","images/gallery/jaecoo-5/int6.jpg"],
+    "ג'אקו|ג'אקו 5 חשמלי": ["images/gallery/jaecoo-5/ext1.jpg","images/gallery/jaecoo-5/ext2.jpg","images/gallery/jaecoo-5/ext3.jpg","images/gallery/jaecoo-5/ext4.jpg","images/gallery/jaecoo-5/int5.jpg","images/gallery/jaecoo-5/int6.jpg"],
+    "סיטרואן|ברלינגו": ["images/gallery/citroen-berlingo/ext1.jpg","images/gallery/citroen-berlingo/ext2.jpg","images/gallery/citroen-berlingo/ext3.jpg","images/gallery/citroen-berlingo/ext4.jpg","images/gallery/citroen-berlingo/int5.jpg"],
+    "אווטר|אווטר 11": ["images/gallery/avatr-11/ext1.jpg","images/gallery/avatr-11/ext2.jpg","images/gallery/avatr-11/ext3.jpg","images/gallery/avatr-11/ext4.jpg","images/gallery/avatr-11/int5.jpg","images/gallery/avatr-11/int6.jpg"],
+    "וויה|Free": ["images/gallery/voyah-free/ext1.jpg","images/gallery/voyah-free/ext2.jpg","images/gallery/voyah-free/ext3.jpg","images/gallery/voyah-free/ext4.jpg","images/gallery/voyah-free/int5.jpg","images/gallery/voyah-free/int6.jpg"]
   };
   C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
   window.Car2Buy.LOAN_CARS = C;
