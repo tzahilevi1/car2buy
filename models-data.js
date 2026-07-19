@@ -403,7 +403,6 @@
     gallery,
     byId: (id) => MODELS.find((m) => m.id === id),
     card(m) {
-      const waMsg = encodeURIComponent(`היי, אשמח לפרטים על ${m.brand} ${m.name} ולכמה יעלה לי החזר חודשי 🚗`);
       const C2B = (typeof window !== 'undefined' && window.Car2Buy) || {};
       const dispB = C2B.dispBrand ? C2B.dispBrand(m.brand) : m.brand;
       const dispM = C2B.enModel ? C2B.enModel(m.name) : m.name;
@@ -411,13 +410,13 @@
       return `<article class="car reveal" data-cat="${m.cat}" data-brand="${m.brand}" data-fuel="${m.fuel}" data-monthly="${m.monthly}" data-name="${dispFull}">
         <button class="car-compare" type="button" data-id="${m.id}">+ השוואה</button>
         <a class="car-hit" href="car.html?car=${m.id}">
-          <div class="car-ph"><img loading="lazy" src="${m.img}" alt="${dispFull}">
+          <div class="car-ph car-ph-shot"><img loading="lazy" src="${m.img}" alt="${dispFull}">
             ${m.tag ? `<span class="car-badge">${m.tag}</span>` : ''}
             ${LOGO_SLUG[m.brand] ? `<span class="brand-logo car-logo-badge"><img loading="lazy" src="${LOGO(m.brand)}" alt="${dispB}" onerror="this.closest('.brand-logo').style.display='none'"></span>` : ''}
             ${FAST.has(m.id) ? '<span class="car-fast">⚡ אספקה מהירה</span>' : ''}</div>
           <div class="car-body">
-            <div class="car-tier">${dispB} · ${m.type}</div>
-            <h3>${dispM}</h3>
+            <div class="car-tier">${m.type}</div>
+            <h3>${dispB} ${dispM}</h3>
             <div class="car-spec">
               <span><b>${m.power}</b> כ״ס</span><span class="dot"></span>
               <span>הנעה ${m.drive}</span><span class="dot"></span>
@@ -431,10 +430,6 @@
         </a>
         <div class="car-actions">
           <a class="car-cta-main" href="car.html?car=${m.id}">כמה יעלה לי להפוך את זה למציאות?</a>
-          <div class="car-act-row">
-            <a class="car-act wa" href="https://wa.me/972723319929?text=${waMsg}" target="_blank" rel="noopener" data-track="whatsapp_click"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.6 6L4 29l8.2-1.6c1.7.9 3.7 1.4 5.8 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3z" transform="scale(0.83)"></path></svg> וואטסאפ</a>
-            <a class="car-act contact" href="contact.html?car=${encodeURIComponent(dispFull)}">יצירת קשר</a>
-          </div>
         </div>
       </article>`;
     },

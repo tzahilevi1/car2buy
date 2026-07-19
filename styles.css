@@ -1284,7 +1284,7 @@ input[type="tel"] { direction: rtl; text-align: right; }
 @media (max-width: 560px) { .art-bar-row { grid-template-columns: minmax(90px, 40%) 1fr auto; gap: 8px; } .art-bar-lab { font-size: 13px; } }
 
 /* ===== compare: card button ===== */
-.car-compare { position: absolute; inset-block-end: 12px; inset-inline-start: 12px; z-index: 3; background: color-mix(in oklab, var(--bg) 66%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); color: var(--ink-soft); font-family: var(--body); font-size: 12.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: 0.25s; }
+.car-compare { position: absolute; inset-block-start: 12px; inset-inline-start: 12px; z-index: 4; background: color-mix(in oklab, var(--bg) 66%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); color: var(--ink-soft); font-family: var(--body); font-size: 12.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: 0.25s; }
 .car-compare:hover { border-color: var(--gold-line); color: var(--gold); }
 .car-compare.active { background: linear-gradient(135deg, var(--gold-bright), var(--gold-deep)); color: #FFFFFF; border-color: transparent; }
 
