@@ -45,6 +45,12 @@
         C.LOAN_CARS = rows.map(function (row, i) {
           // real per-car photos from the sheet: Google-Drive share links -> direct image URLs
           var gallery = [row.imgL, row.imgB, row.imgR].map(driveUrl).filter(Boolean);
+          // fallback: if the sheet has no per-car photos, use the bundled real-photo gallery for this model
+          if (!gallery.length && C.MODEL_GALLERIES) {
+            var _n = function (s) { return String(s == null ? '' : s).replace(/['׳"`]/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); };
+            var _g = C.MODEL_GALLERIES[_n(row.brand) + '|' + _n(row.name)];
+            if (_g && _g.length) gallery = _g.slice();
+          }
           return {
             brand: clean(row.brand), name: clean(row.name), trim: clean(row.trim),
             nameEn: clean(row.nameEn), engine: clean(row.engine), seats: int(row.seats),

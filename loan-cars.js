@@ -179,6 +179,11 @@
     "וויה|Free": ["images/gallery/voyah-free/ext1.jpg","images/gallery/voyah-free/ext2.jpg","images/gallery/voyah-free/ext3.jpg","images/gallery/voyah-free/ext4.jpg","images/gallery/voyah-free/int5.jpg","images/gallery/voyah-free/int6.jpg"]
   };
   C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
+  // expose galleries with a normalized key (apostrophes/spaces stripped) so db-cars.js can apply them
+  // to the live Google-Sheet inventory too (which replaces LOAN_CARS at runtime)
+  var galNorm = function (s) { return String(s == null ? '' : s).replace(/['׳"`]/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); };
+  var NG = {}; Object.keys(GALLERIES).forEach(function (k) { var p = k.split('|'); NG[galNorm(p[0]) + '|' + galNorm(p[1])] = GALLERIES[k]; });
+  window.Car2Buy.MODEL_GALLERIES = NG;
   window.Car2Buy.LOAN_CARS = C;
 
   // ---- English display names (nicer card titles) ----
