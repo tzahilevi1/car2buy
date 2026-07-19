@@ -785,7 +785,7 @@ image-slot { display: block; }
   linear-gradient(0deg, var(--bg) 4%, transparent 52%); }
 .mh-content { max-width: 600px; padding-block: clamp(40px, 8vh, 90px); }
 /* keep the home hero content (eyebrow/title) clear of the two-tier fixed header */
-.media-hero.home .mh-content { padding-top: max(var(--nav-off), clamp(40px, 8vh, 90px)); }
+.media-hero.home .mh-content { padding-top: calc(var(--nav-off) + clamp(32px, 6vh, 72px)); }
 .media-hero.home { padding-bottom: clamp(120px, 15vh, 180px); }
 .media-hero.home .hero-quick { margin-bottom: 8px; }
 .media-hero.home .wrap { max-width: 1440px; }
