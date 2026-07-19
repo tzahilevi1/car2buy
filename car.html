@@ -173,6 +173,21 @@
   .cd-sn-tabs a.active { color:var(--gold); background:var(--bg-2); }
   @media (max-width:760px){ .cd-sn-name { font-size:15px; } .cd-sn-badge { width:38px; height:38px; font-size:14px; } }
   .cd-anchor { scroll-margin-top:152px; }
+  /* ---- trims / רמות גימור ---- */
+  .cd-trims-title { text-align:center; font-size:clamp(26px,3.6vw,40px); margin-top:8px; }
+  .cd-trims-sub { text-align:center; color:var(--ink-soft); max-width:640px; margin:12px auto 0; font-size:15.5px; line-height:1.7; }
+  .cd-trims-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin-top:clamp(24px,3vw,36px); }
+  .cd-trim { display:flex; flex-direction:column; gap:9px; background:#fff; border:1px solid var(--line-2); border-radius:18px; padding:22px 22px 20px; color:inherit; text-decoration:none; transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+  .cd-trim:hover { transform:translateY(-4px); border-color:var(--gold); box-shadow:0 26px 54px -38px rgba(0,0,0,.5); }
+  .cd-trim.is-cur { border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset; background:linear-gradient(180deg,#fffdf7,#fff); }
+  .cd-trim-head { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:26px; }
+  .cd-trim-name { font-weight:800; font-size:18px; color:var(--ink); }
+  .cd-trim-badge { font-size:11px; font-weight:800; color:#7a5200; background:rgba(212,160,23,.16); border-radius:999px; padding:3px 10px; white-space:nowrap; }
+  .cd-trim-mo { display:flex; align-items:baseline; gap:6px; margin-top:4px; }
+  .cd-trim-mo b { font-size:27px; font-weight:900; color:var(--ink); letter-spacing:-.5px; }
+  .cd-trim-mo small { color:var(--ink-soft); font-size:13px; }
+  .cd-trim-price { font-size:13.5px; color:var(--ink-soft); }
+  .cd-trim-cta { margin-top:auto; padding-top:12px; font-weight:800; font-size:14px; color:var(--gold-deep,#a9781a); }
 
   .cd-vbtn-wide { margin-top:16px; width:100%; justify-content:center; background:var(--ink); border-color:var(--ink); }
   .cd-vbtn-wide:hover { background:#000; }
@@ -1013,6 +1028,42 @@ function renderCarDetail() {
   }
   var reviewHtml = buildReview(car);
 
+  // ---- trims / רמות גימור: every sheet row for this exact model is one trim ----
+  var trimPool = (window.Car2Buy && window.Car2Buy.LOAN_CARS || [])
+    .filter(function (l) { return l.brand === car.brand && l.name === car.model; });
+  var seenTrim = {};
+  var trims = trimPool.filter(function (l) {
+    var k = (l.trim || '') + '|' + l.p + '|' + l.m;
+    if (seenTrim[k]) return false; seenTrim[k] = 1; return true;
+  }).sort(function (a, b) { return (a.m || 0) - (b.m || 0); });
+
+  var trimsSection = '';
+  if (trims.length > 1) {
+    trimsSection =
+      '<section class="section cd-anchor" id="trims" style="padding-top:0;">' +
+        '<div class="wrap">' +
+          '<div class="cd-section-k" style="text-align:center;">רמות גימור</div>' +
+          '<h2 class="cd-trims-title">בחרו את ה<span class="gold-text">גרסה</span> שמתאימה לכם</h2>' +
+          '<p class="cd-trims-sub">' + esc(modelDisp) + ' מגיע ב-' + trims.length + ' גרסאות. ההחזר החודשי מחושב על מימון 60% ל-60 חודשים.</p>' +
+          '<div class="cd-trims-grid">' +
+            trims.map(function (t) {
+              var cur = t.id === slug;
+              return '<a class="cd-trim' + (cur ? ' is-cur' : '') + '" href="car.html?car=' + encodeURIComponent(t.id) + '">' +
+                '<div class="cd-trim-head">' +
+                  '<span class="cd-trim-name"><bdi>' + esc(t.trim || 'סטנדרט') + '</bdi></span>' +
+                  (cur ? '<span class="cd-trim-badge">הגרסה שנבחרה</span>' : '') +
+                '</div>' +
+                '<div class="cd-trim-mo"><b>' + fmt(t.m) + '</b><small>לחודש</small></div>' +
+                '<div class="cd-trim-price">מחיר רכב: ' + fmt(t.p) + '</div>' +
+                '<span class="cd-trim-cta">' + (cur ? 'מוצג כעת' : 'לצפייה בגרסה') +
+                  (cur ? '' : ' <span aria-hidden="true">←</span>') + '</span>' +
+              '</a>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+      '</section>';
+  }
+
   root.innerHTML =
     '<section class="cd-hero">' +
       '<div class="cd-hero-scene" style="background-color:#0d1018;background-image:url(' + SCENE + ')"></div>' +
@@ -1104,6 +1155,8 @@ function renderCarDetail() {
         rateHtml +
       '</div>' +
     '</section>' +
+
+    trimsSection +
 
     // ---- media: light masonry gallery ----
     '<section class="section cd-anchor cd-media-sec" id="media" style="padding-top:0;">' +
