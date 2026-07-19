@@ -793,6 +793,7 @@ image-slot { display: block; }
 }
 .media-hero.page .mh-content { padding-top: 140px; }
 .mh-content h1 { font-size: clamp(38px, 4.8vw, 62px); line-height: 1.06; margin-top: 20px; }
+.media-hero.home .mh-content h1 { font-size: clamp(27px, 3.15vw, 42px); line-height: 1.12; margin-top: 14px; }
 .hero-text h1 { letter-spacing: -0.015em; text-wrap: balance; }
 .hero-text h1 .gold-text { font-style: normal; display: inline-block; }
 .hero-trust { display: flex; gap: 0; margin-top: 30px; }
@@ -1357,7 +1358,7 @@ td.cmp-best { background: color-mix(in oklab, var(--gold) 9%, transparent); colo
 .hs-btn { padding: 12px 22px; white-space: nowrap; border-radius: 999px; }
 
 /* ===== hero quick rail (catalog CTAs + links) ===== */
-.hero-quick { margin-top: clamp(28px, 4vw, 44px); display: grid; gap: 32px; }
+.hero-quick { margin-top: clamp(24px, 3vw, 38px); display: grid; gap: 24px; }
 .hq-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
 .hq-cta .btn { min-width: 220px; }
 .hq-links { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
