@@ -58,7 +58,7 @@
     { brand:"אמ.ג'י", name:'EHS', trim:'Luxury PHEV', m:1955, p:191610, img:I+'mg-hs-new.jpg' },
     { brand:"אמ.ג'י", name:'HS', trim:'Hybrid+ Luxury', m:1827, p:179610, img:I+'mg-hs-new.jpg' },
     { brand:"אמ.ג'י", name:'ZS', trim:'Luxury Hybrid', m:1594, p:157918, img:I+'mg-zs-new.jpg' },
-    { brand:"אמ.ג'י", name:'MG 3', trim:'Luxury Hybrid', m:1290, p:129595, img:I+'mg-3-new.jpg' },
+    { brand:"אמ.ג'י", name:'MG 3', trim:'Luxury Hybrid', m:1290, p:129595, img:I+'mg-3-new.jpg', gallery:['images/gallery/mg3/mg3-front.jpg','images/gallery/mg3/mg3-side.jpg','images/gallery/mg3/mg3-grille.jpg','images/gallery/mg3/mg3-wheel.jpg','images/gallery/mg3/mg3-interior-seats.jpg','images/gallery/mg3/mg3-interior-screen.jpg'] },
     { brand:"אמ.ג'י", name:'S9', trim:'Comfort', m:1990, p:192610, img:I+'mg-s9-new.jpg' },
     // Škoda
     { brand:'סקודה', name:'סופרב', trim:'L&K 4x4', m:2992, p:288296, img:I+'skoda-superb-new.jpg' },
