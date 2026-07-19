@@ -564,20 +564,22 @@
     const items = window.Car2Buy.TESTIMONIALS || window.Car2Buy.CUSTOMERS;
     const track = document.getElementById('vtTrack');
     const dotsWrap = document.getElementById('vtDots');
-    track.innerHTML = items.map((c) => `
+    track.innerHTML = items.map((c) => {
+      const media = c.video
+        ? `<video class="vtest-video" controls preload="metadata" playsinline${c.img ? ` poster="${c.img}"` : ''}><source src="${c.video}" type="video/mp4"></video>`
+        : `<img src="${c.img}" alt="${c.name || ''}"><button class="vtest-play" aria-label="נגן סרטון"><span class="tri"></span></button><span class="vtest-badge">▶ סרטון המלצה</span>`;
+      const nm = c.name || 'חוויית לקוח';
+      return `
       <article class="vtest-slide">
-        <div class="vtest-media">
-          <img src="${c.img}" alt="${c.name}">
-          <button class="vtest-play" aria-label="נגן סרטון"><span class="tri"></span></button>
-          <span class="vtest-badge">▶ סרטון המלצה</span>
-        </div>
+        <div class="vtest-media${c.video ? ' has-video' : ''}">${media}</div>
         <div class="vtest-body">
           <div class="vtest-quote-mark">”</div>
-          <p class="vtest-quote">${c.quote}</p>
-          <div class="vtest-by"><div class="vtest-av">${c.name.charAt(0)}</div><div><div class="vtest-name">${c.name}</div><div class="vtest-car">${c.car}</div></div></div>
+          <p class="vtest-quote">${c.quote || 'לקוח/ה שקיבל/ה את הרכב דרך Car2Buy — צפו בחוויה האמיתית.'}</p>
+          <div class="vtest-by"><div class="vtest-av">${nm.charAt(0)}</div><div><div class="vtest-name">${nm}</div>${c.car ? `<div class="vtest-car">${c.car}</div>` : ''}</div></div>
           <div class="vtest-stars">★★★★★</div>
         </div>
-      </article>`).join('');
+      </article>`;
+    }).join('');
     dotsWrap.innerHTML = items.map((_, i) => `<button class="vtest-dot${i === 0 ? ' active' : ''}" data-i="${i}" aria-label="המלצה ${i + 1}"></button>`).join('');
     const dots = [...dotsWrap.children];
     let idx = 0, timer = null;

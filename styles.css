@@ -546,6 +546,8 @@ input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius
 .vtest-play .tri { width: 0; height: 0; border-style: solid; border-width: 12px 0 12px 20px; border-color: transparent transparent transparent currentColor; margin-inline-start: 5px; }
 .vtest-badge { position: absolute; inset-block-start: 16px; inset-inline-start: 16px; z-index: 2; background: color-mix(in oklab, var(--bg) 60%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--gold-line); color: var(--gold); font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 999px; }
 .vtest-media.playing::after, .vtest-media.playing .vtest-play, .vtest-media.playing .vtest-badge { display: none; }
+.vtest-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; z-index: 3; }
+.vtest-media.has-video::after { display: none; }
 .vtest-media.playing::before { content: "הסרטון יתנגן כאן"; position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: #000; color: var(--muted); font-family: var(--mono); font-size: 13px; letter-spacing: 0.06em; }
 .vtest-body { padding: clamp(28px, 4vw, 52px); display: flex; flex-direction: column; justify-content: center; }
 .vtest-quote-mark { font-family: var(--display); font-size: 64px; line-height: 0.5; color: var(--gold-line); height: 30px; }
