@@ -27,10 +27,13 @@
         <span class="eyebrow reveal">עסקת מימון לרכב · מבחר רחב ממותגים מובילים</span>
         <h1 class="reveal">רכב חדש <span class="gold-text">בהחזר החודשי הנמוך בישראל</span><br>חיפשתם את העסקה הכי טובה? הגעתם ל‑Car2Buy</h1>
         <p class="lead reveal">מבחר רכבים חדשים מכל המותגים המובילים, <bdi>100%</bdi> מימון בריבית הטובה בישראל, טרייד‑אין לרכב הישן וליווי אישי עד קבלת המפתח – בהתחייבות להחזר החודשי הנמוך ביותר.</p>
+        <div class="hero-cta reveal">
+          <button type="button" class="btn btn-gold btn-lg" id="quoteCtaBtn">קבלו הצעת מחיר עכשיו</button>
+        </div>
         <div class="hero-trust reveal">
-          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v8H3z"></path><path d="M16 10h3l2 3v2h-5z"></path><circle cx="7" cy="17" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg></span><div class="ht-tx"><b>מלאי רחב</b><span>מותגים מובילים</span></div></div>
-          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span><div class="ht-tx"><b>החזר מותאם</b><span>אישית לתקציב</span></div></div>
-          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"></path></svg></span><div class="ht-tx"><b>אספקה מהירה</b><span>בהתאם למלאי</span></div></div>
+          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span><div class="ht-tx"><b>ההחזר הנמוך בישראל</b><span>בהתחייבות – ובריבית הטובה ביותר</span></div></div>
+          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v8H3z"></path><path d="M16 10h3l2 3v2h-5z"></path><circle cx="7" cy="17" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg></span><div class="ht-tx"><b>מלאי רחב</b><span>רכבים חדשים מכל המותגים והיבואנים המובילים</span></div></div>
+          <div class="ht-item"><span class="ht-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"></path></svg></span><div class="ht-tx"><b>אספקה מהירה</b><span>מהחתימה ועד המפתח – בליווי אישי</span></div></div>
         </div>
       </div>
       <div class="hero-search-wrap reveal">
@@ -63,6 +66,51 @@
   </div>
   <div class="scroll-cue"><span>גלול</span><span class="bar"></span></div>
 </section>
+
+<!-- ===== QUOTE MODAL (שם + טלפון) ===== -->
+<div class="qm-overlay" id="quoteModal" hidden>
+  <div class="qm-card" role="dialog" aria-modal="true" aria-labelledby="qmTitle">
+    <button type="button" class="qm-x" id="qmClose" aria-label="סגירה">&times;</button>
+    <div class="qm-kicker">קבלת הצעת מחיר</div>
+    <h3 id="qmTitle">נחזור אליכם עם ההצעה הטובה ביותר</h3>
+    <p class="qm-sub">השאירו שם וטלפון ונחזור אליכם עם הצעה אישית — בהתחייבות להחזר החודשי הנמוך ביותר.</p>
+    <form id="qmForm" novalidate>
+      <input type="text" name="company_url" class="qm-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="qm-field"><span>שם מלא</span><input type="text" name="name" id="qmName" required autocomplete="name" placeholder="השם שלכם"></label>
+      <label class="qm-field"><span>טלפון</span><input type="tel" name="phone" id="qmPhone" required autocomplete="tel" inputmode="tel" placeholder="050-0000000"></label>
+      <button type="submit" class="btn btn-gold btn-lg" id="qmSubmit" style="width:100%;margin-top:6px;">שליחה — קבלו הצעה</button>
+      <div class="qm-note">בלחיצה על שליחה אני מאשר/ת שנציג יצור עמי קשר.</div>
+    </form>
+    <div class="qm-done" id="qmDone" hidden>תודה! קיבלנו את הפרטים ונחזור אליכם בהקדם ✓</div>
+  </div>
+</div>
+<script>
+(function () {
+  var openBtn = document.getElementById('quoteCtaBtn'), modal = document.getElementById('quoteModal');
+  if (!openBtn || !modal) return;
+  var closeBtn = document.getElementById('qmClose'), form = document.getElementById('qmForm'),
+      done = document.getElementById('qmDone'), nameI = document.getElementById('qmName'), phoneI = document.getElementById('qmPhone');
+  function show() { modal.hidden = false; document.body.style.overflow = 'hidden'; setTimeout(function () { if (nameI) nameI.focus(); }, 60); }
+  function hide() { modal.hidden = true; document.body.style.overflow = ''; }
+  openBtn.addEventListener('click', show);
+  closeBtn.addEventListener('click', hide);
+  modal.addEventListener('click', function (e) { if (e.target === modal) hide(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) hide(); });
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = (nameI.value || '').trim(), phone = (phoneI.value || '').trim();
+    if (name.length < 2) { nameI.focus(); return; }
+    if (phone.replace(/\D/g, '').length < 9) { phoneI.focus(); return; }
+    if (window.submitLead) {
+      submitLead({ name: name, phone: phone, source: 'home_quote_cta',
+        message: 'בקשת הצעת מחיר מהכפתור הראשי בעמוד הבית',
+        company_url: (form.company_url && form.company_url.value) || '' });
+    }
+    form.hidden = true; done.hidden = false;
+    setTimeout(hide, 2800);
+  });
+})();
+</script>
 
 <!-- ===== QUICK CONTACT ===== -->
 <section class="quick-contact">
