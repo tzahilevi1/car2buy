@@ -22,16 +22,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Fetch sheet → cars.json
+      - name: Fetch new-car sheet → cars.json
         run: node scripts/sync-cars.mjs
+      - name: Fetch used-car (יד 2) sheet → used-cars.js
+        run: node scripts/sync-used.mjs
       - name: Commit if changed
         run: |
-          if [[ -n "$(git status --porcelain cars.json)" ]]; then
+          if [[ -n "$(git status --porcelain cars.json used-cars.js)" ]]; then
             git config user.name "car2buy-bot"
             git config user.email "actions@users.noreply.github.com"
-            git add cars.json
-            git commit -m "chore: sync cars from Google Sheet [skip ci]"
+            git add cars.json used-cars.js
+            git commit -m "chore: sync inventory from Google Sheets [skip ci]"
             git push
           else
-            echo "cars.json unchanged"
+            echo "inventory unchanged"
           fi
