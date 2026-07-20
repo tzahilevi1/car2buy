@@ -1,0 +1,522 @@
+[
+  {
+    "folder": "kia-picanto",
+    "brand": "קיה",
+    "name": "פיקנטו",
+    "nameEn": "Kia Picanto",
+    "m": 1094,
+    "seats": 5,
+    "thumb": "images/gallery/kia-picanto/ext1.jpg",
+    "file": "lp-kia-picanto.html"
+  },
+  {
+    "folder": "mg3",
+    "brand": "אמ.ג'י",
+    "name": "3",
+    "nameEn": "MG 3",
+    "m": 1290,
+    "seats": 5,
+    "thumb": "images/gallery/mg3/mg3-front.jpg",
+    "file": "lp-mg3.html"
+  },
+  {
+    "folder": "dongfeng-box",
+    "brand": "דונפנג",
+    "name": "בוקס",
+    "nameEn": "Donpeng box (2025)",
+    "m": 1290,
+    "seats": 5,
+    "thumb": "images/gallery/dongfeng-box/ext1.jpg",
+    "file": "lp-dongfeng-box.html"
+  },
+  {
+    "folder": "chery-tiggo4",
+    "brand": "צ'רי",
+    "name": "טיגו 4",
+    "nameEn": "Chery Tiggo 4",
+    "m": 1388,
+    "seats": 5,
+    "thumb": "images/gallery/chery-tiggo4/ext1.jpg",
+    "file": "lp-chery-tiggo4.html"
+  },
+  {
+    "folder": "skoda-kamiq",
+    "brand": "סקודה",
+    "name": "קאמיק",
+    "nameEn": "Škoda Kamiq",
+    "m": 1450,
+    "seats": 5,
+    "thumb": "images/gallery/skoda-kamiq/ext1.jpg",
+    "file": "lp-skoda-kamiq.html"
+  },
+  {
+    "folder": "toyota-yaris",
+    "brand": "טויוטה",
+    "name": "יאריס",
+    "nameEn": "Toyota Yaris",
+    "m": 1530,
+    "seats": 5,
+    "thumb": "images/gallery/toyota-yaris/ext2.jpg",
+    "file": "lp-toyota-yaris.html"
+  },
+  {
+    "folder": "byd-atto2",
+    "brand": "ב.י.ד",
+    "name": "אטו 2",
+    "nameEn": "BYD Atto 2",
+    "m": 1580,
+    "seats": 5,
+    "thumb": "images/gallery/byd-atto2/ext1.jpg",
+    "file": "lp-byd-atto2.html"
+  },
+  {
+    "folder": "jaecoo-5",
+    "brand": "ג'אקו",
+    "name": "5",
+    "nameEn": "Jaecoo 5",
+    "m": 1583,
+    "seats": 5,
+    "thumb": "images/gallery/jaecoo-5/ext1.jpg",
+    "file": "lp-jaecoo-5.html"
+  },
+  {
+    "folder": "mg-zs",
+    "brand": "אמ.ג'י",
+    "name": "ZS",
+    "nameEn": "MG ZS",
+    "m": 1594,
+    "seats": 5,
+    "thumb": "images/gallery/mg-zs/ext1.jpg",
+    "file": "lp-mg-zs.html"
+  },
+  {
+    "folder": "toyota-yariscross",
+    "brand": "טויוטה",
+    "name": "יאריס קרוס",
+    "nameEn": "Toyota Yaris Cross - החכר",
+    "m": 1627,
+    "seats": 5,
+    "thumb": "images/gallery/toyota-yariscross/ext2.jpg",
+    "file": "lp-toyota-yariscross.html"
+  },
+  {
+    "folder": "hyundai-venue",
+    "brand": "יונדאי",
+    "name": "וניו",
+    "nameEn": "Hyundai Venue",
+    "m": 1634,
+    "seats": 5,
+    "thumb": "images/gallery/hyundai-venue/ext1.jpg",
+    "file": "lp-hyundai-venue.html"
+  },
+  {
+    "folder": "nissan-juke",
+    "brand": "ניסאן",
+    "name": "ג'וק",
+    "nameEn": "Nissan Juke",
+    "m": 1649,
+    "seats": 5,
+    "thumb": "images/gallery/nissan-juke/ext1.jpg",
+    "file": "lp-nissan-juke.html"
+  },
+  {
+    "folder": "kia-seltos",
+    "brand": "קיה",
+    "name": "סלטוס",
+    "nameEn": "Kia Seltos",
+    "m": 1694,
+    "seats": 5,
+    "thumb": "images/gallery/kia-seltos/ext1.jpg",
+    "file": "lp-kia-seltos.html"
+  },
+  {
+    "folder": "mitsubishi-eclipsecross",
+    "brand": "מיצובישי",
+    "name": "אקליפס",
+    "nameEn": "Mitsubishi Eclipse",
+    "m": 1695,
+    "seats": 5,
+    "thumb": "images/gallery/mitsubishi-eclipsecross/ext1.jpg",
+    "file": "lp-mitsubishi-eclipsecross.html"
+  },
+  {
+    "folder": "skoda-octavia",
+    "brand": "סקודה",
+    "name": "אוקטביה",
+    "nameEn": "Škoda Octavia",
+    "m": 1695,
+    "seats": 5,
+    "thumb": "images/gallery/skoda-octavia/ext1.jpg",
+    "file": "lp-skoda-octavia.html"
+  },
+  {
+    "folder": "byd-sealion5",
+    "brand": "ב.י.ד",
+    "name": "סיליון",
+    "nameEn": "BYD Sealion  5",
+    "m": 1717,
+    "seats": 5,
+    "thumb": "images/gallery/byd-sealion5/ext1.jpg",
+    "file": "lp-byd-sealion5.html"
+  },
+  {
+    "folder": "byd-seal5",
+    "brand": "ב.י.ד",
+    "name": "סיל 5 DM-i",
+    "nameEn": "BYD Seal 5 DM-i",
+    "m": 1803,
+    "seats": 5,
+    "thumb": "images/gallery/byd-seal5/ext1.jpg",
+    "file": "lp-byd-seal5.html"
+  },
+  {
+    "folder": "hyundai-kona",
+    "brand": "יונדאי",
+    "name": "קונה",
+    "nameEn": "Hyundai Kona",
+    "m": 1824,
+    "seats": 5,
+    "thumb": "images/gallery/hyundai-kona/ext1.jpg",
+    "file": "lp-hyundai-kona.html"
+  },
+  {
+    "folder": "mg-hs",
+    "brand": "אמ.ג'י",
+    "name": "HS",
+    "nameEn": "MG HS",
+    "m": 1827,
+    "seats": 5,
+    "thumb": "images/gallery/mg-hs/ext1.jpg",
+    "file": "lp-mg-hs.html"
+  },
+  {
+    "folder": "citroen-berlingo",
+    "brand": "סיטרואן",
+    "name": "ברלינגו",
+    "nameEn": "Citroën Berlingo",
+    "m": 1827,
+    "seats": 5,
+    "thumb": "images/gallery/citroen-berlingo/ext1.jpg",
+    "file": "lp-citroen-berlingo.html"
+  },
+  {
+    "folder": "hyundai-elantra",
+    "brand": "יונדאי",
+    "name": "אלנטרה",
+    "nameEn": "Hyundai Elantra",
+    "m": 1835,
+    "seats": 5,
+    "thumb": "images/gallery/hyundai-elantra/ext1.jpg",
+    "file": "lp-hyundai-elantra.html"
+  },
+  {
+    "folder": "kia-niro",
+    "brand": "קיה",
+    "name": "נירו",
+    "nameEn": "Kia Niro",
+    "m": 1845,
+    "seats": 5,
+    "thumb": "images/gallery/kia-niro/ext1.jpg",
+    "file": "lp-kia-niro.html"
+  },
+  {
+    "folder": "chery-tiggo7",
+    "brand": "צ'רי",
+    "name": "טיגו 7 פרו",
+    "nameEn": "Chery Tiggo 7 Pro",
+    "m": 1856,
+    "seats": 5,
+    "thumb": "images/gallery/chery-tiggo7/ext2.jpg",
+    "file": "lp-chery-tiggo7.html"
+  },
+  {
+    "folder": "nissan-qashqai",
+    "brand": "ניסאן",
+    "name": "קשקאי",
+    "nameEn": "NISSAN QASHQAI",
+    "m": 1890,
+    "seats": 5,
+    "thumb": "images/gallery/nissan-qashqai/ext1.jpg",
+    "file": "lp-nissan-qashqai.html"
+  },
+  {
+    "folder": "leapmotor-c10",
+    "brand": "ליפמוטור",
+    "name": "C10",
+    "nameEn": "Leapmotor C10",
+    "m": 1912,
+    "seats": 5,
+    "thumb": "images/gallery/leapmotor-c10/ext1.jpg",
+    "file": "lp-leapmotor-c10.html"
+  },
+  {
+    "folder": "zeekr-x",
+    "brand": "זיקר",
+    "name": "x",
+    "nameEn": "ZEEKR X",
+    "m": 1931,
+    "seats": 5,
+    "thumb": "images/gallery/zeekr-x/ext1.jpg",
+    "file": "lp-zeekr-x.html"
+  },
+  {
+    "folder": "toyota-chr",
+    "brand": "טויוטה",
+    "name": "C-HR",
+    "nameEn": "Toyota C-HR",
+    "m": 1952,
+    "seats": 5,
+    "thumb": "images/gallery/toyota-chr/ext1.jpg",
+    "file": "lp-toyota-chr.html"
+  },
+  {
+    "folder": "omoda-7",
+    "brand": "אומודה",
+    "name": "7",
+    "nameEn": "Omoda 7",
+    "m": 1990,
+    "seats": 5,
+    "thumb": "images/gallery/omoda-7/ext1.jpg",
+    "file": "lp-omoda-7.html"
+  },
+  {
+    "folder": "hyundai-tucson",
+    "brand": "יונדאי",
+    "name": "טוסון",
+    "nameEn": "Hyundai Tucson",
+    "m": 1992,
+    "seats": 5,
+    "thumb": "images/gallery/hyundai-tucson/ext1.jpg",
+    "file": "lp-hyundai-tucson.html"
+  },
+  {
+    "folder": "mazda-cx5",
+    "brand": "מאזדה",
+    "name": "cx5",
+    "nameEn": "MAZDA CX5",
+    "m": 2013,
+    "seats": 5,
+    "thumb": "images/gallery/mazda-cx5/ext1.jpg",
+    "file": "lp-mazda-cx5.html"
+  },
+  {
+    "folder": "byd-sealu",
+    "brand": "ב.י.ד",
+    "name": "סיל יו",
+    "nameEn": "BYD Seal U",
+    "m": 2074,
+    "seats": 5,
+    "thumb": "images/gallery/byd-sealu/ext1.jpg",
+    "file": "lp-byd-sealu.html"
+  },
+  {
+    "folder": "chery-tiggo8",
+    "brand": "צ'רי",
+    "name": "טיגו 8 פרו",
+    "nameEn": "Chery Tiggo 8 Pro",
+    "m": 2074,
+    "seats": 7,
+    "thumb": "images/gallery/chery-tiggo8/ext1.jpg",
+    "file": "lp-chery-tiggo8.html"
+  },
+  {
+    "folder": "jaecoo-7",
+    "brand": "ג'אקו",
+    "name": "7",
+    "nameEn": "Jaecoo 7",
+    "m": 2107,
+    "seats": 5,
+    "thumb": "images/gallery/jaecoo-7/ext1.jpg",
+    "file": "lp-jaecoo-7.html"
+  },
+  {
+    "folder": "mitsubishi-outlander",
+    "brand": "מיצובישי",
+    "name": "אאוטלנדר",
+    "nameEn": "Mitsubishi Outlander",
+    "m": 2109,
+    "seats": 7,
+    "thumb": "images/gallery/mitsubishi-outlander/ext1.jpg",
+    "file": "lp-mitsubishi-outlander.html"
+  },
+  {
+    "folder": "hyundai-sonata",
+    "brand": "יונדאי",
+    "name": "סונטה",
+    "nameEn": "Hyundai Sonata",
+    "m": 2289,
+    "seats": 5,
+    "thumb": "images/gallery/hyundai-sonata/ext1.jpg",
+    "file": "lp-hyundai-sonata.html"
+  },
+  {
+    "folder": "jaecoo-8",
+    "brand": "ג'אקו",
+    "name": "8",
+    "nameEn": "Jaecoo 8",
+    "m": 2396,
+    "seats": 7,
+    "thumb": "images/gallery/jaecoo-8/ext1.jpg",
+    "file": "jaecoo8-bold.html"
+  },
+  {
+    "folder": "smart-5",
+    "brand": "סמארט",
+    "name": "#5",
+    "nameEn": "SMART #5",
+    "m": 2396,
+    "seats": 5,
+    "thumb": "images/gallery/smart-5/ext1.jpg",
+    "file": "lp-smart-5.html"
+  },
+  {
+    "folder": "chery-tiggo9",
+    "brand": "צ'רי",
+    "name": "טיגו 9 לקשרי",
+    "nameEn": "Chery Tiggo 9 Pro",
+    "m": 2400,
+    "seats": 7,
+    "thumb": "images/gallery/chery-tiggo9/ext1.jpg",
+    "file": "lp-chery-tiggo9.html"
+  },
+  {
+    "folder": "zeekr-7x",
+    "brand": "זיקר",
+    "name": "7x",
+    "nameEn": "ZEEKR 7X",
+    "m": 2442,
+    "seats": 5,
+    "thumb": "images/gallery/zeekr-7x/ext1.jpg",
+    "file": "lp-zeekr-7x.html"
+  },
+  {
+    "folder": "bmw-2gc",
+    "brand": "ב.מ.וו",
+    "name": "216",
+    "nameEn": "bmw 216",
+    "m": 2795,
+    "seats": 5,
+    "thumb": "images/gallery/bmw-2gc/ext1.jpg",
+    "file": "lp-bmw-2gc.html"
+  },
+  {
+    "folder": "skoda-superb",
+    "brand": "סקודה",
+    "name": "סופרב",
+    "nameEn": "Škoda Superb",
+    "m": 2992,
+    "seats": 5,
+    "thumb": "images/gallery/skoda-superb/ext1.jpg",
+    "file": "lp-skoda-superb.html"
+  },
+  {
+    "folder": "audi-a3",
+    "brand": "אאודי",
+    "name": "A3 ספורטבק חבילת SLINE LUX",
+    "nameEn": "Audi A3 Sportback SLINE LUX",
+    "m": 2999,
+    "seats": 5,
+    "thumb": "images/gallery/audi-a3/ext1.jpg",
+    "file": "lp-audi-a3.html"
+  },
+  {
+    "folder": "avatr-11",
+    "brand": "אווטר",
+    "name": "11",
+    "nameEn": "Avatr 11",
+    "m": 3050,
+    "seats": 5,
+    "thumb": "images/gallery/avatr-11/ext1.jpg",
+    "file": "lp-avatr-11.html"
+  },
+  {
+    "folder": "audi-q3",
+    "brand": "אאודי",
+    "name": "Q3 ספורטבק 35 TFSI חבילת אבזור Design",
+    "nameEn": "Audi Q3 Sportback 35 TFSI",
+    "m": 3490,
+    "seats": 5,
+    "thumb": "images/gallery/audi-q3/ext1.jpg",
+    "file": "lp-audi-q3.html"
+  },
+  {
+    "folder": "mercedes-gla",
+    "brand": "מרצדס",
+    "name": "GLA 200",
+    "nameEn": "MERCEDES GLA 200",
+    "m": 3699,
+    "seats": 5,
+    "thumb": "images/gallery/mercedes-gla/ext1.jpg",
+    "file": "lp-mercedes-gla.html"
+  },
+  {
+    "folder": "bmw-4gc",
+    "brand": "ב.מ.וו",
+    "name": "420i",
+    "nameEn": "BMW 420i",
+    "m": 3982,
+    "seats": 4,
+    "thumb": "images/gallery/bmw-4gc/ext1.jpg",
+    "file": "lp-bmw-4gc.html"
+  },
+  {
+    "folder": "mercedes-cla",
+    "brand": "מרצדס",
+    "name": "cla 200 סיגניצ'ר AMG LINE",
+    "nameEn": "CLA 200",
+    "m": 3999,
+    "seats": 5,
+    "thumb": "images/gallery/mercedes-cla/ext1.jpg",
+    "file": "lp-mercedes-cla.html"
+  },
+  {
+    "folder": "mercedes-glc",
+    "brand": "מרצדס",
+    "name": "GLC 200",
+    "nameEn": "MERCEDES GLC 200",
+    "m": 4806,
+    "seats": 5,
+    "thumb": "images/gallery/mercedes-glc/ext1.jpg",
+    "file": "lp-mercedes-glc.html"
+  },
+  {
+    "folder": "bmw-5",
+    "brand": "ב.מ.וו",
+    "name": "530",
+    "nameEn": "BMW 530 E",
+    "m": 5531,
+    "seats": 5,
+    "thumb": "images/gallery/bmw-5/ext1.jpg",
+    "file": "lp-bmw-5.html"
+  },
+  {
+    "folder": "bmw-ix2",
+    "brand": "ב.מ.וו",
+    "name": "ix2",
+    "nameEn": "IX2",
+    "m": 0,
+    "seats": 5,
+    "thumb": "images/gallery/bmw-ix2/ext1.jpg",
+    "file": "lp-bmw-ix2.html"
+  },
+  {
+    "folder": "bmw-ix",
+    "brand": "ב.מ.וו",
+    "name": "IX50",
+    "nameEn": "IX50 -2025",
+    "m": 0,
+    "seats": 5,
+    "thumb": "images/gallery/bmw-ix/ext1.jpg",
+    "file": "lp-bmw-ix.html"
+  },
+  {
+    "folder": "audi-q5",
+    "brand": "אאודי",
+    "name": "Q5 40TFSI",
+    "nameEn": "Audi Q5 sportback",
+    "m": 0,
+    "seats": 5,
+    "thumb": "images/gallery/audi-q5/ext1.jpg",
+    "file": "lp-audi-q5.html"
+  }
+]
