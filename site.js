@@ -525,6 +525,14 @@ window.C2B_consentOK = function (scope) {
     document.body.appendChild(s);
   }
 
+  // quick lead popup (powers the mobile bar "הצעת מימון" + any [data-open-lead] trigger)
+  if (!document.getElementById('quickLeadScript')) {
+    const s = document.createElement('script');
+    s.id = 'quickLeadScript';
+    s.src = 'quick-lead.js';
+    document.body.appendChild(s);
+  }
+
   // social-proof popups
   if (!document.getElementById('socialProofScript')) {
     const s = document.createElement('script');
@@ -555,8 +563,8 @@ window.C2B_consentOK = function (scope) {
     document.body.insertAdjacentHTML('beforeend',
       '<div id="mobileBar" class="mbar">' +
         '<a class="mbar-btn wa" href="https://wa.me/972723319929" target="_blank" rel="noopener" data-track="whatsapp_click"><span class="mbar-ic">✆</span>וואטסאפ</a>' +
-        '<a class="mbar-btn primary" href="contact.html" data-track="finance_offer_click"><span class="mbar-ic">₪</span>הצעת מימון</a>' +
-        '<a class="mbar-btn" href="contact.html" data-track="schedule_meeting_click"><span class="mbar-ic">☕</span>פגישה</a>' +
+        '<a class="mbar-btn primary" href="contact.html" data-open-lead data-source="mobilebar_finance" data-track="finance_offer_click"><span class="mbar-ic">₪</span>הצעת מימון</a>' +
+        '<a class="mbar-btn" href="contact.html" data-open-scheduler data-track="schedule_meeting_click"><span class="mbar-ic">☕</span>פגישה</a>' +
       '</div>');
   }
 

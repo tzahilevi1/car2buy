@@ -1785,3 +1785,21 @@ td.cmp-best { background: color-mix(in oklab, var(--gold) 9%, transparent); colo
 .uc-ph-logo { width: clamp(56px, 20%, 88px); max-height: 60px; object-fit: contain; opacity: .92; }
 .uc-ph-model { font-family: var(--display); font-weight: 800; font-size: 18px; color: #2a2f3a; line-height: 1.2; }
 .uc-ph-soon { font-size: 12px; font-weight: 600; color: #8a8f99; }
+
+/* ===== Mobile UX fixes (header logo / language / hero CTA / floating whatsapp) ===== */
+@media (max-width: 640px) {
+  /* header: flex layout so the logo keeps its natural aspect ratio (was squished by the 3-col grid),
+     and the language switcher no longer sits on top of the logo. Language stays on tablet/desktop. */
+  .nav-top-inner { display: flex !important; justify-content: space-between; align-items: center; gap: 8px; }
+  .nav-top-start, #navLang { display: none !important; }  /* language globe + search — no room on phones */
+  .nav-logo { justify-self: auto; flex: 0 0 auto; }
+  .brand-img { height: 40px; }                   /* natural 440x184 ratio → ~96px wide, not stretched */
+  .nav-cta { gap: 8px; flex: 0 1 auto; justify-content: flex-end; }
+  /* the floating side WhatsApp is redundant with the bottom bar → hide it on phones */
+  .wa-float { display: none !important; }
+}
+@media (max-width: 560px) {
+  /* hero CTA: long Hebrew label was clipped by white-space:nowrap → let it wrap and fill the width */
+  .btn-lg { padding: 15px 22px; font-size: 15px; }
+  .hero-cta .btn, #quoteCtaBtn { white-space: normal; width: 100%; text-align: center; line-height: 1.3; }
+}
