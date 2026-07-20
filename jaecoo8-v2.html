@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self'; connect-src 'self' https://tdxhqpauuqawcoivjnnm.supabase.co https://api.ipify.org; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<title>ג'אקו 8 · יוקרה ל-7 · Car2Buy</title>
+<meta name="description" content="ג'אקו 8 — SUV פלאג-אין מפואר ל-7 נוסעים. החל מ-₪2,396 לחודש, 100% מימון. קבלו הצעה אישית.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,700;0,800;0,900;1,500;1,700;1,900&display=swap" rel="stylesheet">
+<style>
+  /* V2 — Editorial Luxury: high-contrast magazine, oversized kinetic type, framed video,
+     serial numbers, thin rules, film grain. Single accent (gold), one radius scale. */
+  :root{ --ink:#0d0d0f; --paper:#f4f1ea; --paper-2:#e9e5db; --gold:#F5691E; --gold-d:#c9490a;
+    --muted:#8a8578; --line:rgba(13,13,15,.14); --ease:cubic-bezier(.22,.68,0,1); --maxw:1280px; }
+  *{margin:0;padding:0;box-sizing:border-box;} html{scroll-behavior:smooth;}
+  body{font-family:"Rubik","Noto Sans Hebrew",sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  img{max-width:100%;display:block;} a{color:inherit;text-decoration:none;}
+  .wrap{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:clamp(18px,4vw,44px);}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  /* top rule bar */
+  .topbar{position:fixed;inset-block-start:0;inset-inline:0;z-index:100;display:flex;justify-content:space-between;align-items:center;
+    padding:16px clamp(18px,4vw,44px);border-bottom:1px solid var(--line);background:rgba(244,241,234,.82);backdrop-filter:blur(14px);}
+  .topbar .b{font-weight:900;font-size:19px;letter-spacing:-.02em;} .topbar .b i{color:var(--gold);font-style:normal;}
+  .topbar .r{display:flex;align-items:center;gap:20px;font-size:13.5px;font-weight:600;}
+  .topbar a.cta{background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:999px;letter-spacing:.01em;transition:.4s var(--ease);}
+  .topbar a.cta:hover{background:var(--gold);}
+  @media(max-width:620px){ .topbar .tel{display:none;} }
+
+  /* HERO — editorial split */
+  .hero{padding-top:clamp(96px,13vh,150px);padding-bottom:clamp(30px,5vw,60px);}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--ink);padding-bottom:18px;flex-wrap:wrap;gap:14px;}
+  .kick{font-size:12.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;}
+  .kick .g{color:var(--gold);}
+  .issue{font-size:12.5px;color:var(--muted);letter-spacing:.1em;}
+  h1{font-weight:900;font-size:clamp(52px,13vw,168px);line-height:.86;letter-spacing:-.05em;margin-top:clamp(20px,3vw,40px);text-wrap:balance;}
+  h1 em{font-style:italic;color:var(--gold);font-weight:900;}
+  .hero-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(24px,3vw,50px);margin-top:clamp(26px,3.5vw,46px);align-items:end;}
+  @media(max-width:900px){ .hero-grid{grid-template-columns:1fr;} }
+  .hero-lede{font-size:clamp(17px,2vw,22px);line-height:1.5;max-width:34ch;font-weight:500;}
+  .hero-lede b{color:var(--gold-d);}
+  .hero-meta{display:flex;gap:clamp(20px,3vw,44px);margin-top:26px;flex-wrap:wrap;}
+  .hm .v{font-size:clamp(26px,3vw,40px);font-weight:900;letter-spacing:-.03em;line-height:1;}
+  .hm .v em{font-style:normal;color:var(--gold);}
+  .hm .k{font-size:12.5px;color:var(--muted);margin-top:6px;letter-spacing:.04em;}
+  /* framed video window */
+  .frame{position:relative;border:1px solid var(--ink);padding:10px;background:var(--paper-2);}
+  .frame::after{content:"JAECOO 8 — 2026";position:absolute;inset-block-end:-1px;inset-inline-start:-1px;background:var(--ink);color:var(--paper);
+    font-size:10.5px;font-weight:700;letter-spacing:.18em;padding:6px 12px;}
+  .frame video,.frame img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;filter:contrast(1.04) saturate(1.05);}
+
+  /* marquee */
+  .marq{border-block:1px solid var(--ink);overflow:hidden;margin-top:clamp(30px,4vw,54px);padding:16px 0;}
+  .marq-t{display:flex;gap:44px;width:max-content;animation:mv 26s linear infinite;white-space:nowrap;}
+  .marq-t span{font-size:clamp(20px,2.6vw,32px);font-weight:900;letter-spacing:-.02em;text-transform:uppercase;color:var(--ink);opacity:.28;}
+  .marq-t span b{color:var(--gold);opacity:1;}
+  @keyframes mv{to{transform:translateX(50%);}}
+
+  /* editorial articles (numbered) */
+  .sec{padding-block:clamp(60px,9vw,130px);}
+  .art{display:grid;grid-template-columns:auto 1fr;gap:clamp(20px,3vw,48px);border-top:1px solid var(--line);padding-top:clamp(28px,4vw,52px);margin-top:clamp(28px,4vw,52px);align-items:start;}
+  .art:first-child{border-top:none;margin-top:0;padding-top:0;}
+  .art .no{font-size:clamp(40px,6vw,92px);font-weight:900;letter-spacing:-.04em;color:var(--gold);line-height:.8;}
+  .art h2{font-size:clamp(28px,4.4vw,58px);font-weight:900;letter-spacing:-.03em;line-height:1;text-wrap:balance;}
+  .art h2 em{font-style:italic;color:var(--gold);}
+  .art p{font-size:clamp(15.5px,1.7vw,19px);line-height:1.65;color:#2b2b2e;max-width:56ch;margin-top:16px;}
+  .art .big{font-size:clamp(64px,11vw,150px);font-weight:900;letter-spacing:-.05em;line-height:.85;margin-top:18px;}
+  .art .big em{font-style:normal;color:var(--gold);}
+  .art-media{margin-top:22px;border:1px solid var(--ink);padding:8px;background:var(--paper-2);}
+  .art-media img{width:100%;aspect-ratio:16/9;object-fit:cover;}
+  @media(max-width:720px){ .art{grid-template-columns:1fr;gap:12px;} }
+
+  /* gallery editorial */
+  .egal{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(10px,1.4vw,18px);margin-top:clamp(30px,4vw,52px);}
+  .egal figure{border:1px solid var(--ink);padding:8px;background:var(--paper-2);overflow:hidden;}
+  .egal img{width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease);}
+  .egal figure:hover img{transform:scale(1.04);}
+  .e1{grid-column:span 7;aspect-ratio:16/10;} .e2{grid-column:span 5;aspect-ratio:4/5;}
+  .e3{grid-column:span 5;} .e4{grid-column:span 7;aspect-ratio:16/9;}
+  @media(max-width:720px){ .e1,.e2,.e3,.e4{grid-column:span 12;aspect-ratio:16/10;} }
+
+  /* lead — inverted block */
+  .lead{background:var(--ink);color:var(--paper);}
+  .lead .wrap{padding-block:clamp(60px,9vw,120px);}
+  .lead-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(28px,4vw,64px);align-items:center;}
+  @media(max-width:860px){ .lead-grid{grid-template-columns:1fr;} }
+  .lead h2{font-size:clamp(34px,6vw,80px);font-weight:900;letter-spacing:-.04em;line-height:.92;text-wrap:balance;}
+  .lead h2 em{font-style:italic;color:var(--gold);}
+  .lead p{color:rgba(244,241,234,.66);font-size:clamp(16px,1.9vw,20px);margin-top:20px;max-width:40ch;}
+  form{display:grid;gap:14px;}
+  .fld input{width:100%;background:transparent;border:none;border-bottom:2px solid rgba(244,241,234,.28);color:var(--paper);font-family:inherit;
+    font-size:20px;padding:14px 4px;transition:border-color .4s var(--ease);}
+  .fld input::placeholder{color:rgba(244,241,234,.4);} .fld input:focus{outline:none;border-color:var(--gold);}
+  .fld label{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(244,241,234,.5);}
+  .go{margin-top:12px;display:inline-flex;align-items:center;justify-content:space-between;gap:16px;background:var(--gold);color:#fff;
+    font-family:inherit;font-weight:800;font-size:19px;border:none;cursor:pointer;padding:18px 22px;border-radius:999px;transition:transform .5s var(--ease),filter .3s;}
+  .go:hover{transform:translateY(-2px);filter:brightness(1.06);} .go:active{transform:scale(.98);}
+  .go .a{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;transition:transform .5s var(--ease);}
+  .go:hover .a{transform:translateX(-5px);} .go svg{width:16px;height:16px;stroke:#fff;}
+  .note{font-size:12px;color:rgba(244,241,234,.5);margin-top:8px;}
+  .hp{position:absolute;left:-9999px;opacity:0;}
+  .done{display:none;} .done.on{display:block;animation:fu .5s var(--ease);}
+  @keyframes fu{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  .done .ok{width:52px;height:52px;border-radius:50%;background:var(--gold);display:grid;place-items:center;margin-bottom:14px;}
+  .done .ok svg{width:24px;height:24px;stroke:#fff;stroke-width:3;} .done h3{font-size:26px;font-weight:900;} .done p{margin-top:8px;}
+
+  .foot{border-top:1px solid var(--line);padding-block:36px;font-size:13px;color:var(--muted);text-align:center;}
+  .foot a{color:var(--gold-d);font-weight:600;}
+  .rev{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease);}
+  .rev.in{opacity:1;transform:none;}
+  @media(prefers-reduced-motion:reduce){.rev{opacity:1;transform:none;}.marq-t{animation:none;}}
+  /* switcher */
+  .switch{position:fixed;inset-block-end:16px;inset-inline-end:16px;z-index:120;background:var(--ink);color:var(--paper);border-radius:999px;
+    padding:9px 16px;font-size:13px;font-weight:700;box-shadow:0 12px 30px -12px rgba(0,0,0,.5);}
+  .switch a{color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="topbar">
+  <div class="b">CAR<i>2</i>BUY</div>
+  <div class="r"><a class="tel" href="tel:+97223319929">072-3319929</a><a class="cta" href="#lead">קבלו הצעה</a></div>
+</div>
+
+<header class="hero"><div class="wrap">
+  <div class="hero-top">
+    <div class="kick">מהדורה מיוחדת · <span class="g">ג'אקו 8</span></div>
+    <div class="issue">SUV · פלאג-אין · 7 מושבים · 2026</div>
+  </div>
+  <h1 class="rev">יוקרה<br>ל-<em>שבעה</em>.</h1>
+  <div class="hero-grid">
+    <div class="rev">
+      <p class="hero-lede">SUV משפחתי פלאג-אין, מפואר ומרווח — עם <b>100% מימון</b> בריבית הטובה בישראל.</p>
+      <div class="hero-meta">
+        <div class="hm"><div class="v"><em>₪</em>2,396</div><div class="k">החזר חודשי החל מ-</div></div>
+        <div class="hm"><div class="v">7</div><div class="k">מושבים · 3 שורות</div></div>
+        <div class="hm"><div class="v">PHEV</div><div class="k">פלאג-אין היברידי</div></div>
+      </div>
+    </div>
+    <div class="frame rev"><video autoplay muted loop playsinline preload="auto" poster="videos/jaecoo8-drive-poster.jpg"><source src="videos/jaecoo8-drive.mp4" type="video/mp4"></video></div>
+  </div>
+  <div class="marq"><div class="marq-t">
+    <span>ג'אקו 8</span><span><b>פלאג-אין</b></span><span>7 מושבים</span><span><b>100% מימון</b></span><span>מסירה מהירה</span><span><b>אחריות יצרן</b></span>
+    <span>ג'אקו 8</span><span><b>פלאג-אין</b></span><span>7 מושבים</span><span><b>100% מימון</b></span><span>מסירה מהירה</span><span><b>אחריות יצרן</b></span>
+  </div></div>
+</div></header>
+
+<section class="sec"><div class="wrap">
+  <div class="art rev"><div class="no">01</div><div>
+    <h2>הנוכחות של <em>ריינג' רובר</em>,<br>המחיר של משפחה.</h2>
+    <p>קווים נקיים, גריל אנכי מרשים ונפח פנימי אמיתי לשלוש שורות. ג'אקו 8 עוצרת מבטים בכל חניה — בלי לעצור את חשבון הבנק.</p>
+    <div class="art-media"><img loading="lazy" src="images/gallery/jaecoo-8/ext2.jpg" alt="ג'אקו 8 חוץ"></div>
+  </div></div>
+  <div class="art rev"><div class="no">02</div><div>
+    <h2>פלאג-אין — <em>שקט</em> וחסכוני.</h2>
+    <p>נסיעה חשמלית שקטה ליום-יום בעיר, וטווח בנזין ארוך לחופשה. בלי חרדת טווח, עם עלות אחזקה נמוכה משמעותית.</p>
+    <div class="big"><em>70</em>+ ק"מ בחשמל</div>
+  </div></div>
+  <div class="art rev"><div class="no">03</div><div>
+    <h2>פנים <em>יוקרתי</em> באמת.</h2>
+    <p>מסכים גדולים, ריפודים רכים, תא נהג דיגיטלי ומערכות בטיחות אקטיביות — גימור שמרגישים בכל נגיעה.</p>
+    <div class="art-media"><img loading="lazy" src="images/gallery/jaecoo-8/int5.jpg" alt="ג'אקו 8 פנים"></div>
+  </div></div>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap">
+  <div class="kick">גלריה</div>
+  <div class="egal">
+    <figure class="e1 rev"><img loading="lazy" src="images/gallery/jaecoo-8/ext3.jpg" alt="ג'אקו 8"></figure>
+    <figure class="e2 rev"><img loading="lazy" src="images/gallery/jaecoo-8/int6.jpg" alt="פנים"></figure>
+    <figure class="e3 rev"><img loading="lazy" src="images/gallery/jaecoo-8/int5.jpg" alt="פנים"></figure>
+    <figure class="e4 rev"><img loading="lazy" src="images/gallery/jaecoo-8/ext4.jpg" alt="ג'אקו 8"></figure>
+  </div>
+</div></section>
+
+<section class="lead" id="lead"><div class="wrap"><div class="lead-grid">
+  <div class="rev">
+    <div class="kick" style="color:var(--gold)">קבלו הצעה</div>
+    <h2>הג'אקו 8 מחכה<br>ל<em>כם</em>.</h2>
+    <p>משאירים שם וטלפון — ונחזור אליכם עם המחיר, המימון והטרייד-אין הכי טובים. עוד היום.</p>
+  </div>
+  <div class="rev">
+    <form id="leadForm" novalidate>
+      <input type="text" name="company_url" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="fld"><label>שם מלא</label><input type="text" name="name" placeholder="השם שלכם" autocomplete="name" required></div>
+      <div class="fld"><label>טלפון</label><input type="tel" name="phone" placeholder="050-0000000" inputmode="tel" autocomplete="tel" required></div>
+      <button type="submit" class="go">קבלו הצעה לג'אקו 8<span class="a"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></button>
+      <div class="note">ללא התחייבות · נציג יחזור אליכם בהקדם</div>
+    </form>
+    <div class="done" id="leadDone"><div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><h3>תודה!</h3><p style="color:rgba(244,241,234,.66)">נציג Car2Buy יחזור אליכם עם הצעה אישית לג'אקו 8.</p></div>
+  </div>
+</div></div></section>
+
+<footer class="foot"><div class="wrap"><b>Car2Buy</b> · 072-3319929 · <a href="tel:+97223319929">חייגו עכשיו</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור מימון וזמינות.</div></footer>
+<div class="switch">גרסה 2/5 · <a href="jaecoo8-versions.html">השוואה</a></div>
+
+<script src="supabase.js"></script>
+<script>
+(function(){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.rev').forEach(function(el){io.observe(el);});
+  var form=document.getElementById('leadForm'),done=document.getElementById('leadDone');
+  form.addEventListener('submit',function(e){e.preventDefault();
+    var n=(form.name.value||'').trim(),p=(form.phone.value||'').trim();
+    if(n.length<2){form.name.focus();return;} if(p.replace(/\D/g,'').length<9){form.phone.focus();return;}
+    if(window.submitLead)submitLead({name:n,phone:p,car:'Jaecoo 8',source:'landing_jaecoo8_v2',message:"דף נחיתה ג'אקו 8 (V2)",company_url:(form.company_url&&form.company_url.value)||''});
+    form.style.display='none';done.classList.add('on');
+  });
+})();
+</script>
+</body>
+</html>
