@@ -65,7 +65,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; scroll-padding-top: 134px; }
+html { scroll-behavior: smooth; scroll-padding-top: 134px; overflow-x: clip; }
 
 body {
   background: var(--bg);
