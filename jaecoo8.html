@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://tdxhqpauuqawcoivjnnm.supabase.co https://api.ipify.org; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<title>ג'אקו 8 · SUV פלאג-אין 7 מושבים · החל מ-₪2,396 לחודש | Car2Buy</title>
+<meta name="description" content="ג'אקו 8 — SUV משפחתי פלאג-אין מפואר ל-7 נוסעים, עם 100% מימון בריבית הטובה בישראל. החל מ-₪2,396 לחודש. השאירו פרטים וקבלו הצעה אישית עוד היום.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Jaecoo 8 — premium car landing (Car2Buy)
+     Built with the Taste "high-end-visual-design" discipline:
+     · Design read: premium-consumer automotive, cinematic dark hero → light content
+     · Single locked accent (Car2Buy gold), no AI-purple, no generic 3-card grids
+     · One radius scale (cards 24px, buttons full-pill), documented
+     · Double-Bezel cards, button-in-button CTAs, custom-bezier motion, scroll reveals
+     ============================================================ */
+  :root {
+    --ink:#0a0b0d; --ink-2:#14161a; --paper:#ffffff; --mist:#f4f5f7; --mist-2:#eceef1;
+    --gold:#F5691E; --gold-deep:#d14e0c; --gold-bright:#ff8a4b; --gold-soft:rgba(245,105,30,.12);
+    --muted:#6a7180; --muted-d:rgba(255,255,255,.62);
+    --line:rgba(12,14,18,.09); --line-d:rgba(255,255,255,.12);
+    --r:24px; --r-lg:32px; --r-sm:16px;              /* one radius scale */
+    --ease:cubic-bezier(.32,.72,0,1);
+    --shadow:0 40px 90px -50px rgba(20,22,30,.55);   /* soft, tinted — never pure black */
+    --shadow-gold:0 24px 60px -24px rgba(245,105,30,.55);
+    --maxw:1240px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+  body { font-family:"Rubik","Noto Sans Hebrew",sans-serif; background:var(--paper); color:var(--ink);
+    line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  img { max-width:100%; display:block; }
+  a { color:inherit; text-decoration:none; }
+  .wrap { width:100%; max-width:var(--maxw); margin-inline:auto; padding-inline:clamp(18px,4vw,40px); }
+  section { position:relative; }
+
+  /* ---------- decorative fixed grain (perf-safe: fixed + pointer-events none) ---------- */
+  .grain { position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.035; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  /* ---------- floating pill nav (detached glass) ---------- */
+  .nav { position:fixed; inset-block-start:clamp(12px,2vw,20px); inset-inline:0; z-index:100; display:flex; justify-content:center; pointer-events:none; }
+  .nav-pill { pointer-events:auto; display:flex; align-items:center; gap:clamp(14px,2vw,26px);
+    background:rgba(10,11,13,.6); backdrop-filter:blur(20px) saturate(1.3); -webkit-backdrop-filter:blur(20px) saturate(1.3);
+    border:1px solid var(--line-d); border-radius:999px; padding:9px 9px 9px 20px; box-shadow:0 20px 50px -30px rgba(0,0,0,.7);
+    max-width:calc(100vw - 28px); }
+  .nav-logo { font-weight:900; font-size:19px; letter-spacing:-.02em; color:#fff; white-space:nowrap; }
+  .nav-logo b { color:var(--gold); }
+  .nav-tel { color:rgba(255,255,255,.8); font-weight:600; font-size:14.5px; white-space:nowrap; display:flex; align-items:center; gap:7px; }
+  .nav-tel svg { width:15px; height:15px; stroke:var(--gold); }
+  .nav-cta { display:inline-flex; align-items:center; gap:9px; background:var(--gold); color:#fff; font-weight:700; font-size:14.5px;
+    padding:11px 10px 11px 18px; border-radius:999px; white-space:nowrap; transition:transform .5s var(--ease), box-shadow .5s var(--ease); }
+  .nav-cta:hover { transform:translateY(-1px); box-shadow:var(--shadow-gold); }
+  .nav-cta:active { transform:scale(.97); }
+  .nav-cta .ico { width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,.18); display:grid; place-items:center; transition:transform .5s var(--ease); }
+  .nav-cta:hover .ico { transform:translateX(-3px); }
+  .nav-cta svg { width:13px; height:13px; stroke:#fff; }
+  @media (max-width:620px){ .nav-tel { display:none; } }
+
+  /* ---------- HERO (cinematic, min 100dvh) ---------- */
+  .hero { min-height:100dvh; position:relative; display:flex; align-items:flex-end; background:var(--ink); overflow:hidden; z-index:2; }
+  .hero-bg { position:absolute; inset:0; z-index:0; }
+  .hero-bg img { width:100%; height:100%; object-fit:cover; object-position:center 40%; transform:scale(1.04); animation:kb 20s ease-in-out infinite alternate; }
+  @keyframes kb { to { transform:scale(1.12); } }
+  .hero-scrim { position:absolute; inset:0; z-index:1; background:
+    linear-gradient(to top, rgba(8,9,11,.96) 2%, rgba(8,9,11,.55) 30%, rgba(8,9,11,.15) 55%, rgba(8,9,11,.5) 100%),
+    linear-gradient(to left, rgba(8,9,11,.72) 0%, transparent 55%); }
+  .hero-inner { position:relative; z-index:2; width:100%; padding-block:clamp(40px,10vh,96px) clamp(34px,6vh,64px); padding-top:120px; }
+  .hero-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(28px,4vw,56px); align-items:end; }
+  @media (max-width:940px){ .hero-grid { grid-template-columns:1fr; gap:26px; } }
+
+  .eyebrow { display:inline-flex; align-items:center; gap:9px; background:rgba(255,255,255,.08); border:1px solid var(--line-d);
+    color:#fff; font-size:12.5px; font-weight:600; letter-spacing:.02em; padding:8px 15px; border-radius:999px; backdrop-filter:blur(8px); }
+  .eyebrow .dot { width:7px; height:7px; border-radius:50%; background:var(--gold); box-shadow:0 0 12px 2px rgba(245,105,30,.7); }
+  h1.hero-h { color:#fff; font-weight:900; font-size:clamp(33px,5vw,62px); line-height:1.05; letter-spacing:-.03em; margin-top:20px; text-wrap:balance; }
+  h1.hero-h .g { color:var(--gold); }
+  .hero-sub { color:var(--muted-d); font-size:clamp(15.5px,1.7vw,19px); line-height:1.6; max-width:46ch; margin-top:20px; }
+  .hero-pay { display:flex; align-items:baseline; gap:12px; margin-top:26px; color:#fff; flex-wrap:wrap; }
+  .hero-pay .lbl { font-size:14px; color:var(--muted-d); }
+  .hero-pay .amt { font-size:clamp(30px,4vw,46px); font-weight:900; letter-spacing:-.02em; line-height:1; }
+  .hero-pay .amt small { font-size:16px; font-weight:500; color:var(--muted-d); }
+
+  /* Double-Bezel lead card (outer shell → inner core with concentric radii + inner highlight) */
+  .lead-shell { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-radius:var(--r-lg); padding:8px;
+    box-shadow:0 50px 100px -40px rgba(0,0,0,.8); backdrop-filter:blur(24px) saturate(1.2); }
+  .lead-core { background:#fff; border-radius:calc(var(--r-lg) - 8px); padding:clamp(22px,2.6vw,30px);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.6); }
+  .lead-core .lc-title { font-weight:800; font-size:clamp(19px,2.1vw,23px); letter-spacing:-.02em; }
+  .lead-core .lc-sub { color:var(--muted); font-size:14px; margin-top:5px; }
+  .field { margin-top:14px; }
+  .field label { display:block; font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:6px; }
+  .field input { width:100%; padding:14px 16px; font-size:16px; font-family:inherit; color:var(--ink);
+    background:var(--mist); border:1px solid var(--line); border-radius:var(--r-sm); transition:border-color .3s var(--ease), box-shadow .3s var(--ease); }
+  .field input::placeholder { color:#9aa1ac; }
+  .field input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 4px var(--gold-soft); background:#fff; }
+  .submit { position:relative; width:100%; margin-top:18px; display:inline-flex; align-items:center; justify-content:center; gap:12px;
+    background:var(--gold); color:#fff; font-family:inherit; font-weight:800; font-size:17px; border:none; cursor:pointer;
+    padding:16px 20px; border-radius:999px; box-shadow:var(--shadow-gold); transition:transform .5s var(--ease), filter .3s; }
+  .submit:hover { transform:translateY(-2px); filter:brightness(1.05); }
+  .submit:active { transform:scale(.98); }
+  .submit .ico { width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.2); display:grid; place-items:center; transition:transform .5s var(--ease); }
+  .submit:hover .ico { transform:translateX(-4px) scale(1.05); }
+  .submit svg { width:15px; height:15px; stroke:#fff; }
+  .lc-note { margin-top:12px; font-size:11.5px; color:var(--muted); text-align:center; line-height:1.5; }
+  .lc-done { display:none; padding:24px 6px; text-align:center; }
+  .lc-done.on { display:block; animation:pop .5s var(--ease); }
+  @keyframes pop { from { opacity:0; transform:scale(.94); } to { opacity:1; transform:none; } }
+  .lc-done .ok { width:56px; height:56px; margin:0 auto 14px; border-radius:50%; background:linear-gradient(150deg,var(--gold-bright),var(--gold-deep)); display:grid; place-items:center; }
+  .lc-done .ok svg { width:26px; height:26px; stroke:#fff; stroke-width:3; }
+  .lc-done h4 { font-size:20px; font-weight:800; }
+  .lc-done p { color:var(--muted); font-size:14.5px; margin-top:6px; }
+  .hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+
+  /* ---------- trust strip ---------- */
+  .trust { background:var(--ink); z-index:2; border-top:1px solid var(--line-d); }
+  .trust-row { display:grid; grid-template-columns:repeat(4,1fr); }
+  @media (max-width:760px){ .trust-row { grid-template-columns:repeat(2,1fr); } }
+  .trust-c { display:flex; align-items:center; gap:13px; padding:26px clamp(6px,1.6vw,22px); color:#fff; position:relative; }
+  .trust-c + .trust-c::before { content:""; position:absolute; inset-block:22px; inset-inline-start:0; width:1px; background:var(--line-d); }
+  @media (max-width:760px){ .trust-c:nth-child(odd)::before { display:none; } .trust-c:nth-child(n+3){ border-top:1px solid var(--line-d); } }
+  .trust-ic { width:42px; height:42px; flex:0 0 auto; border-radius:13px; background:var(--gold-soft); display:grid; place-items:center; }
+  .trust-ic svg { width:21px; height:21px; stroke:var(--gold-bright); }
+  .trust-c b { display:block; font-size:16px; font-weight:700; }
+  .trust-c span { font-size:12.5px; color:var(--muted-d); }
+
+  /* ---------- section shell (light) ---------- */
+  .sec { padding-block:clamp(72px,11vw,150px); background:var(--paper); z-index:2; }
+  .sec.mist { background:var(--mist); }
+  .sec-eyebrow { display:inline-flex; align-items:center; gap:8px; color:var(--gold-deep); font-size:12.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+  .sec-h { font-size:clamp(30px,4.4vw,54px); font-weight:900; letter-spacing:-.03em; line-height:1.06; margin-top:14px; text-wrap:balance; }
+  .sec-h .g { color:var(--gold); }
+  .sec-lead { color:var(--muted); font-size:clamp(15.5px,1.7vw,18.5px); line-height:1.7; max-width:60ch; margin-top:16px; }
+
+  /* ---------- WHY: asymmetric bento (varied cell sizes, real image cell) ---------- */
+  .bento { display:grid; grid-template-columns:repeat(6,1fr); gap:clamp(14px,1.6vw,20px); margin-top:clamp(36px,5vw,60px); }
+  .cell { background:#fff; border:1px solid var(--line); border-radius:var(--r); padding:clamp(24px,2.6vw,34px);
+    box-shadow:var(--shadow); position:relative; overflow:hidden; }
+  .cell.big { grid-column:span 4; grid-row:span 2; display:flex; flex-direction:column; justify-content:space-between; min-height:340px; }
+  .cell.wide { grid-column:span 2; }
+  .cell.tall { grid-column:span 2; }
+  .cell.photo { grid-column:span 4; padding:0; min-height:260px; border:none; }
+  .cell.photo img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+  .cell.photo .cap { position:absolute; inset-block-end:0; inset-inline:0; z-index:1; padding:22px 24px;
+    background:linear-gradient(to top, rgba(8,9,11,.85), transparent); color:#fff; font-weight:700; font-size:18px; }
+  @media (max-width:860px){ .bento { grid-template-columns:repeat(2,1fr); } .cell.big,.cell.photo { grid-column:span 2; } .cell.wide,.cell.tall { grid-column:span 1; } }
+  @media (max-width:520px){ .bento { grid-template-columns:1fr; } .cell,.cell.big,.cell.wide,.cell.tall,.cell.photo { grid-column:span 1; } }
+  .cell .n { font-size:clamp(34px,4vw,54px); font-weight:900; letter-spacing:-.03em; color:var(--gold); line-height:1; }
+  .cell h3 { font-size:clamp(18px,2vw,22px); font-weight:800; letter-spacing:-.01em; margin-top:6px; }
+  .cell p { color:var(--muted); font-size:14.5px; line-height:1.6; margin-top:8px; }
+  .cell .cell-ic { width:46px; height:46px; border-radius:14px; background:var(--gold-soft); display:grid; place-items:center; margin-bottom:16px; }
+  .cell .cell-ic svg { width:23px; height:23px; stroke:var(--gold-deep); }
+  .cell.big .big-num { font-size:clamp(52px,7vw,84px); font-weight:900; letter-spacing:-.04em; color:var(--ink); line-height:.95; }
+  .cell.big .big-num span { color:var(--gold); }
+
+  /* ---------- gallery ---------- */
+  .gal { display:grid; grid-template-columns:repeat(6,1fr); gap:clamp(12px,1.4vw,18px); margin-top:clamp(36px,5vw,58px); }
+  .gframe { border-radius:var(--r); overflow:hidden; background:var(--mist-2); position:relative; box-shadow:var(--shadow); }
+  .gframe img { width:100%; height:100%; object-fit:cover; transition:transform .9s var(--ease); }
+  .gframe:hover img { transform:scale(1.05); }
+  .g-lg { grid-column:span 4; aspect-ratio:16/10; }
+  .g-sm { grid-column:span 2; aspect-ratio:4/5; }
+  .g-md { grid-column:span 3; aspect-ratio:16/10; }
+  @media (max-width:760px){ .gal { grid-template-columns:repeat(2,1fr); } .g-lg,.g-md { grid-column:span 2; aspect-ratio:16/10; } .g-sm { grid-column:span 1; aspect-ratio:4/5; } }
+
+  /* ---------- specs (premium horizontal, breathing — no card boxes) ---------- */
+  .specs { display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(18px,2vw,32px); margin-top:clamp(40px,5vw,64px); }
+  @media (max-width:760px){ .specs { grid-template-columns:repeat(2,1fr); gap:32px 18px; } }
+  .spec { position:relative; }
+  .spec + .spec::before { content:""; position:absolute; inset-block:6px auto; inset-inline-start:calc(-1 * clamp(9px,1vw,16px)); top:6px; bottom:6px; width:1px; background:var(--line); }
+  @media (max-width:760px){ .spec:nth-child(odd)::before { display:none; } }
+  .spec .sv { font-size:clamp(34px,4.4vw,56px); font-weight:900; letter-spacing:-.03em; line-height:1; }
+  .spec .sv em { font-style:normal; color:var(--gold); }
+  .spec .sk { color:var(--muted); font-size:14px; margin-top:8px; }
+
+  /* ---------- finance band (dark, cinematic) ---------- */
+  .finance { background:var(--ink); color:#fff; z-index:2; overflow:hidden; }
+  .finance::before { content:""; position:absolute; inset:0; background:radial-gradient(90% 120% at 85% 10%, rgba(245,105,30,.18), transparent 55%); }
+  .fin-grid { position:relative; display:grid; grid-template-columns:1.1fr .9fr; gap:clamp(28px,4vw,60px); align-items:center; }
+  @media (max-width:860px){ .fin-grid { grid-template-columns:1fr; } }
+  .fin-big { font-size:clamp(56px,9vw,120px); font-weight:900; letter-spacing:-.05em; line-height:.9; color:#fff; }
+  .fin-big span { color:var(--gold); }
+  .fin-big small { display:block; font-size:clamp(15px,1.7vw,19px); font-weight:500; color:var(--muted-d); letter-spacing:0; margin-top:14px; }
+  .fin-list { display:grid; gap:16px; }
+  .fin-li { display:flex; align-items:center; gap:14px; font-size:clamp(15.5px,1.8vw,18px); }
+  .fin-li .ck { width:30px; height:30px; flex:0 0 auto; border-radius:50%; background:var(--gold-soft); border:1px solid rgba(245,105,30,.3); display:grid; place-items:center; }
+  .fin-li .ck svg { width:15px; height:15px; stroke:var(--gold-bright); stroke-width:2.5; }
+  .fin-li b { color:#fff; font-weight:700; }
+  .fin-li span { color:var(--muted-d); }
+
+  /* ---------- social proof ---------- */
+  .social { display:grid; grid-template-columns:1.2fr 1fr; gap:clamp(24px,3vw,44px); align-items:center; margin-top:clamp(36px,5vw,56px); }
+  @media (max-width:860px){ .social { grid-template-columns:1fr; } }
+  .quote-shell { background:#fff; border:1px solid var(--line); border-radius:var(--r-lg); padding:8px; box-shadow:var(--shadow); }
+  .quote-core { background:var(--mist); border-radius:calc(var(--r-lg) - 8px); padding:clamp(28px,3.4vw,44px); box-shadow:inset 0 1px 1px rgba(255,255,255,.7); }
+  .quote-core .mark { font-size:60px; line-height:.5; color:var(--gold); font-weight:900; }
+  .quote-core p { font-size:clamp(19px,2.4vw,27px); font-weight:600; letter-spacing:-.01em; line-height:1.4; margin-top:18px; }
+  .quote-by { display:flex; align-items:center; gap:13px; margin-top:24px; }
+  .quote-by .av { width:46px; height:46px; border-radius:50%; overflow:hidden; background:var(--mist-2); border:1px solid var(--line); }
+  .quote-by .av img { width:100%; height:100%; object-fit:cover; }
+  .quote-by b { display:block; font-weight:700; }
+  .quote-by span { color:var(--muted); font-size:13.5px; }
+  .stars { color:var(--gold); font-size:15px; letter-spacing:2px; margin-top:4px; }
+  .social-stat { display:grid; gap:20px; }
+  .stat { border-inline-start:3px solid var(--gold); padding-inline-start:20px; }
+  .stat .sn { font-size:clamp(36px,5vw,56px); font-weight:900; letter-spacing:-.03em; line-height:1; }
+  .stat .sl { color:var(--muted); font-size:15px; margin-top:6px; }
+
+  /* ---------- final CTA ---------- */
+  .final { background:var(--mist); z-index:2; }
+  .final-shell { max-width:760px; margin-inline:auto; background:var(--ink); border-radius:var(--r-lg); padding:8px; box-shadow:0 60px 120px -50px rgba(10,12,18,.7); position:relative; overflow:hidden; }
+  .final-shell::before { content:""; position:absolute; inset:0; background:radial-gradient(80% 120% at 80% 0%, rgba(245,105,30,.22), transparent 55%); }
+  .final-core { position:relative; border:1px solid var(--line-d); border-radius:calc(var(--r-lg) - 8px); padding:clamp(30px,4vw,52px); text-align:center; }
+  .final-core .sec-eyebrow { color:var(--gold-bright); justify-content:center; }
+  .final-core h2 { color:#fff; font-size:clamp(26px,3.6vw,44px); font-weight:900; letter-spacing:-.03em; line-height:1.1; margin-top:12px; text-wrap:balance; }
+  .final-core p { color:var(--muted-d); font-size:clamp(15px,1.7vw,18px); margin-top:14px; }
+  .final-form { display:flex; gap:12px; margin-top:26px; flex-wrap:wrap; max-width:560px; margin-inline:auto; }
+  .final-form input { flex:1 1 180px; padding:16px 18px; font-size:16px; font-family:inherit; color:#fff; background:rgba(255,255,255,.07);
+    border:1px solid var(--line-d); border-radius:999px; text-align:center; }
+  .final-form input::placeholder { color:rgba(255,255,255,.5); }
+  .final-form input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 0 4px var(--gold-soft); }
+  .final-form .submit { flex:1 1 100%; margin-top:4px; }
+  .final-note { color:var(--muted-d); font-size:12px; margin-top:14px; }
+
+  /* ---------- footer ---------- */
+  .foot { background:var(--ink); color:var(--muted-d); padding-block:40px; z-index:2; position:relative; text-align:center; font-size:13.5px; }
+  .foot b { color:#fff; }
+  .foot a { color:var(--gold-bright); }
+
+  /* ---------- sticky mobile CTA ---------- */
+  .sticky { position:fixed; inset-block-end:0; inset-inline:0; z-index:90; display:none; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:rgba(10,11,13,.86); backdrop-filter:blur(18px); border-top:1px solid var(--line-d); }
+  .sticky a { display:flex; align-items:center; justify-content:center; gap:10px; background:var(--gold); color:#fff; font-weight:800; font-size:16px; padding:15px; border-radius:999px; }
+  .sticky .p { color:rgba(255,255,255,.85); font-weight:700; font-size:15px; padding:15px; border:1px solid var(--line-d); border-radius:999px; display:flex; align-items:center; gap:7px; }
+  .sticky-in { display:grid; grid-template-columns:auto 1fr; gap:10px; max-width:520px; margin-inline:auto; }
+  @media (max-width:760px){ .sticky { display:block; } body { padding-bottom:78px; } }
+
+  /* ---------- scroll reveal (transform+opacity only) ---------- */
+  .reveal { opacity:0; transform:translateY(28px); filter:blur(6px); transition:opacity .8s var(--ease), transform .8s var(--ease), filter .8s var(--ease); will-change:transform,opacity; }
+  .reveal.in { opacity:1; transform:none; filter:none; }
+  @media (prefers-reduced-motion:reduce){ .reveal{opacity:1;transform:none;filter:none;transition:none;} .hero-bg img{animation:none;} }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- floating nav -->
+<nav class="nav">
+  <div class="nav-pill">
+    <a class="nav-logo" href="index.html">Car<b>2</b>Buy</a>
+    <a class="nav-tel" href="tel:+97223319929"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/></svg>072-3319929</a>
+    <a class="nav-cta" href="#lead">קבלו הצעה<span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-bg"><img src="images/gallery/jaecoo-8/ext1.jpg" alt="ג'אקו 8" fetchpriority="high"></div>
+  <div class="hero-scrim"></div>
+  <div class="hero-inner">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div class="reveal">
+          <span class="eyebrow"><span class="dot"></span>ג'אקו 8 · פלאג-אין · 7 מושבים</span>
+          <h1 class="hero-h">יוקרה ל-7 נוסעים,<br>בהחזר של <span class="g">משפחה</span>.</h1>
+          <p class="hero-sub">SUV משפחתי פלאג-אין, מפואר ומרווח — עם 100% מימון בריבית הטובה בישראל.</p>
+          <div class="hero-pay"><span class="lbl">החזר חודשי החל מ-</span><span class="amt">₪2,396<small> / חודש</small></span></div>
+        </div>
+
+        <!-- Double-Bezel lead card -->
+        <div class="reveal" id="lead">
+          <div class="lead-shell">
+            <div class="lead-core">
+              <form id="leadForm" novalidate>
+                <div class="lc-title">קבלו הצעה אישית עוד היום</div>
+                <div class="lc-sub">משאירים שם וטלפון — ונחזור אליכם עם המחיר והמימון הכי טובים.</div>
+                <input type="text" name="company_url" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+                <div class="field"><label for="n1">שם מלא</label><input id="n1" type="text" name="name" placeholder="השם שלכם" autocomplete="name" required></div>
+                <div class="field"><label for="p1">טלפון</label><input id="p1" type="tel" name="phone" placeholder="050-0000000" inputmode="tel" autocomplete="tel" required></div>
+                <button type="submit" class="submit">קבלו הצעה לג'אקו 8<span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></button>
+                <div class="lc-note">ללא התחייבות · נציג יחזור אליכם בהקדם</div>
+              </form>
+              <div class="lc-done" id="leadDone">
+                <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+                <h4>תודה! קיבלנו את הפרטים</h4>
+                <p>נציג Car2Buy יחזור אליכם עם הצעה אישית לג'אקו 8.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- trust strip -->
+<section class="trust">
+  <div class="wrap"><div class="trust-row">
+    <div class="trust-c"><span class="trust-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg></span><div><b>ההחזר הזול בישראל</b><span>בהתחייבות ובכתב</span></div></div>
+    <div class="trust-c"><span class="trust-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><div><b>100% מימון</b><span>בריבית הטובה בישראל</span></div></div>
+    <div class="trust-c"><span class="trust-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v8H3z"/><path d="M16 10h3l2 3v2h-5z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span><div><b>מסירה מהירה</b><span>ישר מהיבואן</span></div></div>
+    <div class="trust-c"><span class="trust-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7 12 3 4 7v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9z"/></svg></span><div><b>אחריות יצרן מלאה</b><span>שקט לשנים קדימה</span></div></div>
+  </div></div>
+</section>
+
+<!-- WHY (bento) -->
+<section class="sec">
+  <div class="wrap">
+    <span class="sec-eyebrow">למה ג'אקו 8</span>
+    <h2 class="sec-h">כל מה שמשפחה צריכה —<br><span class="g">ברמת גימור אחרת</span>.</h2>
+    <div class="bento">
+      <div class="cell big reveal">
+        <div>
+          <div class="cell-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg></div>
+          <h3>מנוע פלאג-אין חסכוני</h3>
+          <p>נסיעה חשמלית שקטה ליום-יום בעיר, וטווח בנזין ארוך לחופשה — בלי חרדת טווח ובעלות אחזקה נמוכה.</p>
+        </div>
+        <div class="big-num">70<span>+ ק"מ</span></div>
+      </div>
+      <div class="cell wide reveal">
+        <div class="n">7</div><h3>מושבים מלאים</h3>
+        <p>שלוש שורות מרווחות — לכל המשפחה, בנוחות.</p>
+      </div>
+      <div class="cell tall reveal">
+        <div class="cell-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8M12 18v2"/></svg></div>
+        <h3>מסך ענק וטכנולוגיה</h3>
+        <p>תא נהג דיגיטלי, מערכות בטיחות אקטיביות ומולטימדיה חכמה.</p>
+      </div>
+      <div class="cell photo reveal"><img loading="lazy" src="images/gallery/jaecoo-8/int5.jpg" alt="פנים ג'אקו 8"><span class="cap">תא נוסעים יוקרתי · גימור פרימיום</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- gallery -->
+<section class="sec mist">
+  <div class="wrap">
+    <h2 class="sec-h">מכל <span class="g">זווית</span>.</h2>
+    <p class="sec-lead">עיצוב נוכח ומפואר בחוץ, מרחב ושקט בפנים. הכירו את ג'אקו 8 לפני שאתם נכנסים לנסיעת מבחן.</p>
+    <div class="gal">
+      <div class="gframe g-lg reveal"><img loading="lazy" src="images/gallery/jaecoo-8/ext2.jpg" alt="ג'אקו 8 חוץ"></div>
+      <div class="gframe g-sm reveal"><img loading="lazy" src="images/gallery/jaecoo-8/int6.jpg" alt="ג'אקו 8 פנים"></div>
+      <div class="gframe g-md reveal"><img loading="lazy" src="images/gallery/jaecoo-8/ext3.jpg" alt="ג'אקו 8 צד"></div>
+      <div class="gframe g-md reveal"><img loading="lazy" src="images/gallery/jaecoo-8/ext4.jpg" alt="ג'אקו 8 אחור"></div>
+    </div>
+  </div>
+</section>
+
+<!-- specs -->
+<section class="sec">
+  <div class="wrap">
+    <span class="sec-eyebrow">נתונים שחשובים</span>
+    <h2 class="sec-h">המספרים <span class="g">מדברים</span>.</h2>
+    <div class="specs">
+      <div class="spec reveal"><div class="sv">7</div><div class="sk">מושבים · 3 שורות</div></div>
+      <div class="spec reveal"><div class="sv">PHEV</div><div class="sk">פלאג-אין היברידי</div></div>
+      <div class="spec reveal"><div class="sv"><em>₪</em>2,396</div><div class="sk">החזר חודשי החל מ-</div></div>
+      <div class="spec reveal"><div class="sv">100<em>%</em></div><div class="sk">מימון בריבית מעולה</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- finance -->
+<section class="sec finance">
+  <div class="wrap">
+    <div class="fin-grid">
+      <div class="reveal">
+        <span class="sec-eyebrow" style="color:var(--gold-bright)">המימון של Car2Buy</span>
+        <div class="fin-big">₪2,396<span>.</span><small>החזר חודשי החל מ- · מותאם אישית לתקציב שלכם</small></div>
+      </div>
+      <div class="fin-list reveal">
+        <div class="fin-li"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>100% מימון</b> — בלי הון עצמי, בריבית הטובה בישראל</span></div>
+        <div class="fin-li"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>טרייד-אין</b> — נקנה ונקזז את הרכב הישן שלכם</span></div>
+        <div class="fin-li"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>ליווי אישי</b> — יועץ צמוד מהשיחה ועד המפתח ביד</span></div>
+        <div class="fin-li"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>התחייבות</b> — מצאתם החזר זול יותר? נשווה</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- social proof -->
+<section class="sec mist">
+  <div class="wrap">
+    <span class="sec-eyebrow">לקוחות מספרים</span>
+    <h2 class="sec-h">הם כבר <span class="g">על הכביש</span>.</h2>
+    <div class="social">
+      <div class="quote-shell reveal">
+        <div class="quote-core">
+          <div class="mark">”</div>
+          <p>קיבלנו את הג'אקו 8 תוך כמה ימים, בהחזר חודשי שלא האמנו שאפשרי. ליווי אישי לאורך כל הדרך — פשוט מקצועיים.</p>
+          <div class="quote-by">
+            <span class="av"><img loading="lazy" src="images/customers/cust-01.jpg" alt="לקוח"></span>
+            <div><b>אלירן ואבי</b><span>Jaecoo 8 · טבריה</span><div class="stars">★★★★★</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="social-stat reveal">
+        <div class="stat"><div class="sn">2,400+</div><div class="sl">לקוחות מרוצים כבר על הכביש</div></div>
+        <div class="stat"><div class="sn">100%</div><div class="sl">מימון בריבית הטובה בישראל</div></div>
+        <div class="stat"><div class="sn">1:1</div><div class="sl">יועץ אישי צמוד לכל לקוח</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- final CTA -->
+<section class="sec final">
+  <div class="wrap">
+    <div class="final-shell reveal">
+      <div class="final-core">
+        <span class="sec-eyebrow">כמות מוגבלת</span>
+        <h2>הג'אקו 8 מחכה לכם.<br>קבלו הצעה אישית עוד היום.</h2>
+        <p>משאירים שם וטלפון — ונחזור אליכם עם המחיר, המימון והטרייד-אין הכי טובים.</p>
+        <form id="leadForm2" class="final-form" novalidate>
+          <input type="text" name="company_url" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <input type="text" name="name" placeholder="שם מלא" autocomplete="name" required>
+          <input type="tel" name="phone" placeholder="טלפון נייד" inputmode="tel" autocomplete="tel" required>
+          <button type="submit" class="submit">קבלו הצעה לג'אקו 8<span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></button>
+        </form>
+        <div class="lc-done" id="leadDone2" style="color:#fff"><div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><h4 style="color:#fff">תודה! קיבלנו את הפרטים</h4><p style="color:var(--muted-d)">נציג יחזור אליכם בהקדם עם הצעה אישית.</p></div>
+        <div class="final-note">בלחיצה על שליחה אני מאשר/ת שנציג Car2Buy יצור עמי קשר.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap"><b>Car2Buy</b> — רכב חדש, קל ופשוט · <a href="tel:+97223319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור גוף מימון וזמינות במלאי.</div>
+</footer>
+
+<!-- sticky mobile CTA -->
+<div class="sticky"><div class="sticky-in"><a class="p" href="tel:+97223319929"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/></svg>חייגו</a><a href="#lead">קבלו הצעה עכשיו</a></div></div>
+
+<script src="supabase.js"></script>
+<script>
+(function () {
+  // scroll reveal — IntersectionObserver (no scroll listeners)
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+
+  function wire(formId, doneId) {
+    var form = document.getElementById(formId), done = document.getElementById(doneId);
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = (form.querySelector('[name=name]').value || '').trim();
+      var phone = (form.querySelector('[name=phone]').value || '').trim();
+      var hp = form.querySelector('[name=company_url]');
+      if (name.length < 2) { form.querySelector('[name=name]').focus(); return; }
+      if (phone.replace(/\D/g, '').length < 9) { form.querySelector('[name=phone]').focus(); return; }
+      if (window.submitLead) {
+        submitLead({ name: name, phone: phone, car: 'Jaecoo 8', source: 'landing_jaecoo8',
+          message: 'דף נחיתה ג\'אקו 8', company_url: (hp && hp.value) || '' });
+      }
+      form.style.display = 'none';
+      if (done) done.classList.add('on'), done.style.display = 'block';
+    });
+  }
+  wire('leadForm', 'leadDone');
+  wire('leadForm2', 'leadDone2');
+})();
+</script>
+</body>
+</html>
