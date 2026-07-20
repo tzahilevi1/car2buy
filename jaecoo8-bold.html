@@ -37,6 +37,7 @@
 
   /* HERO — logo + big model name */
   .hero .pc{text-align:center;padding-top:70px;}
+  .hero-stars{color:var(--star);font-size:20px;letter-spacing:4px;line-height:1;margin-bottom:14px;text-shadow:0 2px 14px rgba(0,0,0,.55);}
   .urgency{display:inline-flex;align-items:center;gap:8px;background:rgba(245,105,30,.16);border:1px solid rgba(245,105,30,.45);color:var(--gold-l);font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;backdrop-filter:blur(8px);}
   .urgency .p{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px 2px rgba(245,105,30,.8);animation:pulse 2s ease-in-out infinite;} @keyframes pulse{50%{opacity:.4;transform:scale(1.5);}}
   .brandlogo{height:clamp(26px,3.4vw,42px);width:auto;margin:22px auto 0;filter:brightness(0) invert(1);opacity:.96;}
@@ -134,12 +135,13 @@
   <div class="panel-bg"><video autoplay muted loop playsinline preload="auto" poster="videos/jaecoo8-drive-poster.jpg"><source src="videos/jaecoo8-drive.mp4" type="video/mp4"></video></div>
   <div class="scrim"></div>
   <div class="pc"><div class="wrap">
+    <div class="hero-stars rev in" aria-label="דירוג 5 כוכבים">★★★★★</div>
     <span class="urgency rev in"><span class="p"></span>מבצע השקה · כמות מוגבלת</span>
     <img class="brandlogo rev in" src="images/brands/jaecoo.svg" alt="Jaecoo" onerror="this.style.display='none'">
     <h1 class="rev in">ג'אקו <span class="g">8</span></h1>
     <p class="hero-tag rev in">רכב 7 מושבים עם מחירון של רבע מיליון ₪.</p>
     <p class="hero-sub rev in">פלאג-אין · 7 מושבים · 4X4 · בהחזר החודשי הנמוך בישראל – בהתחייבות.</p>
-    <div class="hero-pay rev in"><span class="a">₪2,396<span>.</span></span><span class="l">ההחזר שלכם · לחודש, החל מ-</span></div>
+    <div class="hero-pay rev in"><span class="l">ההחזר שלכם · החל מ-</span><span class="a">₪2,396</span><span class="l">לחודש</span></div>
     <div class="cta-row rev in"><a class="btn" href="#lead">בדקו כמה זה יעלה לכם</a><a class="btn ghost" href="tel:+97223319929">חייגו עכשיו</a></div>
     <div class="hero-trust rev in">
       <span><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>100% מימון</span>
