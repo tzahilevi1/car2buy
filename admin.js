@@ -25,7 +25,7 @@
   // ---------- drawer ----------
   function openDrawer(html) { $('drawer').innerHTML = html; $('drawer').classList.add('open'); $('overlay').classList.add('open'); }
   function closeDrawer() { $('drawer').classList.remove('open'); $('overlay').classList.remove('open'); }
-  $('overlay').addEventListener('click', closeDrawer);
+  $('overlay').addEventListener('click', function () { closeDrawer(); $('side').classList.remove('open'); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
 
   window.C2B = { db: db, $: $, esc: esc, fmt: fmtDateTime, nis: nis, view: view, loading: loading, errBox: errBox, stat: stat, openDrawer: openDrawer, closeDrawer: closeDrawer, go: function (n, o) { return go(n, o); } };
@@ -42,7 +42,7 @@
     localStorage.setItem('c2b_admin_theme', cur);
     this.textContent = cur === 'dark' ? '☀️' : '🌙';
   });
-  $('burger').addEventListener('click', function () { $('side').classList.toggle('open'); });
+  $('burger').addEventListener('click', function () { var o = $('side').classList.toggle('open'); if (window.innerWidth <= 820) $('overlay').classList.toggle('open', o); });
 
   // ---------- tasks bell ----------
   function loadBell() {
@@ -148,9 +148,9 @@
   function go(nav, opts) {
     opts = opts || {};
     if (window.C2B && window.C2B.role && !navAllowed(nav, window.C2B.role)) { nav = 'dashboard'; opts = {}; }
-    if (nav === 'users') { setActive(nav); if (window.innerWidth <= 820) $('side').classList.remove('open'); return renderUsers(); }
+    if (nav === 'users') { setActive(nav); if (window.innerWidth <= 820) { $('side').classList.remove('open'); $('overlay').classList.remove('open'); } return renderUsers(); }
     setActive(nav, opts.status);
-    if (window.innerWidth <= 820) $('side').classList.remove('open');
+    if (window.innerWidth <= 820) { $('side').classList.remove('open'); $('overlay').classList.remove('open'); }
     if (nav === 'dashboard') return window.C2B_renderDashboard && window.C2B_renderDashboard();
     if (nav === 'leads') return window.C2B_renderLeads && window.C2B_renderLeads(opts.status);
     if (nav === 'files') return window.C2B_renderFiles && window.C2B_renderFiles();
