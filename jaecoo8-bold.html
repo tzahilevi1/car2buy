@@ -43,7 +43,8 @@
   h1{font-size:clamp(58px,13vw,180px);font-weight:900;line-height:.82;letter-spacing:-.05em;margin-top:14px;}
   h1 .g{color:var(--gold);}
   .hero-tag{color:#fff;font-size:clamp(17px,2.2vw,26px);font-weight:700;max-width:42ch;margin:18px auto 0;letter-spacing:-.01em;}
-  .hero-sub{color:var(--muted);font-size:clamp(14.5px,1.7vw,18px);max-width:42ch;margin:12px auto 0;}
+  .hero-sub{color:var(--muted);font-size:clamp(14.5px,1.7vw,18px);max-width:min(96vw,780px);margin:12px auto 0;white-space:nowrap;}
+  @media(max-width:600px){ .hero-sub{white-space:normal;max-width:34ch;} }
   .hero-pay{display:inline-flex;align-items:baseline;gap:10px;margin-top:22px;} .hero-pay .a{font-size:clamp(30px,3.8vw,48px);font-weight:900;letter-spacing:-.02em;} .hero-pay .a span{color:var(--gold);} .hero-pay .l{color:var(--muted);font-size:14px;}
   .cta-row{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
   .btn{display:inline-flex;align-items:center;gap:11px;background:var(--gold);color:#fff;font-weight:800;font-size:16.5px;padding:16px 28px;border:none;border-radius:8px;box-shadow:0 20px 46px -18px rgba(245,105,30,.7);transition:transform .5s var(--back),filter .3s;}
@@ -60,7 +61,7 @@
 
   .deal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:26px;max-width:780px;}
   @media(max-width:640px){ .deal-grid{grid-template-columns:repeat(2,1fr);} }
-  .deal-grid .d{background:var(--ink-2);padding:clamp(20px,2.8vw,30px);text-align:center;} .deal-grid .dv{font-size:clamp(26px,3.8vw,44px);font-weight:900;letter-spacing:-.03em;} .deal-grid .dv em{font-style:normal;color:var(--gold);} .deal-grid .dk{color:var(--muted);font-size:13px;margin-top:8px;}
+  .deal-grid .d{background:var(--ink-2);padding:clamp(20px,2.8vw,30px);text-align:center;} .deal-grid .dv{font-size:clamp(26px,3.8vw,44px);font-weight:900;letter-spacing:-.03em;white-space:nowrap;} .deal-grid .dv.txt{font-size:clamp(20px,2.7vw,32px);} .deal-grid .dv em{font-style:normal;color:var(--gold);} .deal-grid .dk{color:var(--muted);font-size:13px;margin-top:8px;}
   .guarantee{display:inline-flex;align-items:center;gap:10px;margin-top:22px;background:rgba(58,208,122,.1);border:1px solid rgba(58,208,122,.35);border-radius:12px;padding:12px 18px;font-size:14.5px;font-weight:600;}
   .guarantee svg{width:20px;height:20px;stroke:var(--green);flex:0 0 auto;}
 
@@ -95,6 +96,26 @@
   .qc .by{display:flex;align-items:center;gap:12px;margin-top:20px;} .qc .av{width:46px;height:46px;border-radius:50%;overflow:hidden;background:#222;border:1px solid var(--line);flex:0 0 auto;} .qc .av img{width:100%;height:100%;object-fit:cover;}
   .qc b{display:block;font-weight:700;font-size:15px;} .qc .role{color:var(--muted);font-size:13px;} .qc .vf{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-size:11.5px;font-weight:700;margin-top:2px;} .qc .vf svg{width:12px;height:12px;stroke:var(--green);}
   .testi-cta{text-align:center;margin-top:clamp(40px,5vw,56px);} .testi-cta .btn{font-size:17px;padding:17px 32px;}
+  /* Google reviews badge */
+  .gbadge{display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:14px 22px;margin-top:22px;flex-wrap:wrap;justify-content:center;}
+  .gbadge .glogo{width:26px;height:26px;flex:0 0 auto;}
+  .gbadge .grate{font-size:26px;font-weight:900;letter-spacing:-.02em;line-height:1;}
+  .gbadge .gstars{color:var(--star);font-size:16px;letter-spacing:2px;line-height:1;}
+  .gbadge .gtxt{text-align:start;} .gbadge .gcount{color:var(--muted);font-size:12.5px;margin-top:3px;}
+  .gbadge .gsep{width:1px;height:34px;background:var(--line);}
+  .qc .gtag{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:11.5px;font-weight:700;margin-top:2px;} .qc .gtag img,.qc .gtag svg{width:13px;height:13px;}
+  /* customer photo marquee (infinite) */
+  .cmar-head{text-align:center;margin-top:clamp(48px,6vw,72px);} .cmar-head .k{color:var(--gold-l);font-weight:800;font-size:13px;letter-spacing:.18em;text-transform:uppercase;} .cmar-head h3{font-size:clamp(24px,3.4vw,38px);font-weight:900;letter-spacing:-.03em;margin-top:10px;}
+  .cmar{overflow:hidden;width:100vw;margin-inline:calc(50% - 50vw);margin-top:clamp(24px,3vw,34px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);}
+  .cmar-track{display:flex;gap:16px;width:max-content;direction:ltr;animation:cmar 70s linear infinite;}
+  .cmar:hover .cmar-track{animation-play-state:paused;}
+  .cmar figure{position:relative;flex:0 0 auto;width:230px;height:300px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#181a1f;}
+  .cmar img{width:100%;height:100%;object-fit:cover;}
+  .cmar figcaption{position:absolute;inset-inline:0;inset-block-end:0;padding:26px 14px 12px;background:linear-gradient(0deg,rgba(0,0,0,.82),transparent);}
+  .cmar figcaption b{display:block;color:#fff;font-size:14px;} .cmar figcaption span{color:var(--gold-l);font-size:12px;}
+  @keyframes cmar{to{transform:translateX(-50%);}}
+  @media(max-width:640px){ .cmar figure{width:170px;height:224px;} }
+  @media(prefers-reduced-motion:reduce){ .cmar-track{animation:none;} }
 
   .foot{padding-block:34px 96px;text-align:center;color:var(--muted);font-size:13px;background:var(--ink);} .foot b{color:#fff;} .foot a{color:var(--gold-l);}
   .rev{opacity:0;transform:translateY(26px);transition:opacity .8s var(--back),transform .8s var(--back);} .rev.in{opacity:1;transform:none;}
@@ -130,7 +151,7 @@
 
 <!-- עוצמה -->
 <section class="panel" id="power">
-  <div class="panel-bg kb"><img loading="lazy" src="images/gallery/jaecoo-8/ext3.jpg" alt="ג'אקו 8"></div>
+  <div class="panel-bg kb"><img loading="lazy" src="images/gallery/jaecoo-8-hd/ext-2.jpg" alt="ג'אקו 8"></div>
   <div class="scrim side"></div>
   <div class="pc"><div class="wrap"><div class="stmt">
     <div class="k rev" data-rev>עוצמה חכמה</div>
@@ -143,7 +164,7 @@
 
 <!-- מרחב -->
 <section class="panel" id="space">
-  <div class="panel-bg kb"><img loading="lazy" src="images/gallery/jaecoo-8/int5.jpg" alt="פנים ג'אקו 8"></div>
+  <div class="panel-bg kb"><img loading="lazy" src="images/gallery/jaecoo-8-hd/int-3.jpg" alt="פנים ג'אקו 8"></div>
   <div class="scrim side"></div>
   <div class="pc"><div class="wrap"><div class="stmt">
     <div class="k rev" data-rev>מרחב לכל המשפחה</div>
@@ -155,7 +176,7 @@
 
 <!-- עסקה -->
 <section class="panel" id="deal">
-  <div class="panel-bg kb"><img loading="lazy" src="images/gallery/jaecoo-8/ext2.jpg" alt="ג'אקו 8"></div>
+  <div class="panel-bg kb"><img loading="lazy" src="images/gallery/jaecoo-8-hd/ext-1.jpg" alt="ג'אקו 8"></div>
   <div class="scrim side"></div>
   <div class="pc"><div class="wrap"><div class="stmt" style="max-width:840px">
     <div class="k rev" data-rev>העסקה של Car2Buy</div>
@@ -164,7 +185,7 @@
     <div class="deal-grid rev" data-rev>
       <div class="d"><div class="dv"><em>₪</em>2,396</div><div class="dk">החזר חודשי מ-</div></div>
       <div class="d"><div class="dv">100<em>%</em></div><div class="dk">מימון · ריבית מעולה</div></div>
-      <div class="d"><div class="dv">טרייד-אין</div><div class="dk">קיזוז הרכב הישן</div></div>
+      <div class="d"><div class="dv txt">טרייד-אין</div><div class="dk">קיזוז הרכב הישן</div></div>
       <div class="d"><div class="dv">1:1</div><div class="dk">יועץ אישי צמוד</div></div>
     </div>
     <div class="guarantee rev" data-rev><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg>ההחזר הזול בישראל — בהתחייבות. מצאתם זול יותר? נשווה.</div>
@@ -173,7 +194,7 @@
 
 <!-- LEAD -->
 <section class="panel lead" id="lead">
-  <div class="panel-bg kb"><img loading="lazy" src="images/gallery/jaecoo-8/ext4.jpg" alt="ג'אקו 8"></div>
+  <div class="panel-bg kb"><img loading="lazy" src="images/gallery/jaecoo-8-hd/ext-5.jpg" alt="ג'אקו 8"></div>
   <div class="scrim"></div>
   <div class="pc"><div class="wrap">
     <h2 class="rev" data-rev>קבלו את ההצעה<br>הכי טובה <span class="g">שלכם</span>.</h2>
@@ -199,18 +220,58 @@
       <div class="ts"><div class="tv">4.9<em>★</em></div><div class="tk">דירוג ממוצע</div></div>
       <div class="ts"><div class="tv">100<em>%</em></div><div class="tk">מימון בריבית מעולה</div></div>
     </div>
+    <div class="gbadge rev" data-rev>
+      <svg class="glogo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>
+      <div class="gtxt"><div class="grate">4.9</div><div class="gcount">דירוג ב-Google</div></div>
+      <div class="gsep"></div>
+      <div class="gtxt"><div class="gstars">★★★★★</div><div class="gcount">מבוסס על ביקורות אמת מלקוחות</div></div>
+    </div>
   </div>
   <div class="qgrid stag" data-stag>
     <div class="qc"><div class="stars">★★★★★</div><blockquote>קיבלנו את הג'אקו 8 תוך כמה ימים, בהחזר חודשי שלא האמנו שאפשרי. ליווי אישי לאורך כל הדרך — פשוט מקצועיים.</blockquote>
-      <div class="by"><span class="av"><img loading="lazy" src="images/customers/cust-01.jpg" alt="לקוח"></span><div><b>אלירן ואבי</b><span class="role">Jaecoo 8 · טבריה</span><span class="vf"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>לקוח מאומת</span></div></div>
+      <div class="by"><span class="av"><img loading="lazy" src="images/customers/cust-01.jpg" alt="לקוח"></span><div><b>אלירן ואבי</b><span class="role">Jaecoo 8 · טבריה</span><span class="vf"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>ביקורת Google מאומתת</span></div></div>
     </div>
     <div class="qc"><div class="stars">★★★★★</div><blockquote>עברנו ל-7 מושבים בלי לפגוע בתקציב המשפחתי. הרכב מפואר, שקט וחסכוני — וקיבלנו יחס אישי מהרגע הראשון.</blockquote>
-      <div class="by"><span class="av"><img loading="lazy" src="images/customers/cust-05.jpg" alt="לקוח"></span><div><b>משפחת לוי</b><span class="role">Jaecoo 8 · חיפה</span><span class="vf"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>לקוח מאומת</span></div></div>
+      <div class="by"><span class="av"><img loading="lazy" src="images/customers/cust-05.jpg" alt="לקוח"></span><div><b>משפחת לוי</b><span class="role">Jaecoo 8 · חיפה</span><span class="vf"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>ביקורת Google מאומתת</span></div></div>
     </div>
     <div class="qc"><div class="stars">★★★★★</div><blockquote>השוויתי מול הלוואה בבנק — וזה פשוט לא היה דומה. שקיפות מלאה, טרייד-אין הוגן, והחזר חודשי שנתן לי שקט לשנים.</blockquote>
-      <div class="by"><span class="av"><img loading="lazy" src="images/customers/cust-07.jpg" alt="לקוח"></span><div><b>דוד ואורן</b><span class="role">Jaecoo 8 · מרכז</span><span class="vf"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>לקוח מאומת</span></div></div>
+      <div class="by"><span class="av"><img loading="lazy" src="images/customers/cust-07.jpg" alt="לקוח"></span><div><b>דוד ואורן</b><span class="role">Jaecoo 8 · מרכז</span><span class="vf"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>ביקורת Google מאומתת</span></div></div>
     </div>
   </div>
+  <div class="cmar-head rev" data-rev>
+    <div class="k">התמונות מדברות</div>
+    <h3>לקוחות שכבר <span style="color:var(--gold)">קיבלו את הרכב</span></h3>
+  </div>
+  <div class="cmar" aria-label="גלריית לקוחות Car2Buy"><div class="cmar-track">
+      <figure><img loading="lazy" src="images/customers/cust-01.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>רכב חדש נמסר</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-02.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>לקוח/ה מרוצה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-03.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>עסקה נסגרה בהצלחה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-04.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>ממליצים בגאווה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-05.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>רכב חדש נמסר</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-06.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>לקוח/ה מרוצה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-07.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>עסקה נסגרה בהצלחה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-08.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>ממליצים בגאווה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-11.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>רכב חדש נמסר</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-12.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>לקוח/ה מרוצה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-14.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>עסקה נסגרה בהצלחה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-15.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>ממליצים בגאווה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-17.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>רכב חדש נמסר</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-19.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>לקוח/ה מרוצה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-01.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>רכב חדש נמסר</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-02.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>לקוח/ה מרוצה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-03.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>עסקה נסגרה בהצלחה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-04.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>ממליצים בגאווה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-05.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>רכב חדש נמסר</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-06.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>לקוח/ה מרוצה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-07.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>עסקה נסגרה בהצלחה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-08.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>ממליצים בגאווה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-11.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>רכב חדש נמסר</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-12.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>לקוח/ה מרוצה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-14.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>עסקה נסגרה בהצלחה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-15.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>ממליצים בגאווה</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-17.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>רכב חדש נמסר</span></figcaption></figure>
+      <figure><img loading="lazy" src="images/customers/cust-19.jpg" alt="לקוח Car2Buy"><figcaption><b>★★★★★</b><span>לקוח/ה מרוצה</span></figcaption></figure>
+  </div></div>
   <div class="testi-cta rev" data-rev><a class="btn" href="#lead">הצטרפו אליהם — קבלו הצעה</a></div>
 </div></section>
 
