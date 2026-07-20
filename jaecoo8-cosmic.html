@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self'; connect-src 'self' https://tdxhqpauuqawcoivjnnm.supabase.co https://api.ipify.org; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<title>ג'אקו 8 · יוקרה שמגיעה אליכם · Car2Buy</title>
+<meta name="description" content="ג'אקו 8 — SUV פלאג-אין ל-7 נוסעים. החל מ-₪2,396 לחודש, 100% מימון. קבלו הצעה אישית.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&family=Frank+Ruhl+Libre:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Cosmic Luxury — inspired by Voyah. Ethereal deep-space ambiance, glowing accents,
+     glass panels. Skills: Taste (Ethereal Glass archetype, single locked gold accent, cubic-bezier motion)
+     + UI/UX Pro Max (dark-mode contrast AAA discipline, stagger reveal, count-up). */
+  :root{
+    --bg:#06060c; --bg-2:#0b0b16; --glass:rgba(255,255,255,.05); --glass-b:rgba(255,255,255,.11);
+    --gold:#F5691E; --gold-l:#ff9a5c; --neb1:rgba(245,105,30,.22); --neb2:rgba(180,60,140,.2); --neb3:rgba(70,90,200,.18);
+    --muted:rgba(233,232,245,.62); --line:rgba(255,255,255,.09); --r:22px; --r-lg:30px;
+    --ease:cubic-bezier(.32,.72,0,1); --back:cubic-bezier(.34,1.56,.64,1); --expo:cubic-bezier(.16,1,.3,1); --maxw:1200px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;} html{scroll-behavior:smooth;}
+  body{font-family:"Heebo","Noto Sans Hebrew",sans-serif;background:var(--bg);color:#fff;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative;}
+  img{max-width:100%;display:block;} a{color:inherit;text-decoration:none;} button{cursor:pointer;font-family:inherit;}
+  .serif{font-family:"Frank Ruhl Libre",serif;}
+  .wrap{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:clamp(18px,4vw,40px);}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
+
+  /* cosmic backdrop: drifting nebula + starfield (fixed, perf-safe) */
+  .cosmos{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .cosmos .neb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.9;mix-blend-mode:screen;}
+  .neb.a{width:60vw;height:60vw;top:-15%;right:-10%;background:radial-gradient(circle,var(--neb1),transparent 68%);animation:drift1 26s ease-in-out infinite alternate;}
+  .neb.b{width:55vw;height:55vw;bottom:-20%;left:-12%;background:radial-gradient(circle,var(--neb2),transparent 66%);animation:drift2 32s ease-in-out infinite alternate;}
+  .neb.c{width:45vw;height:45vw;top:30%;left:20%;background:radial-gradient(circle,var(--neb3),transparent 70%);animation:drift1 38s ease-in-out infinite alternate-reverse;}
+  @keyframes drift1{to{transform:translate(-6%,8%) scale(1.12);}} @keyframes drift2{to{transform:translate(8%,-6%) scale(1.15);}}
+  .stars{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 70% 60%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 40% 80%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 85% 20%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 55% 45%,rgba(255,255,255,.4),transparent);background-size:600px 600px;opacity:.5;animation:tw 6s ease-in-out infinite alternate;}
+  @keyframes tw{to{opacity:.28;}}
+  main,nav,footer{position:relative;z-index:1;}
+
+  nav{position:fixed;inset-block-start:14px;inset-inline:0;z-index:100;display:flex;justify-content:center;pointer-events:none;}
+  .npill{pointer-events:auto;display:flex;align-items:center;gap:clamp(14px,2vw,26px);background:rgba(8,8,16,.5);backdrop-filter:blur(22px) saturate(1.3);border:1px solid var(--glass-b);border-radius:999px;padding:9px 9px 9px 22px;}
+  .npill .b{font-weight:900;font-size:19px;letter-spacing:.02em;} .npill .b i{color:var(--gold);font-style:normal;}
+  .npill .tel{color:var(--muted);font-size:14px;font-weight:600;} .npill .cta{background:var(--gold);color:#fff;font-weight:700;font-size:14px;padding:11px 18px;border-radius:999px;box-shadow:0 0 26px -4px rgba(245,105,30,.6);transition:.4s var(--ease);}
+  .npill .cta:hover{filter:brightness(1.08);transform:translateY(-1px);} @media(max-width:560px){ .npill .tel{display:none;} }
+
+  /* HERO */
+  .hero{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:130px 0 60px;position:relative;}
+  .kick{display:inline-flex;align-items:center;gap:9px;background:var(--glass);border:1px solid var(--glass-b);border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:600;letter-spacing:.05em;backdrop-filter:blur(8px);}
+  .kick .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 14px 3px rgba(245,105,30,.8);}
+  h1{font-size:clamp(42px,8.5vw,110px);font-weight:900;line-height:.98;letter-spacing:-.01em;margin-top:22px;text-shadow:0 0 50px rgba(245,105,30,.25);}
+  h1 .g{color:var(--gold);text-shadow:0 0 40px rgba(245,105,30,.6);}
+  .hero-sub{color:var(--muted);font-size:clamp(16px,2vw,21px);max-width:40ch;margin:22px auto 0;}
+  .hero-stage{position:relative;width:min(1000px,92vw);margin-top:clamp(34px,5vw,60px);border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--glass-b);box-shadow:0 60px 120px -50px rgba(0,0,0,.9),0 0 80px -30px var(--neb1);}
+  .hero-stage video{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;}
+  .hero-stage .halo{position:absolute;inset:0;box-shadow:inset 0 0 80px rgba(6,6,12,.6);pointer-events:none;}
+  .pay-pill{display:inline-flex;align-items:baseline;gap:10px;margin-top:26px;background:var(--glass);border:1px solid var(--glass-b);border-radius:999px;padding:12px 22px;backdrop-filter:blur(10px);}
+  .pay-pill .a{font-size:clamp(24px,3vw,34px);font-weight:900;letter-spacing:-.02em;} .pay-pill .a span{color:var(--gold);} .pay-pill .l{color:var(--muted);font-size:13.5px;}
+  .cta-row{display:flex;gap:14px;justify-content:center;align-items:center;margin-top:26px;flex-wrap:wrap;}
+  .btn{display:inline-flex;align-items:center;gap:11px;background:var(--gold);color:#fff;font-weight:800;font-size:16.5px;padding:15px 12px 15px 26px;border:none;border-radius:999px;box-shadow:0 20px 50px -18px rgba(245,105,30,.7),0 0 30px -6px rgba(245,105,30,.5);transition:transform .5s var(--back),filter .3s;}
+  .btn:hover{transform:translateY(-2px);filter:brightness(1.06);} .btn:active{transform:scale(.98);}
+  .btn .a{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;transition:transform .5s var(--back);} .btn:hover .a{transform:translateX(-4px);} .btn svg{width:14px;height:14px;stroke:#fff;}
+  .btn.ghost{background:var(--glass);border:1px solid var(--glass-b);box-shadow:none;padding:15px 24px;}
+
+  .sec{padding-block:clamp(70px,10vw,140px);}
+  .eyebrow{color:var(--gold-l);font-weight:700;font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;}
+  h2{font-size:clamp(30px,5vw,60px);font-weight:900;letter-spacing:-.01em;line-height:1.06;margin-top:12px;} h2 .g{color:var(--gold);}
+  .lede{color:var(--muted);font-size:clamp(15.5px,1.8vw,19px);max-width:58ch;margin-top:16px;}
+  .center{text-align:center;} .center .lede{margin-inline:auto;}
+
+  /* glowing stat tiles */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.6vw,18px);margin-top:clamp(40px,5vw,60px);}
+  @media(max-width:700px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  .stat{background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r);padding:clamp(24px,2.8vw,34px);text-align:center;position:relative;overflow:hidden;}
+  .stat::after{content:"";position:absolute;inset:auto -40% -50% auto;width:80%;height:80%;background:radial-gradient(circle,var(--neb1),transparent 65%);filter:blur(20px);}
+  .stat .v{position:relative;font-size:clamp(38px,5vw,60px);font-weight:900;letter-spacing:-.03em;line-height:1;text-shadow:0 0 30px rgba(245,105,30,.3);} .stat .v em{font-style:normal;color:var(--gold);}
+  .stat .k{position:relative;color:var(--muted);font-size:14px;margin-top:10px;}
+
+  /* feature — glass rows alternating with glow */
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,72px);align-items:center;margin-top:clamp(50px,7vw,90px);}
+  .feat:nth-child(even){direction:ltr;} .feat:nth-child(even) .ft{direction:rtl;text-align:right;}
+  @media(max-width:820px){ .feat,.feat:nth-child(even){grid-template-columns:1fr;direction:rtl;} }
+  .ft .n{font-size:clamp(50px,7vw,96px);font-weight:900;letter-spacing:-.05em;color:var(--gold);line-height:.85;text-shadow:0 0 40px rgba(245,105,30,.4);}
+  .ft h3{font-size:clamp(23px,3vw,38px);font-weight:800;margin-top:10px;} .ft p{color:var(--muted);font-size:clamp(15.5px,1.8vw,18px);margin-top:14px;max-width:44ch;}
+  .fimg{border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--glass-b);aspect-ratio:4/3;box-shadow:0 40px 90px -50px rgba(0,0,0,.9),0 0 60px -30px var(--neb2);}
+  .fimg img{width:100%;height:100%;object-fit:cover;transition:transform 1.1s var(--ease);} .feat:hover .fimg img{transform:scale(1.05);}
+
+  /* gallery cosmic */
+  .gal{display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(12px,1.4vw,18px);margin-top:clamp(38px,5vw,56px);}
+  .gf{border-radius:var(--r);overflow:hidden;border:1px solid var(--glass-b);} .gf img{width:100%;height:100%;object-fit:cover;transition:transform .9s var(--ease);} .gf:hover img{transform:scale(1.06);}
+  .gl{grid-column:span 4;aspect-ratio:16/10;} .gs{grid-column:span 2;aspect-ratio:4/5;} .gm{grid-column:span 3;aspect-ratio:16/10;}
+  @media(max-width:760px){ .gal{grid-template-columns:repeat(2,1fr);} .gl,.gm{grid-column:span 2;aspect-ratio:16/10;} .gs{grid-column:span 1;aspect-ratio:4/5;} }
+
+  /* lead — glowing glass */
+  .lead-shell{max-width:600px;margin:clamp(50px,7vw,72px) auto 0;background:var(--glass);border:1px solid var(--glass-b);border-radius:var(--r-lg);padding:8px;backdrop-filter:blur(24px);box-shadow:0 60px 120px -50px rgba(0,0,0,.9),0 0 80px -34px var(--neb1);}
+  .lead-core{background:rgba(11,11,22,.72);border-radius:calc(var(--r-lg) - 8px);padding:clamp(28px,4vw,44px);box-shadow:inset 0 1px 1px rgba(255,255,255,.08);}
+  .lead-core h3{font-size:clamp(22px,3vw,30px);font-weight:900;letter-spacing:-.02em;} .lead-core p{color:var(--muted);margin-top:8px;}
+  form{margin-top:22px;display:grid;gap:13px;}
+  .fld input{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--glass-b);color:#fff;font-family:inherit;font-size:16px;padding:15px 17px;border-radius:14px;transition:.3s var(--ease);}
+  .fld input::placeholder{color:rgba(255,255,255,.4);} .fld input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,105,30,.2),0 0 24px -6px rgba(245,105,30,.5);background:rgba(255,255,255,.09);}
+  .lead-core .btn{width:100%;justify-content:center;margin-top:4px;font-size:17px;padding:17px;}
+  .note{text-align:center;font-size:12px;color:var(--muted);margin-top:12px;}
+  .hp{position:absolute;left:-9999px;opacity:0;}
+  .done{display:none;text-align:center;} .done.on{display:block;animation:pp .5s var(--back);}
+  @keyframes pp{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:none;}}
+  .done .ok{width:58px;height:58px;border-radius:50%;background:linear-gradient(150deg,var(--gold-l),#c9490a);display:grid;place-items:center;margin:0 auto 14px;box-shadow:0 0 34px -6px rgba(245,105,30,.7);} .done .ok svg{width:26px;height:26px;stroke:#fff;stroke-width:3;} .done h4{font-size:22px;font-weight:800;} .done p{color:var(--muted);margin-top:6px;}
+
+  .foot{padding-block:40px;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--line);} .foot b{color:#fff;} .foot a{color:var(--gold-l);}
+  .rev{opacity:0;transform:translateY(30px);transition:opacity .8s var(--expo),transform .8s var(--expo);} .rev.in{opacity:1;transform:none;}
+  .stag>*{opacity:0;transform:translateY(22px);} .stag.in>*{animation:up .6s var(--back) forwards;}
+  .stag.in>*:nth-child(1){animation-delay:.05s;}.stag.in>*:nth-child(2){animation-delay:.12s;}.stag.in>*:nth-child(3){animation-delay:.19s;}.stag.in>*:nth-child(4){animation-delay:.26s;}
+  @keyframes up{to{opacity:1;transform:none;}}
+  @media(prefers-reduced-motion:reduce){ .rev,.stag>*{opacity:1!important;transform:none!important;animation:none!important;} .neb,.stars,.hero-stage video{animation:none!important;} }
+  .msticky{position:fixed;inset-block-end:0;inset-inline:0;z-index:95;display:none;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(8,8,16,.9);backdrop-filter:blur(18px);border-top:1px solid var(--glass-b);}
+  .msticky a{display:flex;align-items:center;justify-content:center;gap:9px;background:var(--gold);color:#fff;font-weight:800;padding:15px;border-radius:999px;box-shadow:0 0 24px -6px rgba(245,105,30,.6);}
+  @media(max-width:760px){ .msticky{display:block;} body{padding-bottom:74px;} }
+  .switch{position:fixed;inset-block-end:88px;inset-inline-end:14px;z-index:120;background:#fff;color:var(--bg);border-radius:999px;padding:8px 15px;font-size:12.5px;font-weight:800;} .switch a{color:var(--gold);} @media(min-width:761px){ .switch{inset-block-end:16px;} }
+</style>
+</head>
+<body>
+<div class="cosmos"><div class="neb a"></div><div class="neb b"></div><div class="neb c"></div><div class="stars"></div></div>
+<nav><div class="npill"><span class="b">Car<i>2</i>Buy</span><a class="tel" href="tel:+97223319929">072-3319929</a><a class="cta" href="#lead">קבלו הצעה</a></div></nav>
+
+<main>
+<header class="hero"><div class="wrap">
+  <span class="kick rev in"><span class="dot"></span>ג'אקו 8 · פלאג-אין · 7 מושבים</span>
+  <h1 class="serif rev in">יוקרה <span class="g">שמגיעה</span><br>אליכם.</h1>
+  <p class="hero-sub rev in">SUV משפחתי פלאג-אין, מפואר ומרווח — בהחזר חודשי של משפחה.</p>
+  <div class="hero-stage rev in"><video autoplay muted loop playsinline preload="auto" poster="videos/jaecoo8-drive-poster.jpg"><source src="videos/jaecoo8-drive.mp4" type="video/mp4"></video><div class="halo"></div></div>
+  <div class="pay-pill rev in"><span class="a">₪2,396<span>.</span></span><span class="l">/ חודש · החל מ-</span></div>
+  <div class="cta-row rev in">
+    <a class="btn" href="#lead">קבלו הצעה אישית<span class="a"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></a>
+    <a class="btn ghost" href="tel:+97223319929">חייגו עכשיו</a>
+  </div>
+</div></header>
+
+<section class="sec"><div class="wrap center">
+  <span class="eyebrow rev" data-rev>בנתונים</span><h2 class="serif rev" data-rev>כוכב חדש <span class="g">בשמיים שלכם</span>.</h2>
+  <div class="stats stag" data-stag>
+    <div class="stat"><div class="v" data-count="7">0</div><div class="k">מושבים · 3 שורות</div></div>
+    <div class="stat"><div class="v" data-count="70" data-suffix="+">0</div><div class="k">ק"מ בנהיגה חשמלית</div></div>
+    <div class="stat"><div class="v" data-count="100" data-suffix="%">0</div><div class="k">מימון · ריבית מעולה</div></div>
+    <div class="stat"><div class="v"><em>₪</em>2,396</div><div class="k">החזר חודשי מ-</div></div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="center"><span class="eyebrow rev" data-rev>למה ג'אקו 8</span><h2 class="serif rev" data-rev>מתוכננת סביב <span class="g">המשפחה</span>.</h2></div>
+  <div class="feat"><div class="ft rev" data-rev><div class="n">7</div><h3>מושבים, שלוש שורות</h3><p>מרחב אמיתי לכל המשפחה — נוחות, בטיחות ותא מטען גדול לכל טיול.</p></div><div class="fimg rev" data-rev><img loading="lazy" src="images/gallery/jaecoo-8/int5.jpg" alt="פנים"></div></div>
+  <div class="feat"><div class="ft rev" data-rev><div class="n">70+</div><h3>ק"מ בנהיגה חשמלית</h3><p>שקט מוחלט בעיר, טווח בנזין ארוך לחופשה — בלי חרדת טווח ובעלות אחזקה נמוכה.</p></div><div class="fimg rev" data-rev><img loading="lazy" src="images/gallery/jaecoo-8/ext3.jpg" alt="חוץ"></div></div>
+  <div class="feat"><div class="ft rev" data-rev><div class="n">100%</div><h3>מימון, בלי הון עצמי</h3><p>בריבית הטובה בישראל, עם טרייד-אין לרכב הישן וליווי אישי עד קבלת המפתח.</p></div><div class="fimg rev" data-rev><img loading="lazy" src="images/gallery/jaecoo-8/int6.jpg" alt="פנים"></div></div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="center"><span class="eyebrow rev" data-rev>מכל זווית</span><h2 class="serif rev" data-rev>גלריה.</h2></div>
+  <div class="gal stag" data-stag>
+    <div class="gf gl"><img loading="lazy" src="images/gallery/jaecoo-8/ext2.jpg" alt="ג'אקו 8"></div>
+    <div class="gf gs"><img loading="lazy" src="images/gallery/jaecoo-8/int5.jpg" alt="פנים"></div>
+    <div class="gf gm"><img loading="lazy" src="images/gallery/jaecoo-8/ext4.jpg" alt="ג'אקו 8"></div>
+    <div class="gf gm"><img loading="lazy" src="images/gallery/jaecoo-8/int6.jpg" alt="פנים"></div>
+  </div>
+</div></section>
+
+<section class="sec" id="lead"><div class="wrap center">
+  <span class="eyebrow rev" data-rev>כמות מוגבלת</span><h2 class="serif rev" data-rev>קבלו הצעה אישית<br><span class="g">עוד היום</span>.</h2>
+  <p class="lede rev" data-rev>משאירים שם וטלפון — ונחזור אליכם עם המחיר, המימון והטרייד-אין הכי טובים.</p>
+  <div class="lead-shell rev" data-rev><div class="lead-core">
+    <form id="leadForm" novalidate>
+      <input type="text" name="company_url" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="fld"><input type="text" name="name" placeholder="שם מלא" autocomplete="name" required></div>
+      <div class="fld"><input type="tel" name="phone" placeholder="טלפון נייד" inputmode="tel" autocomplete="tel" required></div>
+      <button type="submit" class="btn">קבלו הצעה לג'אקו 8<span class="a"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></button>
+      <div class="note">ללא התחייבות · נציג יחזור אליכם בהקדם</div>
+    </form>
+    <div class="done" id="leadDone"><div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><h4>תודה! קיבלנו את הפרטים</h4><p>נציג יחזור אליכם עם הצעה אישית לג'אקו 8.</p></div>
+  </div></div>
+</div></section>
+</main>
+
+<footer class="foot"><div class="wrap"><b>Car2Buy</b> · <a href="tel:+97223319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור מימון וזמינות.</div></footer>
+<div class="msticky"><a href="#lead">קבלו הצעה לג'אקו 8 ←</a></div>
+<div class="switch">Voyah-style · <a href="jaecoo8-versions.html">כל הגרסאות</a></div>
+
+<script src="supabase.js"></script>
+<script>
+(function(){
+  function countUp(el){var t=parseInt(el.getAttribute('data-count'),10),suf=el.getAttribute('data-suffix')||'',t0=null,d=1200;
+    function s(ts){if(!t0)t0=ts;var k=Math.min((ts-t0)/d,1),e=1-Math.pow(1-k,3);el.textContent=Math.round(t*e).toLocaleString('en-US')+suf;if(k<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');e.target.querySelectorAll&&e.target.querySelectorAll('[data-count]').forEach(countUp);io.unobserve(e.target);}});},{threshold:.14,rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('[data-rev],[data-stag]').forEach(function(el){el.classList.add(el.hasAttribute('data-stag')?'stag':'rev');io.observe(el);});
+  var f=document.getElementById('leadForm'),d=document.getElementById('leadDone');
+  f.addEventListener('submit',function(e){e.preventDefault();var n=(f.name.value||'').trim(),p=(f.phone.value||'').trim();
+    if(n.length<2){f.name.focus();return;} if(p.replace(/\D/g,'').length<9){f.phone.focus();return;}
+    if(window.submitLead)submitLead({name:n,phone:p,car:'Jaecoo 8',source:'landing_jaecoo8_cosmic',message:"דף נחיתה ג'אקו 8 קוסמי",company_url:(f.company_url&&f.company_url.value)||''});
+    f.style.display='none';d.classList.add('on');});
+})();
+</script>
+</body>
+</html>
