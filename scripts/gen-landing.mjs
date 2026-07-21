@@ -239,8 +239,6 @@ ${figs()}
   <a href="#lead" data-tab="lead">הצעה</a>
   <a href="#reviews" data-tab="reviews">לקוחות</a>
 </div></nav>
-<div class="switch"><a href="landings.html">‹ כל הרכבים</a></div>
-
 <script src="supabase.js"></script>
 <script>
 (function(){
