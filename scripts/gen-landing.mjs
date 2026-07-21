@@ -54,6 +54,14 @@ const cleanEn = (nameEn, brandEn) => {
   if (brandEn) s = s.replace(new RegExp('^' + brandEn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), '').trim();
   return s.replace(/\s+/g, ' ').trim() || nameEn;
 };
+// size the hero title to the name length so long model names don't overflow / dominate
+const h1Style = (model) => {
+  const n = String(model).trim().length;
+  if (n <= 4) return 'font-size:clamp(56px,13vw,168px);line-height:.82;';
+  if (n <= 8) return 'font-size:clamp(46px,10vw,118px);line-height:.9;';
+  if (n <= 13) return 'font-size:clamp(38px,7vw,86px);line-height:.96;';
+  return 'font-size:clamp(30px,5.4vw,66px);line-height:1.02;';
+};
 // wrap a trailing number/short token in gold for a premium look
 const h1Html = (model) => {
   const parts = String(model).trim().split(/\s+/);
@@ -114,7 +122,7 @@ ${STYLE}
     <div class="hero-stars rev in" aria-label="דירוג 5 כוכבים">★★★★★</div>
     <span class="urgency rev in"><span class="p"></span>100% מימון · אישור מהיר</span>
     <div class="brandname rev in" dir="ltr">${esc(brandEn)}</div>
-    <h1 class="rev in" dir="ltr">${h1Html(modelEn)}</h1>
+    <h1 class="rev in" dir="ltr" style="${h1Style(modelEn)}">${h1Html(modelEn)}</h1>
     <p class="hero-tag rev in">רכב חדש 0 ק"מ — ההחזר החודשי הנמוך בישראל.</p>
     <p class="hero-sub rev in">${seats} מקומות · 100% מימון · טרייד-אין לרכב הישן · ליווי אישי עד קבלת המפתח.</p>
     <div class="hero-pay rev in">${hasPrice ? `<span class="l">ההחזר שלכם · החל מ-</span><span class="a">${payStr}</span><span class="l">לחודש</span>` : `<span class="a" style="font-size:clamp(24px,3vw,38px)">${payStr}</span><span class="l">· דברו איתנו להצעה</span>`}</div>
