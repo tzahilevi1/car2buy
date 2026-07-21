@@ -71,6 +71,11 @@ const h1Html = (model) => {
   }
   return esc(model);
 };
+// brand → logo slug (files in images/brands/)
+const BRAND_SLUG = { 'Audi':'audi','Avatr':'avatr','Omoda':'omoda','MG':'mg','BYD':'byd','BMW':'bmw','Jaecoo':'jaecoo','Dongfeng':'dongfeng','Zeekr':'zeekr','Toyota':'toyota','Hyundai':'hyundai','Leapmotor':'leapmotor','Mazda':'mazda','Mitsubishi':'mitsubishi','Mercedes-Benz':'mercedes','Nissan':'nissan','Citroën':'citroen','smart':'smart','Škoda':'skoda','Chery':'chery','Kia':'kia' };
+function logoFor(brandEn) { const s = BRAND_SLUG[brandEn]; if (!s) return null; for (const e of ['svg', 'png']) if (fs.existsSync(ROOT + '/images/brands/' + s + '.' + e)) return 'images/brands/' + s + '.' + e; return null; }
+// prefer HD press photos (images/gallery/<folder>-hd/) when available
+function hdSet(folder) { const dir = ROOT + '/images/gallery/' + folder + '-hd'; try { const f = fs.readdirSync(dir).filter(x => /\.(jpe?g|png)$/i.test(x)).sort(); if (f.length >= 3) return f.map(n => 'images/gallery/' + folder + '-hd/' + n); } catch (e) {} return null; }
 
 function page(x) {
   const brandEn = BRAND_EN[(x.brand || '').trim()] || (x.brand || '').trim();
@@ -78,9 +83,10 @@ function page(x) {
   const fullEn = `${brandEn} ${modelEn}`.trim();
   const name = modelEn;
   const seats = x.seats || 5;
-  const G = x.gallery;
+  const logo = logoFor(brandEn);
+  const G = hdSet(x.folder) || x.gallery;
   const at = (i) => G[Math.min(i, G.length - 1)];
-  const interior = G.find(p => /int\d|interior|screen|seats/.test(p)) || at(G.length - 1);
+  const interior = G.find(p => /int[-_]?\d|interior|screen|seats/.test(p)) || at(G.length - 1);
   const heroImg = at(0), p2 = at(2), p3 = interior, p4 = at(1), leadImg = at(3);
   const hasPrice = x.m > 0;
   const payStr = hasPrice ? nis(x.m) : 'הצעה אישית';
@@ -121,7 +127,7 @@ ${STYLE}
   <div class="pc"><div class="wrap">
     <div class="hero-stars rev in" aria-label="דירוג 5 כוכבים">★★★★★</div>
     <span class="urgency rev in"><span class="p"></span>100% מימון · אישור מהיר</span>
-    <div class="brandname rev in" dir="ltr">${esc(brandEn)}</div>
+    ${logo ? `<img class="brandlogo rev in" src="${logo}" alt="${esc(brandEn)}" onerror="this.style.display='none'">` : `<div class="brandname rev in" dir="ltr">${esc(brandEn)}</div>`}
     <h1 class="rev in" dir="ltr" style="${h1Style(modelEn)}">${h1Html(modelEn)}</h1>
     <p class="hero-tag rev in">רכב חדש 0 ק"מ — ההחזר החודשי הנמוך בישראל.</p>
     <p class="hero-sub rev in">${seats} מקומות · 100% מימון · טרייד-אין לרכב הישן · ליווי אישי עד קבלת המפתח.</p>

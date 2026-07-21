@@ -10,7 +10,8 @@ os.makedirs(ROOT + '/videos/lp', exist_ok=True)
 W, H, DUR, X, FPS, CRF = 768, 432, 3.0, 0.6, 18, 38
 
 def ext_imgs(folder):
-    files = sorted(glob.glob(f'images/gallery/{folder}/*.jpg'))
+    hd = sorted(glob.glob(f'images/gallery/{folder}-hd/*.jpg'))
+    files = hd if len(hd) >= 3 else sorted(glob.glob(f'images/gallery/{folder}/*.jpg'))
     def key(p):
         b = os.path.basename(p).lower()
         # exterior first (ext1..4, front/side/grille/wheel), interior last
