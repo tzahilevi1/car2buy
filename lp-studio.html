@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Car2Buy · סטודיו דפי נחיתה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0c0e12;--ink2:#151922;--pan:#1b212c;--gold:#F5691E;--gold-l:#ff8a4b;--line:rgba(255,255,255,.12);--muted:rgba(255,255,255,.6);--txt:#eef1f6;--ok:#3ad07a;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Heebo",sans-serif;background:var(--ink);color:var(--txt);height:100vh;overflow:hidden;}
+  .app{display:grid;grid-template-columns:420px 1fr;grid-template-rows:56px 1fr;height:100vh;}
+  header{grid-column:1/3;display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--ink2);border-bottom:1px solid var(--line);}
+  header .b{font-weight:900;font-size:18px;} header .b i{color:var(--gold);font-style:normal;}
+  header .tag{color:var(--muted);font-size:12.5px;} header .sp{flex:1;}
+  header button{font-family:inherit;font-weight:700;font-size:13px;border:1px solid var(--line);background:var(--pan);color:var(--txt);padding:8px 14px;border-radius:8px;cursor:pointer;transition:.15s;}
+  header button:hover{border-color:var(--gold);}
+  header button.p{background:var(--gold);border-color:var(--gold);color:#fff;}
+  header select{font-family:inherit;font-size:13px;background:var(--pan);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:200px;}
+  .form{overflow-y:auto;padding:16px 16px 60px;border-inline-end:1px solid var(--line);background:var(--ink);}
+  .grp{margin-bottom:20px;} .grp>h3{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-l);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  .f{margin-bottom:11px;} .f label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px;font-weight:600;}
+  .f input,.f textarea,.f select{width:100%;font-family:inherit;font-size:13.5px;background:var(--ink2);color:var(--txt);border:1px solid var(--line);border-radius:7px;padding:9px 10px;}
+  .f input:focus,.f textarea:focus,.f select:focus{outline:none;border-color:var(--gold);}
+  .f textarea{resize:vertical;min-height:56px;line-height:1.5;}
+  .f .hint{font-size:11px;color:var(--muted);margin-top:3px;}
+  .row{display:flex;gap:8px;} .row>.f{flex:1;}
+  .f input[type=color]{height:38px;padding:3px;cursor:pointer;}
+  .assetbtn{font-size:11px;color:var(--gold-l);background:none;border:0;cursor:pointer;padding:2px 0;text-decoration:underline;}
+  .preview{position:relative;background:#000;overflow:hidden;}
+  .preview iframe{width:100%;height:100%;border:0;background:#000;}
+  .pbar{position:absolute;inset-block-start:10px;inset-inline:10px;display:flex;gap:8px;align-items:center;z-index:5;pointer-events:none;}
+  .pbar .chip{pointer-events:auto;background:rgba(12,14,18,.8);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;}
+  .pbar .chip.dev{cursor:pointer;} .pbar .chip.on{background:var(--gold);border-color:var(--gold);color:#fff;}
+  .toast{position:fixed;inset-block-end:20px;inset-inline-start:50%;transform:translateX(50%);background:var(--ok);color:#04240f;font-weight:800;padding:12px 22px;border-radius:10px;opacity:0;transition:.3s;z-index:99;font-size:14px;}
+  .toast.show{opacity:1;}
+  .fleet{background:linear-gradient(160deg,rgba(245,105,30,.12),transparent);border:1px solid rgba(245,105,30,.35);border-radius:10px;padding:12px;}
+  .fleet p{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:8px;} .fleet code{background:#000;color:var(--gold-l);padding:1px 5px;border-radius:4px;font-size:11.5px;}
+  .agents{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0;} .agents span{font-size:11px;background:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:4px 9px;}
+  @media(max-width:900px){.app{grid-template-columns:1fr;grid-template-rows:56px 46vh 1fr;} .form{border-inline-end:0;border-bottom:1px solid var(--line);} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <span class="b">Car<i>2</i>Buy</span><span class="tag">· סטודיו דפי נחיתה</span>
+    <span class="sp"></span>
+    <select id="loadSel" title="טעינת דגם קיים"><option value="">＋ דף חדש</option></select>
+    <button id="briefBtn">📋 העתק בריף לצי הסוכנים</button>
+    <button id="dlBtn" class="p">⬇ הורד HTML</button>
+  </header>
+
+  <div class="form" id="form">
+    <div class="grp"><h3>בסיס</h3>
+      <div class="row">
+        <div class="f"><label>מותג (אנגלית)</label><input id="brand" value="Hyundai"></div>
+        <div class="f"><label>לוגו</label><select id="logo"></select></div>
+      </div>
+      <div class="f"><label>שם הדגם (אנגלית, גדול בהירו)</label><input id="model" value="Tucson"></div>
+      <div class="row">
+        <div class="f"><label>החזר חודשי ₪ (0 = "הצעה אישית")</label><input id="price" type="number" value="1992"></div>
+        <div class="f"><label>מקומות</label><input id="seats" type="number" value="5"></div>
+      </div>
+      <div class="f"><label>צבע הדגשה</label><input id="accent" type="color" value="#F5691E"></div>
+    </div>
+
+    <div class="grp"><h3>מדיה</h3>
+      <div class="f"><label>וידאו הירו (נתיב/URL)</label><input id="video" placeholder="videos/lp/hyundai-tucson.mp4">
+        <button class="assetbtn" data-fill="video">מלא מברירת מחדל של הדגם ↺</button></div>
+      <div class="f"><label>Poster + רקע פאנל 1 (חוץ)</label><input id="img0" placeholder="images/gallery/…-hd/ext-1.jpg"></div>
+      <div class="row"><div class="f"><label>פאנל "חדש" (חוץ)</label><input id="img2"></div>
+        <div class="f"><label>פאנל "עסקה" (חוץ)</label><input id="img1"></div></div>
+      <div class="row"><div class="f"><label>פאנל "מרחב" (פנים)</label><input id="img3"></div>
+        <div class="f"><label>פאנל "הצעה" (חוץ)</label><input id="img4"></div></div>
+      <button class="assetbtn" data-fill="imgs">מלא את כל התמונות מברירת מחדל של הדגם ↺</button>
+    </div>
+
+    <div class="grp"><h3>הירו — טקסטים</h3>
+      <div class="f"><label>תגית עליונה (מבצע)</label><input id="urgency" value="100% מימון · אישור מהיר"></div>
+      <div class="f"><label>שורת מתחת לשם</label><input id="heroTag" value="רכב חדש 0 ק&quot;מ — ההחזר החודשי הנמוך בישראל."></div>
+      <div class="f"><label>שורת מפרט</label><input id="heroSub" placeholder="(אוטומטי לפי מקומות)"></div>
+    </div>
+
+    <div class="grp"><h3>סקשן "רכב חדש"</h3>
+      <div class="f"><label>כותרת</label><input id="p2h" value="רכב חדש.|אחריות מלאה."><div class="hint">| מפריד בין שורה לבנה לשורה כתומה</div></div>
+      <div class="f"><label>פסקה</label><textarea id="p2p"></textarea></div>
+    </div>
+    <div class="grp"><h3>סקשן "מרחב"</h3>
+      <div class="f"><label>כותרת</label><input id="p3h" value="{seats} מקומות.|נוחות מלאה."></div>
+      <div class="f"><label>פסקה</label><textarea id="p3p"></textarea></div>
+    </div>
+    <div class="grp"><h3>סקשן "העסקה"</h3>
+      <div class="f"><label>כותרת</label><input id="p4h" value="רכב חדש לכל כיס.|ההחזר הנמוך בישראל."></div>
+      <div class="f"><label>פסקה</label><textarea id="p4p"></textarea></div>
+    </div>
+    <div class="grp"><h3>טופס לידים</h3>
+      <div class="f"><label>כותרת (| = שורה, {} = מודגש)</label><input id="leadh" value="קבלו את ההצעה|הכי טובה {שלכם}."></div>
+      <div class="f"><label>פסקה</label><textarea id="leadp"></textarea></div>
+    </div>
+
+    <div class="grp"><h3>🤖 צי הסוכנים החכם</h3>
+      <div class="fleet">
+        <p>אין לך עדיין תמונות/וידאו איכותיים לדגם? שלח בריף לצי הסוכנים דרך <b>Claude Code</b>. הם יסרקו, יורידו, ויאמתו ויזואלית:</p>
+        <div class="agents"><span>🎯 מנהל עבודה</span><span>🔍 מחקר</span><span>✍️ תוכן</span><span>🖼️ תמונות HD</span><span>🎬 וידאו</span><span>🎨 עיצוב</span><span>✅ QA ויזואלי</span></div>
+        <p>לחץ <b>"העתק בריף"</b> למעלה, ואז הדבק ב-Claude Code עם: <code>תריץ את צי הסוכנים על הבריף הזה</code></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview">
+    <div class="pbar">
+      <span class="chip" id="sizeChip">🖥 דסקטופ</span>
+      <span class="chip dev" id="devChip">📱 מובייל</span>
+      <span class="chip">תצוגה חיה</span>
+    </div>
+    <iframe id="pv" title="תצוגה מקדימה"></iframe>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var STYLE = '';          // shared <style> from jaecoo8-bold.html
+var BUILT = [];          // existing models from _built.json
+var LOGOS = ['audi','avatr','bmw','byd','chery','citroen','dongfeng','hyundai','jaecoo','kia','leapmotor','mazda','mercedes','mg','mitsubishi','nissan','omoda','skoda','smart','toyota','zeekr'];
+var BRAND_SLUG = {'Audi':'audi','Avatr':'avatr','Omoda':'omoda','MG':'mg','BYD':'byd','BMW':'bmw','Jaecoo':'jaecoo','Dongfeng':'dongfeng','Zeekr':'zeekr','Toyota':'toyota','Hyundai':'hyundai','Leapmotor':'leapmotor','Mazda':'mazda','Mitsubishi':'mitsubishi','Mercedes-Benz':'mercedes','Nissan':'nissan','Citroën':'citroen','smart':'smart','Škoda':'skoda','Chery':'chery','Kia':'kia'};
+var $ = function(id){return document.getElementById(id);};
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function nis(n){return '₪'+Number(n).toLocaleString('en-US');}
+function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+
+// split "a|b" -> a plain + b gold ; support {x} inline gold
+function titleHtml(v){
+  var parts=String(v).split('|');
+  return parts.map(function(p,i){ p=inlineGold(p); return i===0?p:'<span class="g">'+p+'</span>'; }).join('<br>');
+}
+function inlineGold(s){ return esc(s).replace(/\{([^}]*)\}/g,'<span class="g">$1</span>'); }
+function h1Style(model){var n=String(model).trim().length;
+  if(n<=4)return'font-size:clamp(56px,13vw,168px);line-height:.82;';
+  if(n<=8)return'font-size:clamp(46px,10vw,118px);line-height:.9;';
+  if(n<=13)return'font-size:clamp(38px,7vw,86px);line-height:.96;';
+  return'font-size:clamp(30px,5.4vw,66px);line-height:1.02;';}
+function h1Html(model){var p=String(model).trim().split(/\s+/),last=p[p.length-1];
+  if(p.length>1&&/^(#?\d|[0-9])/.test(last))return p.map(function(x,i){return i===p.length-1?'<span class="g">'+esc(x)+'</span>':esc(x);}).join(' ');
+  return esc(model);}
+
+function collect(){
+  var seats=$('seats').value||'5';
+  var d={brand:$('brand').value.trim(),logo:$('logo').value,model:$('model').value.trim(),price:+$('price').value||0,seats:seats,
+    accent:$('accent').value,video:$('video').value.trim(),img0:$('img0').value.trim(),img1:$('img1').value.trim(),
+    img2:$('img2').value.trim(),img3:$('img3').value.trim(),img4:$('img4').value.trim(),
+    urgency:$('urgency').value,heroTag:$('heroTag').value,heroSub:$('heroSub').value.trim(),
+    p2h:$('p2h').value,p2p:$('p2p').value.trim(),p3h:$('p3h').value.replace('{seats}',seats),p3p:$('p3p').value.trim(),
+    p4h:$('p4h').value,p4p:$('p4p').value.trim(),leadh:$('leadh').value,leadp:$('leadp').value.trim()};
+  return d;
+}
+function defaults(d){
+  var m=d.model||'הרכב';
+  return {
+    heroSub:d.heroSub||(d.seats+' מקומות · 100% מימון · טרייד-אין לרכב הישן · ליווי אישי עד קבלת המפתח.'),
+    p2p:d.p2p||(m+' חדש לגמרי, 0 ק"מ, עם אחריות יצרן מלאה — בלי היסטוריה ובלי הפתעות. אנחנו דואגים לכל השאר: מימון, טרייד-אין וכל הניירת, כדי שתצאו לדרך בראש שקט.'),
+    p3p:d.p3p||('פנים מרווח ומאובזר, נוחות לכל הנוסעים ותא מטען שנותן מקום לחיים. רוצים לבחון אותו מקרוב? נלווה אתכם אישית ונשים לכם את כל המידע על השולחן — לפני שאתם מחליטים.'),
+    p4p:d.p4p||('בלי הון עצמי, בלי בירוקרטיה מול הבנק ובלי הפתעות. 100% מימון בריבית הטובה בישראל, טרייד-אין לרכב הישן, וליווי אישי עד קבלת המפתח — הכל בעסקה אחת פשוטה, בהתחייבות להחזר החודשי הנמוך ביותר בישראל.'),
+    leadp:d.leadp||('השאירו שם וטלפון – ונחזור אליכם עוד היום עם הצעה שכוללת: החזר חודשי מדויק, מסלול מימון בריבית הטובה בישראל, והערכת טרייד-אין לרכב הישן. בלי התחייבות, בלי אותיות קטנות.')
+  };
+}
+var chk='<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+var cust=['01','05','07'];
+var cmarN=['01','02','03','04','05','06','07','08','11','12','14','15','17','19'];
+var caps=['רכב חדש נמסר','לקוח/ה מרוצה','עסקה נסגרה בהצלחה','ממליצים בגאווה'];
+
+function render(){
+  var d=collect(), df=defaults(d);
+  var pay=d.price>0?nis(d.price):'הצעה אישית';
+  var logoHtml=d.logo?('<img class="brandlogo rev in" src="'+esc(d.logo)+'" alt="'+esc(d.brand)+'" onerror="this.style.display=\'none\'">'):('<div class="brandname rev in" dir="ltr">'+esc(d.brand)+'</div>');
+  var payHtml=d.price>0?('<span class="l">ההחזר שלכם · החל מ-</span><span class="a">'+pay+'</span><span class="l">לחודש</span>'):('<span class="a" style="font-size:clamp(24px,3vw,38px)">'+pay+'</span><span class="l">· דברו איתנו להצעה</span>');
+  var img=function(u,fb){return esc(u||fb||'');};
+  var figs=function(){return cmarN.map(function(n,i){return '<figure><img loading="lazy" src="images/customers/cust-'+n+'.jpg" alt="לקוח"><figcaption><b>★★★★★</b><span>'+caps[i%4]+'</span></figcaption></figure>';}).join('');};
+  var quotes=[
+    {q:'קיבלנו את הרכב תוך כמה ימים, בהחזר חודשי שלא האמנו שאפשרי. ליווי אישי לאורך כל הדרך — פשוט מקצועיים.',n:'אלירן ואבי',c:'טבריה'},
+    {q:'עברנו לרכב חדש בלי לפגוע בתקציב המשפחתי. יחס אישי מהרגע הראשון ועד קבלת המפתח.',n:'משפחת לוי',c:'חיפה'},
+    {q:'השוויתי מול הלוואה בבנק — וזה פשוט לא היה דומה. שקיפות מלאה, טרייד-אין הוגן, והחזר חודשי שנתן לי שקט.',n:'דוד ואורן',c:'מרכז'}];
+  var body=''+
+  '<header class="top"><span class="b">Car<i>2</i>Buy</span><div class="r"><a class="tel" href="tel:+97223319929">072-3319929</a><a class="cta" href="#lead">קבלו הצעה</a></div></header>'+
+  '<section class="panel hero" id="top"><div class="panel-bg"><video autoplay muted loop playsinline poster="'+img(d.img0)+'"><source src="'+img(d.video)+'" type="video/mp4"></video></div><div class="scrim"></div>'+
+    '<div class="pc"><div class="wrap"><div class="hero-stars rev in">★★★★★</div><span class="urgency rev in"><span class="p"></span>'+esc(d.urgency)+'</span>'+
+    logoHtml+'<h1 class="rev in" dir="ltr" style="'+h1Style(d.model)+'">'+h1Html(d.model)+'</h1>'+
+    '<p class="hero-tag rev in">'+esc(d.heroTag)+'</p><p class="hero-sub rev in">'+esc(df.heroSub)+'</p>'+
+    '<div class="hero-pay rev in">'+payHtml+'</div>'+
+    '<div class="cta-row rev in"><a class="btn" href="#lead">בדקו כמה זה יעלה לכם</a><a class="btn ghost" href="tel:+97223319929">חייגו עכשיו</a></div>'+
+    '<div class="hero-trust rev in"><span>'+chk+'100% מימון</span><span>'+chk+'אחריות יצרן מלאה</span><span>'+chk+'2,400+ לקוחות מרוצים</span></div>'+
+    '</div></div></section>'+
+  '<section class="panel" id="power"><div class="panel-bg kb"><img src="'+img(d.img2,d.img0)+'"></div><div class="scrim side"></div><div class="pc"><div class="wrap"><div class="stmt">'+
+    '<div class="k rev">0 קילומטר</div><h2 class="rev">'+titleHtml(d.p2h)+'</h2><p class="rev">'+esc(df.p2p)+'</p>'+
+    '<div class="big rev">0 <span>ק"מ · רכב חדש</span></div></div></div></div></section>'+
+  '<section class="panel" id="space"><div class="panel-bg kb"><img src="'+img(d.img3,d.img0)+'"></div><div class="scrim side"></div><div class="pc"><div class="wrap"><div class="stmt">'+
+    '<div class="k rev">מרחב ונוחות</div><h2 class="rev">'+titleHtml(d.p3h)+'</h2><p class="rev">'+esc(df.p3p)+'</p>'+
+    '<div class="chips rev"><span class="chip">'+d.seats+' מקומות</span><span class="chip">רכב חדש 0 ק"מ</span><span class="chip">אחריות יצרן</span><span class="chip">ליווי אישי</span></div></div></div></div></section>'+
+  '<section class="panel" id="deal"><div class="panel-bg kb"><img src="'+img(d.img1,d.img0)+'"></div><div class="scrim side"></div><div class="pc"><div class="wrap"><div class="stmt" style="max-width:840px">'+
+    '<div class="k rev">העסקה של Car2Buy</div><h2 class="rev">'+titleHtml(d.p4h)+'</h2><p class="rev">'+esc(df.p4p)+'</p>'+
+    '<div class="deal-grid rev"><div class="d"><div class="dv">'+(d.price>0?('<em>₪</em>'+Number(d.price).toLocaleString('en-US')):'<span class="txt" style="font-size:.6em">בהצעה</span>')+'</div><div class="dk">החזר חודשי מ-</div></div>'+
+    '<div class="d"><div class="dv">100<em>%</em></div><div class="dk">מימון · ריבית מעולה</div></div>'+
+    '<div class="d"><div class="dv txt">טרייד-אין</div><div class="dk">קיזוז הרכב הישן</div></div>'+
+    '<div class="d"><div class="dv">1:1</div><div class="dk">יועץ אישי צמוד</div></div></div>'+
+    '<div class="guarantee rev"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg>ההחזר החודשי הנמוך בישראל – בהתחייבות. מצאתם זול יותר? נשווה את ההצעה.</div>'+
+    '</div></div></div></section>'+
+  '<section class="panel lead" id="lead"><div class="panel-bg kb"><img src="'+img(d.img4,d.img0)+'"></div><div class="scrim"></div><div class="pc"><div class="wrap">'+
+    '<h2 class="rev">'+titleHtml(d.leadh)+'</h2><p class="rev">'+esc(df.leadp)+'</p>'+
+    '<form class="lform rev" onsubmit="return false"><input type="text" name="name" placeholder="שם מלא"><input type="tel" name="phone" placeholder="טלפון נייד"><button type="submit" class="btn">קבלו הצעה ל'+esc(d.model)+'</button></form>'+
+    '<div class="lnote rev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>הפרטים שלכם מאובטחים · ללא התחייבות</div>'+
+    '</div></div></section>'+
+  '<section class="testi" id="reviews"><div class="wrap"><div class="testi-head"><div class="k rev">לקוחות מספרים</div><h2 class="rev">הם כבר <span class="g">על הכביש</span>.</h2>'+
+    '<div class="tstats rev"><div class="ts"><div class="tv">2,400<em>+</em></div><div class="tk">לקוחות מרוצים</div></div><div class="ts"><div class="tv">100<em>%</em></div><div class="tk">מימון בריבית מעולה</div></div><div class="ts"><div class="tv">1:1</div><div class="tk">ליווי אישי צמוד</div></div></div></div>'+
+    '<div class="qgrid stag">'+quotes.map(function(t,i){return '<div class="qc"><div class="stars">★★★★★</div><blockquote>'+esc(t.q)+'</blockquote><div class="by"><span class="av"><img src="images/customers/cust-'+cust[i]+'.jpg"></span><div><b>'+esc(t.n)+'</b><span class="role">Car2Buy · '+esc(t.c)+'</span><span class="vf"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>מתוך שיחות עם לקוחותינו</span></div></div></div>';}).join('')+'</div>'+
+    '<div class="cmar-head rev"><div class="k">התמונות מדברות</div><h3>לקוחות שכבר <span style="color:var(--gold)">קיבלו את הרכב</span></h3></div>'+
+    '<div class="cmar"><div class="cmar-track">'+figs()+figs()+'</div></div>'+
+    '<div class="testi-cta rev"><a class="btn" href="#lead">הצטרפו אליהם — קבלו הצעה</a></div></div></section>'+
+  '<footer class="foot"><div class="wrap"><b>Car2Buy</b> · <a href="tel:+97223319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור גוף מימון וזמינות במלאי.</div></footer>'+
+  '<nav class="tabs"><div class="tabs-in"><a href="#top" class="on">הכירו</a><a href="#power">חדש</a><a href="#space">מרחב</a><a href="#deal">עסקה</a><a href="#lead">הצעה</a><a href="#reviews">לקוחות</a></div></nav>';
+
+  var accentCss=d.accent&&d.accent.toLowerCase()!=='#f5691e'?('<style>:root{--gold:'+d.accent+' !important;--gold-l:'+d.accent+' !important;--star:'+d.accent+' !important;}</style>'):'';
+  return '<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'+
+    '<title>'+esc(d.brand+' '+d.model)+'</title>'+
+    '<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">'+
+    STYLE+accentCss+'<base href="'+location.href.replace(/lp-studio\.html.*$/,'')+'">'+
+    '</head><body>'+body+'</body></html>';
+}
+
+function update(){ $('pv').srcdoc=render(); }
+
+function fillAssets(which){
+  var f=slug($('brand').value+'-'+$('model').value).replace(/^[a-z]+-/, function(m){return m;});
+  // best-effort folder guess from brand+model; user can override
+  var folder=$('_folder')?$('_folder').value:'';
+  folder=folder||slug($('brand').value)+'-'+slug($('model').value);
+  var hd='images/gallery/'+folder+'-hd/';
+  if(which==='video'){ $('video').value='videos/lp/'+folder+'.mp4'; }
+  else { $('img0').value=hd+'ext-1.jpg'; $('img2').value=hd+'ext-3.jpg'; $('img1').value=hd+'ext-2.jpg'; $('img3').value=hd+'int-1.jpg'; $('img4').value=hd+'ext-4.jpg'; }
+  update();
+}
+
+function loadModel(folder){
+  var x=BUILT.filter(function(b){return b.folder===folder;})[0]; if(!x)return;
+  $('brand').value=x.brandEn||''; $('model').value=x.modelEn||x.name||''; $('price').value=x.m||0; $('seats').value=x.seats||5;
+  syncLogo();
+  var hd='images/gallery/'+folder+'-hd/';
+  $('video').value='videos/lp/'+folder+'.mp4';
+  $('img0').value=(x.thumb||hd+'ext-1.jpg'); $('img2').value=hd+'ext-3.jpg'; $('img1').value=hd+'ext-2.jpg'; $('img3').value=hd+'int-1.jpg'; $('img4').value=hd+'ext-4.jpg';
+  // keep a hidden folder ref
+  if(!$('_folder')){var h=document.createElement('input');h.type='hidden';h.id='_folder';document.body.appendChild(h);} $('_folder').value=folder;
+  update();
+}
+function syncLogo(){ var s=BRAND_SLUG[$('brand').value.trim()]||''; if(s&&LOGOS.indexOf(s)>=0)$('logo').value='images/brands/'+s+'.svg'; }
+
+function toast(t){var el=$('toast');el.textContent=t;el.classList.add('show');setTimeout(function(){el.classList.remove('show');},1800);}
+
+function briefJSON(){
+  var d=collect();
+  return JSON.stringify({brand:d.brand,model:d.model,monthly:d.price,seats:+d.seats,
+    folder:($('_folder')?$('_folder').value:slug(d.brand)+'-'+slug(d.model)),
+    need:['HD images (4 exterior + 2 interior, ≥1600px, no watermark)','clean cinematic hero video (official/manufacturer, no text/people)','visual QA'],
+    accent:d.accent},null,2);
+}
+
+// ---- init ----
+function boot(){
+  // logo select
+  var lo='<option value="">(ללא — טקסט)</option>'+LOGOS.map(function(s){return '<option value="images/brands/'+s+'.svg">'+s+'</option>';}).join('');
+  $('logo').innerHTML=lo; syncLogo();
+  // fetch shared style
+  fetch('jaecoo8-bold.html').then(function(r){return r.text();}).then(function(t){
+    var m=t.match(/<style>[\s\S]*?<\/style>/); STYLE=m?m[0]:''; update();
+  }).catch(function(){ STYLE='<style>body{background:#08090b;color:#fff;font-family:Heebo}</style>'; update(); });
+  // fetch model list
+  fetch('scripts/_built.json').then(function(r){return r.json();}).then(function(j){
+    BUILT=j; var opt='<option value="">＋ דף חדש</option>'+j.slice().sort(function(a,b){return (a.brandEn||'').localeCompare(b.brandEn||'');}).map(function(x){return '<option value="'+x.folder+'">'+esc((x.brandEn||'')+' '+(x.modelEn||x.name||''))+'</option>';}).join('');
+    $('loadSel').innerHTML=opt;
+  }).catch(function(){});
+  // events
+  $('form').addEventListener('input',update);
+  $('brand').addEventListener('input',syncLogo);
+  $('loadSel').addEventListener('change',function(){ if(this.value)loadModel(this.value); else {location.reload();} });
+  [].forEach.call(document.querySelectorAll('.assetbtn'),function(b){b.addEventListener('click',function(){fillAssets(b.dataset.fill);});});
+  $('dlBtn').addEventListener('click',function(){
+    var d=collect(); var name='lp-'+(($('_folder')&&$('_folder').value)||slug(d.brand)+'-'+slug(d.model))+'.html';
+    var blob=new Blob([render()],{type:'text/html'}); var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+    toast('הורד: '+name);
+  });
+  $('briefBtn').addEventListener('click',function(){
+    navigator.clipboard.writeText(briefJSON()).then(function(){toast('הבריף הועתק — הדבק ב-Claude Code');},function(){prompt('העתק את הבריף:',briefJSON());});
+  });
+  // preview device toggle
+  $('devChip').addEventListener('click',function(){
+    var pv=$('pv'),on=this.classList.toggle('on');
+    pv.style.maxWidth=on?'390px':''; pv.style.margin=on?'0 auto':''; pv.style.height=on?'844px':''; pv.style.transform=on?'scale(.85)':''; pv.style.transformOrigin='top center';
+    $('sizeChip').textContent=on?'📱 390px':'🖥 דסקטופ';
+  });
+}
+boot();
+</script>
+</body>
+</html>
