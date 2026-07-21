@@ -29,9 +29,46 @@ const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</
 const cleanName = (s) => String(s || '').replace(/\([^)]*\)/g, '').replace(/\s*-\s*(החכר|ליסינג|רישוי).*$/,'').trim();
 const nis = (n) => '₪' + Number(n).toLocaleString('en-US');
 
+// English brand + clean English model display names (nice typography for the hero)
+const BRAND_EN = { 'אאודי':'Audi','אווטר':'Avatr','אומודה':'Omoda',"אמ.ג'י":'MG','ב.י.ד':'BYD','ב.מ.וו':'BMW',"ג'אקו":'Jaecoo','דונפנג':'Dongfeng','זיקר':'Zeekr','טויוטה':'Toyota','יונדאי':'Hyundai','ליפמוטור':'Leapmotor','מאזדה':'Mazda','מיצובישי':'Mitsubishi','מרצדס':'Mercedes-Benz','ניסאן':'Nissan','סיטרואן':'Citroën','סמארט':'smart','סקודה':'Škoda',"צ'רי":'Chery','קיה':'Kia' };
+const MODEL_EN = {
+  'audi-a3':'A3 Sportback','audi-q3':'Q3 Sportback','audi-q5':'Q5 Sportback',
+  'bmw-2gc':'216 Gran Coupé','bmw-4gc':'420i Gran Coupé','bmw-5':'530e','bmw-ix':'iX','bmw-ix2':'iX2',
+  'byd-atto2':'Atto 2','byd-seal5':'Seal 5 DM-i','byd-sealion5':'Sealion 5','byd-sealu':'Seal U',
+  'chery-tiggo4':'Tiggo 4','chery-tiggo7':'Tiggo 7 Pro','chery-tiggo8':'Tiggo 8 Pro','chery-tiggo9':'Tiggo 9 Pro',
+  'citroen-berlingo':'Berlingo','dongfeng-box':'Box',
+  'hyundai-elantra':'Elantra','hyundai-kona':'Kona','hyundai-sonata':'Sonata','hyundai-tucson':'Tucson','hyundai-venue':'Venue',
+  'jaecoo-5':'5','jaecoo-7':'7',
+  'kia-niro':'Niro','kia-picanto':'Picanto','kia-seltos':'Seltos',
+  'leapmotor-c10':'C10','mazda-cx5':'CX-5',
+  'mercedes-cla':'CLA 200','mercedes-gla':'GLA 200','mercedes-glc':'GLC 200',
+  'mg-hs':'HS','mg-zs':'ZS','mg3':'3',
+  'mitsubishi-eclipsecross':'Eclipse Cross','mitsubishi-outlander':'Outlander',
+  'nissan-juke':'Juke','nissan-qashqai':'Qashqai','omoda-7':'7',
+  'skoda-kamiq':'Kamiq','skoda-octavia':'Octavia','skoda-superb':'Superb',
+  'smart-5':'#5','toyota-chr':'C-HR','toyota-yaris':'Yaris','toyota-yariscross':'Yaris Cross',
+  'zeekr-7x':'7X','zeekr-x':'X','avatr-11':'11','jaecoo-8':'8',
+};
+const cleanEn = (nameEn, brandEn) => {
+  let s = String(nameEn || '').replace(/[֐-׿]+/g, ' ').replace(/\([^)]*\)/g, ' ').replace(/\s*-\s*\d+\s*$/, '').trim();
+  if (brandEn) s = s.replace(new RegExp('^' + brandEn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), '').trim();
+  return s.replace(/\s+/g, ' ').trim() || nameEn;
+};
+// wrap a trailing number/short token in gold for a premium look
+const h1Html = (model) => {
+  const parts = String(model).trim().split(/\s+/);
+  const last = parts[parts.length - 1];
+  if (parts.length > 1 && /^(#?\d|[0-9])/.test(last)) {
+    return parts.map((p, i) => i === parts.length - 1 ? `<span class="g">${esc(p)}</span>` : esc(p)).join(' ');
+  }
+  return esc(model);
+};
+
 function page(x) {
-  const name = cleanName(x.name) || x.nameEn;
-  const brand = (x.brand || '').trim();
+  const brandEn = BRAND_EN[(x.brand || '').trim()] || (x.brand || '').trim();
+  const modelEn = MODEL_EN[x.folder] || cleanEn(x.nameEn, brandEn);
+  const fullEn = `${brandEn} ${modelEn}`.trim();
+  const name = modelEn;
   const seats = x.seats || 5;
   const G = x.gallery;
   const at = (i) => G[Math.min(i, G.length - 1)];
@@ -40,8 +77,8 @@ function page(x) {
   const hasPrice = x.m > 0;
   const payStr = hasPrice ? nis(x.m) : 'הצעה אישית';
   const source = 'landing_' + x.folder.replace(/[^a-z0-9]+/g, '_');
-  const title = `${name} חדש${hasPrice ? ' · החל מ-' + nis(x.m) + ' לחודש' : ''} | Car2Buy`;
-  const desc = `${name} חדש 0 ק"מ${hasPrice ? ', החל מ-' + nis(x.m) + ' לחודש' : ''} — 100% מימון בריבית הטובה בישראל, טרייד-אין וליווי אישי עד קבלת המפתח. קבלו הצעה אישית עוד היום.`;
+  const title = `${fullEn} חדש${hasPrice ? ' · החל מ-' + nis(x.m) + ' לחודש' : ''} | Car2Buy`;
+  const desc = `${fullEn} חדש 0 ק"מ${hasPrice ? ', החל מ-' + nis(x.m) + ' לחודש' : ''} — 100% מימון בריבית הטובה בישראל, טרייד-אין וליווי אישי עד קבלת המפתח. קבלו הצעה אישית עוד היום.`;
 
   const cust = ['01','05','07'];
   const quotes = [
@@ -71,13 +108,13 @@ ${STYLE}
 
 <!-- HERO -->
 <section class="panel hero" id="top">
-  <div class="panel-bg kb"><img src="${heroImg}" alt="${esc(name)}"></div>
+  <div class="panel-bg"><video autoplay muted loop playsinline preload="metadata" poster="${heroImg}"><source src="videos/lp/${x.folder}.mp4" type="video/mp4"></video></div>
   <div class="scrim"></div>
   <div class="pc"><div class="wrap">
     <div class="hero-stars rev in" aria-label="דירוג 5 כוכבים">★★★★★</div>
     <span class="urgency rev in"><span class="p"></span>100% מימון · אישור מהיר</span>
-    <div class="brandname rev in">${esc(brand)}</div>
-    <h1 class="rev in">${esc(name)}</h1>
+    <div class="brandname rev in" dir="ltr">${esc(brandEn)}</div>
+    <h1 class="rev in" dir="ltr">${h1Html(modelEn)}</h1>
     <p class="hero-tag rev in">רכב חדש 0 ק"מ — ההחזר החודשי הנמוך בישראל.</p>
     <p class="hero-sub rev in">${seats} מקומות · 100% מימון · טרייד-אין לרכב הישן · ליווי אישי עד קבלת המפתח.</p>
     <div class="hero-pay rev in">${hasPrice ? `<span class="l">ההחזר שלכם · החל מ-</span><span class="a">${payStr}</span><span class="l">לחודש</span>` : `<span class="a" style="font-size:clamp(24px,3vw,38px)">${payStr}</span><span class="l">· דברו איתנו להצעה</span>`}</div>
@@ -202,7 +239,7 @@ ${figs()}
   var f=document.getElementById('leadForm'),d=document.getElementById('leadDone');
   f.addEventListener('submit',function(e){e.preventDefault();var n=(f.name.value||'').trim(),p=(f.phone.value||'').trim();
     if(n.length<2){f.name.focus();return;} if(p.replace(/\\D/g,'').length<9){f.phone.focus();return;}
-    if(window.submitLead)submitLead({name:n,phone:p,car:${JSON.stringify(x.nameEn || name)},source:${JSON.stringify(source)},message:${JSON.stringify('דף נחיתה ' + name)},company_url:(f.company_url&&f.company_url.value)||''});
+    if(window.submitLead)submitLead({name:n,phone:p,car:${JSON.stringify(fullEn)},source:${JSON.stringify(source)},message:${JSON.stringify('דף נחיתה ' + fullEn)},company_url:(f.company_url&&f.company_url.value)||''});
     f.style.display='none';d.classList.add('on');});
 })();
 </script>
@@ -219,6 +256,10 @@ for (const x of list) {
   fs.writeFileSync(ROOT + '/' + file, page(x), 'utf8');
   built.push({ ...x, file });
 }
-fs.writeFileSync(ROOT + '/scripts/_built.json', JSON.stringify(built.map(b => ({ folder: b.folder, brand: b.brand, name: cleanName(b.name) || b.nameEn, nameEn: b.nameEn, m: b.m, seats: b.seats, thumb: b.gallery[0], file: b.file })), null, 2));
+fs.writeFileSync(ROOT + '/scripts/_built.json', JSON.stringify(built.map(b => {
+  const brandEn = BRAND_EN[(b.brand || '').trim()] || (b.brand || '').trim();
+  const modelEn = MODEL_EN[b.folder] || cleanEn(b.nameEn, brandEn);
+  return { folder: b.folder, brand: b.brand, brandEn, modelEn, name: `${brandEn} ${modelEn}`.trim(), nameEn: b.nameEn, m: b.m, seats: b.seats, thumb: b.gallery[0], file: b.file };
+}), null, 2));
 console.log('generated pages:', built.filter(b => !b.special).length, '(+ jaecoo8-bold linked)');
 console.log('total models:', built.length);

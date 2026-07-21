@@ -3,13 +3,13 @@ const ROOT = process.cwd();
 const built = JSON.parse(fs.readFileSync(ROOT + '/scripts/_built.json', 'utf8'));
 const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const nis = (n) => '₪' + Number(n).toLocaleString('en-US');
-const items = built.slice().sort((a, b) => (a.brand || '').localeCompare(b.brand || '', 'he') || (a.m || 9e9) - (b.m || 9e9));
+const items = built.slice().sort((a, b) => (a.brandEn || a.brand || '').localeCompare(b.brandEn || b.brand || '', 'en') || (a.m || 9e9) - (b.m || 9e9));
 
 const cards = items.map((x) => `    <a class="card rev" href="${esc(x.file)}">
       <div class="ph"><img loading="lazy" src="${esc(x.thumb)}" alt="${esc(x.name)}"></div>
       <div class="cb">
-        <div class="br">${esc(x.brand || '')}</div>
-        <div class="nm">${esc(x.name)}</div>
+        <div class="br" dir="ltr">${esc(x.brandEn || x.brand || '')}</div>
+        <div class="nm" dir="ltr">${esc(x.modelEn || x.name)}</div>
         <div class="pr">${x.m > 0 ? `<span>החל מ-</span> ${nis(x.m)} <span>/ חודש</span>` : '<span>הצעה אישית</span>'}</div>
       </div>
       <div class="go">לדף הרכב <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></div>
