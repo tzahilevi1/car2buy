@@ -47,8 +47,10 @@
     <span class="b">Car<i>2</i>Buy</span><span class="tag">· סטודיו דפי נחיתה</span>
     <span class="sp"></span>
     <select id="loadSel" title="טעינת דגם קיים"><option value="">＋ דף חדש</option></select>
-    <button id="briefBtn">📋 העתק בריף לצי הסוכנים</button>
-    <button id="dlBtn" class="p">⬇ הורד HTML</button>
+    <button id="briefBtn" title="בריף לצי הסוכנים">📋 בריף</button>
+    <button id="dlBtn">⬇ הורד</button>
+    <button id="pubBtn" class="p">🚀 פרסם לאוויר</button>
+    <button id="setBtn" title="הגדרות פרסום">⚙</button>
   </header>
 
   <div class="form" id="form">
@@ -262,6 +264,39 @@ function briefJSON(){
     accent:d.accent},null,2);
 }
 
+// ---- publish to GitHub (no backend) ----
+var OWNER='tzahilevi1', REPO='car2buy';
+function getCfg(){ try{return JSON.parse(localStorage.getItem('c2b_studio')||'{}');}catch(e){return {};} }
+function setCfg(c){ localStorage.setItem('c2b_studio',JSON.stringify(c)); }
+function settings(){
+  var c=getCfg();
+  var t=prompt('טוקן GitHub (fine-grained, הרשאת Contents: Read & Write על tzahilevi1/car2buy).\nנשמר מקומית בדפדפן הזה בלבד.\n\nהשאר ריק לביטול:', c.token||'');
+  if(t===null) return;
+  c.token=t.trim(); setCfg(c); toast(c.token?'הטוקן נשמר':'הטוקן נמחק');
+}
+function b64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function fname(){ var d=collect(); return 'lp-'+((($('_folder')&&$('_folder').value))||slug(d.brand)+'-'+slug(d.model))+'.html'; }
+async function publish(){
+  var c=getCfg();
+  if(!c.token){ if(!confirm('כדי לפרסם צריך טוקן GitHub (פעם אחת). להגדיר עכשיו?'))return; settings(); c=getCfg(); if(!c.token)return; }
+  var path=fname(), html=render(), api='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+path;
+  var btn=$('pubBtn'); btn.disabled=true; var old=btn.textContent; btn.textContent='מפרסם…';
+  try{
+    var sha=null;
+    var g=await fetch(api+'?ref=main',{headers:{Authorization:'token '+c.token,Accept:'application/vnd.github+json'}});
+    if(g.status===200){ sha=(await g.json()).sha; }
+    else if(g.status===401){ throw new Error('טוקן לא תקין (401). בדוק בהגדרות ⚙'); }
+    var body={message:'סטודיו: פרסום/עדכון '+path,content:b64(html),branch:'main'}; if(sha)body.sha=sha;
+    var r=await fetch(api,{method:'PUT',headers:{Authorization:'token '+c.token,'Content-Type':'application/json',Accept:'application/vnd.github+json'},body:JSON.stringify(body)});
+    if(r.status===200||r.status===201){
+      var url='https://'+OWNER+'.github.io/'+REPO+'/'+path;
+      toast('✅ פורסם! זמין בעוד ~2 דק');
+      setTimeout(function(){ if(confirm('הדף פורסם 🎉\n\n'+url+'\n\n(יעלה לאוויר תוך ~2 דקות)\n\nלפתוח אותו?')) window.open(url,'_blank'); },300);
+    } else { var e=await r.json(); throw new Error('שגיאה '+r.status+': '+(e.message||'')); }
+  } catch(err){ alert('פרסום נכשל: '+err.message); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
+
 // ---- init ----
 function boot(){
   // logo select
@@ -289,6 +324,8 @@ function boot(){
   $('briefBtn').addEventListener('click',function(){
     navigator.clipboard.writeText(briefJSON()).then(function(){toast('הבריף הועתק — הדבק ב-Claude Code');},function(){prompt('העתק את הבריף:',briefJSON());});
   });
+  $('pubBtn').addEventListener('click',publish);
+  $('setBtn').addEventListener('click',settings);
   // preview device toggle
   $('devChip').addEventListener('click',function(){
     var pv=$('pv'),on=this.classList.toggle('on');
