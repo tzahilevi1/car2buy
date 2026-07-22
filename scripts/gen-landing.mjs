@@ -118,7 +118,7 @@ function page(x) {
 ${STYLE}
 </head>
 <body>
-<header class="top"><span class="b">Car<i>2</i>Buy</span><div class="r"><a class="tel" href="tel:+97223319929">072-3319929</a><a class="cta" href="#lead">קבלו הצעה</a></div></header>
+<header class="top"><span class="b">Car<i>2</i>Buy</span><div class="r"><a class="tel" href="tel:+972723319929">072-3319929</a><a class="cta" href="#lead">קבלו הצעה</a></div></header>
 
 <!-- HERO -->
 <section class="panel hero" id="top">
@@ -132,7 +132,7 @@ ${STYLE}
     <p class="hero-tag rev in">רכב חדש 0 ק"מ — ההחזר החודשי הנמוך בישראל.</p>
     <p class="hero-sub rev in">${seats} מקומות · 100% מימון · טרייד-אין לרכב הישן · ליווי אישי עד קבלת המפתח.</p>
     <div class="hero-pay rev in">${hasPrice ? `<span class="l">ההחזר שלכם · החל מ-</span><span class="a">${payStr}</span><span class="l">לחודש</span>` : `<span class="a" style="font-size:clamp(24px,3vw,38px)">${payStr}</span><span class="l">· דברו איתנו להצעה</span>`}</div>
-    <div class="cta-row rev in"><a class="btn" href="#lead">בדקו כמה זה יעלה לכם</a><a class="btn ghost" href="tel:+97223319929">חייגו עכשיו</a></div>
+    <div class="cta-row rev in"><a class="btn" href="#lead">בדקו כמה זה יעלה לכם</a><a class="btn ghost" href="tel:+972723319929">חייגו עכשיו</a></div>
     <div class="hero-trust rev in">
       <span>${chk}100% מימון</span>
       <span>${chk}אחריות יצרן מלאה</span>
@@ -229,7 +229,7 @@ ${figs()}
   <div class="testi-cta rev" data-rev><a class="btn" href="#lead">הצטרפו אליהם — קבלו הצעה</a></div>
 </div></section>
 
-<footer class="foot"><div class="wrap"><b>Car2Buy</b> · <a href="tel:+97223319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור גוף מימון וזמינות במלאי.</div></footer>
+<footer class="foot"><div class="wrap"><b>Car2Buy</b> · <a href="tel:+972723319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור גוף מימון וזמינות במלאי.</div></footer>
 
 <nav class="tabs"><div class="tabs-in">
   <a href="#top" data-tab="top">הכירו</a>

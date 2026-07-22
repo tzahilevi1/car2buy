@@ -52,7 +52,7 @@ const html = `<!DOCTYPE html>
 </style>
 </head>
 <body>
-<header class="top"><span class="b">Car<i>2</i>Buy</span><a class="tel" href="tel:+97223319929">072-3319929</a></header>
+<header class="top"><span class="b">Car<i>2</i>Buy</span><a class="tel" href="tel:+972723319929">072-3319929</a></header>
 <section class="hero"><div class="wrap">
   <div class="k">דפי הנחיתה שלנו</div>
   <h1>כל הרכבים החדשים <span>שלנו</span></h1>
@@ -61,7 +61,7 @@ const html = `<!DOCTYPE html>
 <main class="wrap"><div class="grid">
 ${cards}
 </div></main>
-<footer class="foot"><div class="wrap"><b>Car2Buy</b> · <a href="tel:+97223319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור גוף מימון וזמינות במלאי.</div></footer>
+<footer class="foot"><div class="wrap"><b>Car2Buy</b> · <a href="tel:+972723319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור גוף מימון וזמינות במלאי.</div></footer>
 <script>
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
   document.querySelectorAll('.rev').forEach(function(el){io.observe(el);});
