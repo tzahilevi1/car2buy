@@ -75,7 +75,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 ::selection { background: rgba(var(--gold-rgb) / 0.3); color: var(--ink); }
@@ -731,18 +731,18 @@ image-slot { display: block; }
 /* ---------- financing plans ---------- */
 /* ===== deal steps ===== */
 .dealsteps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px; }
-.dstep { position: relative; background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; padding: 40px 30px 32px; box-shadow: 0 24px 50px -38px rgba(40,30,14,0.4); transition: 0.4s var(--ease); overflow: hidden; }
+.dstep { position: relative; background: linear-gradient(165deg, #FFFFFF, #F4EEE4); border: 1px solid rgba(42,30,14,0.14); border-radius: 18px; padding: 40px 30px 32px; box-shadow: 0 30px 60px -34px rgba(40,30,14,0.5); transition: 0.4s var(--ease); overflow: hidden; }
 .dstep:hover { transform: translateY(-5px); box-shadow: 0 32px 60px -36px rgba(40,30,14,0.5); }
-.dstep::before { content: ""; position: absolute; inset-block-start: 0; inset-inline: 0; height: 4px; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent); }
+.dstep::before { content: ""; position: absolute; inset-block-start: 0; inset-inline: 0; height: 4px; background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb)/0.5), transparent); }
 .dstep.featured { background: linear-gradient(165deg, #2A2724, #1E1B18); border-color: transparent; }
 .dstep.featured::before { background: linear-gradient(90deg, var(--gold-bright), var(--gold-deep)); height: 5px; }
-.dstep-num { position: absolute; inset-block-start: 18px; inset-inline-start: 24px; font-family: var(--display); font-weight: 800; font-size: 52px; line-height: 1; color: transparent; -webkit-text-stroke: 1.5px rgba(0,0,0,0.1); }
+.dstep-num { position: absolute; inset-block-start: 18px; inset-inline-start: 24px; font-family: var(--display); font-weight: 800; font-size: 52px; line-height: 1; color: transparent; -webkit-text-stroke: 1.5px rgba(42,30,14,0.18); }
 .dstep.featured .dstep-num { -webkit-text-stroke-color: rgba(255,255,255,0.18); }
 .dstep-ic { width: 64px; height: 64px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(150deg, var(--gold-bright), var(--gold-deep)); color: #fff; box-shadow: 0 12px 26px -10px rgba(var(--gold-rgb)/0.7); position: relative; }
 .dstep-ic svg { width: 32px; height: 32px; }
 .dstep h3 { font-size: 21px; margin-top: 24px; color: #1A1613; text-wrap: balance; }
 .dstep.featured h3 { color: #fff; }
-.dstep p { font-size: 15.5px; line-height: 1.7; margin-top: 12px; color: #4A4234; }
+.dstep p { font-size: 15.5px; line-height: 1.7; margin-top: 12px; color: #3A3226; }
 .dstep.featured p { color: #DBD2C3; }
 @media (max-width: 860px) { .dealsteps { grid-template-columns: 1fr; max-width: 440px; margin-inline: auto; } }
 
@@ -1405,7 +1405,7 @@ td.cmp-best { background: color-mix(in oklab, var(--gold) 9%, transparent); colo
 }
 
 /* ===== pinned process (4 steps, scroll-driven) ===== */
-.proc-track { position: relative; height: 200vh; }
+.proc-track { position: relative; height: 300vh; }
 .proc-stage { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; overflow: hidden; }
 .proc-body { display: grid; grid-template-columns: 280px 1fr; gap: clamp(28px, 5vw, 64px); align-items: center; margin-top: clamp(28px, 4vw, 48px); }
 .proc-foot { margin-top: clamp(28px, 4vw, 44px); }
