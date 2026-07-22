@@ -1405,7 +1405,7 @@ td.cmp-best { background: color-mix(in oklab, var(--gold) 9%, transparent); colo
 }
 
 /* ===== pinned process (4 steps, scroll-driven) ===== */
-.proc-track { position: relative; height: 360vh; }
+.proc-track { position: relative; height: 200vh; }
 .proc-stage { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; overflow: hidden; }
 .proc-body { display: grid; grid-template-columns: 280px 1fr; gap: clamp(28px, 5vw, 64px); align-items: center; margin-top: clamp(28px, 4vw, 48px); }
 .proc-foot { margin-top: clamp(28px, 4vw, 44px); }

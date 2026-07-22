@@ -736,7 +736,8 @@
 
   /* ---------- pinned process (4 steps, scroll-driven) ---------- */
   const procTrack = document.getElementById('procTrack');
-  if (procTrack && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+  // Sticky scroll-animation disabled — it left a large empty runway (huge gap). Using the compact stacked layout (.proc-track:not(.ready)).
+  if (false && procTrack && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
     const dots = [...procTrack.querySelectorAll('.proc-dot')];
     const cards = [...procTrack.querySelectorAll('.proc-card')];
     const fill = document.getElementById('procFill');
