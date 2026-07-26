@@ -122,7 +122,9 @@
         page_url: location.href,
         ip: ip,
         city: payload.city || meta.city || meta['עיר'] || null,
-        brand: payload.brand || meta.brand || meta['מותג'] || null,
+        // כל ליד מהאתר הציבורי שייך למותג-השיווקי "Car2Buy" (היצרן/דגם נשמרים בשדה car).
+        // כך דוח "לידים לפי מותג" ב-CRM משקף מותגי-שיווק ולא יצרנים.
+        brand: 'Car2Buy',
         marketing_company: payload.marketing_company || attr.utm_source || null,
         utm_source: attr.utm_source || null,
         utm_campaign: attr.utm_campaign || null,
