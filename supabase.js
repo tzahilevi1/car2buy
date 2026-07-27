@@ -148,6 +148,8 @@
           return res.text().then(function (t) { console.warn('[Car2Buy] lead save failed', res.status, t); return false; });
         }
         if (window.c2bTrack) { try { c2bTrack('lead_saved', { source: body.source }); } catch (e) {} }
+        // Meta Pixel — אירוע Lead (המרה) נורה רק כשליד נשמר בפועל
+        if (window.fbq) { try { fbq('track', 'Lead', { content_name: body.car || body.source || 'lead', content_category: body.brand || undefined }); } catch (e) {} }
         return true;
       });
     }).catch(function (e) {
