@@ -31,10 +31,11 @@
     <p id="sub">בחרו סיסמה חדשה לחשבון שלכם.</p>
     <div id="fields">
       <label for="pw">סיסמה חדשה</label>
-      <input type="password" id="pw" autocomplete="new-password" minlength="6" required>
-      <label for="pw2">אימות סיסמה</label>
-      <input type="password" id="pw2" autocomplete="new-password" minlength="6" required>
-      <button type="submit" class="btn">שמור סיסמה והתחבר</button>
+      <input type="password" id="pw" autocomplete="new-password" minlength="6" placeholder="אותיות באנגלית וספרות" required>
+      <label for="pw2">אימות סיסמה (שוב, בדיוק אותו דבר)</label>
+      <input type="password" id="pw2" autocomplete="new-password" minlength="6" placeholder="הקלידו שוב את אותה סיסמה" required>
+      <p style="font-size:12px;color:var(--muted,#8a94a6);margin:2px 0 0">הסיסמה חייבת לכלול <b>אותיות באנגלית וספרות</b>, לפחות 6 תווים.</p>
+      <button type="submit" class="btn" style="margin-top:12px">שמור סיסמה והתחבר</button>
     </div>
     <div class="msg" id="msg"></div>
   </form>
@@ -57,8 +58,10 @@
   document.getElementById('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var pw = document.getElementById('pw').value, pw2 = document.getElementById('pw2').value;
+    if (!/^[A-Za-z0-9]+$/.test(pw)) return show('הסיסמה יכולה להכיל רק אותיות באנגלית וספרות (בלי עברית או רווחים).');
+    if (!/[A-Za-z]/.test(pw) || !/[0-9]/.test(pw)) return show('הסיסמה חייבת לכלול גם אותיות באנגלית וגם ספרות.');
     if (pw.length < 6) return show('הסיסמה חייבת להכיל לפחות 6 תווים.');
-    if (pw !== pw2) return show('הסיסמאות אינן תואמות.');
+    if (pw !== pw2) return show('הסיסמאות אינן תואמות — הקלידו את אותה סיסמה בשני השדות.');
     show('שומר…', true);
     db.auth.updateUser({ password: pw }).then(function (r) {
       if (r.error) return show('שגיאה: ' + r.error.message + ' — ייתכן שהקישור פג. בקשו איפוס מחדש בעמוד הכניסה.');
