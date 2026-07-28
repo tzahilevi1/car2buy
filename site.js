@@ -269,7 +269,7 @@ window.C2B_validPhone = function (v) {
           <h5>צרו קשר</h5>
           <a href="tel:+972723319929">072-3319929</a>
           <a href="mailto:car2buy2@gmail.com">car2buy2@gmail.com</a>
-          <p>הר הקפיצה, נצרת</p>
+          <p>סניפים: נצרת · ראשון לציון · עפולה</p>
           <p>א׳–ה׳ · 09:00–18:00</p>
           <div class="footer-social">
             <a href="https://www.instagram.com/car2buy.il/" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
@@ -606,6 +606,20 @@ window.C2B_validPhone = function (v) {
           "openingHours": "Su-Th 09:00-18:00",
           "areaServed": "IL",
           "priceRange": "₪₪"
+        },
+        {
+          "@type": "AutoDealer", "@id": BASE + "#dealer-rishon", "name": "Car2Buy ראשון לציון",
+          "url": BASE, "telephone": "+972-72-3319929", "email": "car2buy2@gmail.com",
+          "address": { "@type": "PostalAddress", "streetAddress": "פלוטיצקי 6", "addressLocality": "ראשון לציון", "addressCountry": "IL" },
+          "openingHours": "Su-Th 09:00-18:00", "areaServed": "IL", "priceRange": "₪₪",
+          "parentOrganization": { "@id": BASE + "#dealer" }
+        },
+        {
+          "@type": "AutoDealer", "@id": BASE + "#dealer-afula", "name": "Car2Buy עפולה",
+          "url": BASE, "telephone": "+972-72-3319929", "email": "car2buy2@gmail.com",
+          "address": { "@type": "PostalAddress", "addressLocality": "עפולה", "addressCountry": "IL" },
+          "openingHours": "Su-Th 09:00-18:00", "areaServed": "IL", "priceRange": "₪₪",
+          "parentOrganization": { "@id": BASE + "#dealer" }
         }
       ]
     };
