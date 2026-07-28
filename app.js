@@ -1316,7 +1316,7 @@
     let d = null;
     try { d = JSON.parse(sessionStorage.getItem('c2b_trade')); } catch (e) {}
     if (!d) {
-      thankView.innerHTML = `<div class="wiz-success" style="padding:40px 0;"><div class="check">✓</div><h3>תודה!</h3><p>קיבלנו את פנייתכם, נציג יחזור אליכם בהקדם.</p><div class="mh-actions" style="justify-content:center;"><a href="models.html" class="btn btn-gold">לקטלוג הדגמים</a></div></div>`;
+      thankView.innerHTML = `<div class="wiz-success" style="padding:40px 0;"><div class="check">✓</div><h1>תודה!</h1><p>קיבלנו את פנייתכם, נציג יחזור אליכם בהקדם.</p><div class="mh-actions" style="justify-content:center;"><a href="models.html" class="btn btn-gold">לקטלוג הדגמים</a></div></div>`;
     } else {
       const rows = [
         ['רכב לטרייד-אין', d.car ? `${d.car}${d.year ? ' · ' + d.year : ''}` : '—'],

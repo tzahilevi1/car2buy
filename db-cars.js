@@ -14,7 +14,9 @@
   // לכן לרשומות עם תמונה שגויה/שבורה בגיליון נגדיר כאן תמונה נכונה. מפתח = "brand|name" מנורמל.
   var IMG_OVERRIDE = {
     // "האמר 2X" (GMC Hummer EV) — בגיליון הוגדרה בטעות תמונת שברולט סילברדו.
-    'האמר|2x': 'images/cars/gmc-hummer-ev-2x.webp'
+    'האמר|2x': 'images/cars/gmc-hummer-ev-2x.webp',
+    // "אומודה 9 וויזיין" — בגיליון אין תמונה כלל.
+    'אומודה|9 וויזיין': 'images/cars/omoda-9.webp'
   };
 
   C.carsLoading = true; // app.js defers the catalog render until we merge
@@ -49,6 +51,9 @@
       if (rows && rows.length) {
         // keep the seed (loan-cars.js) inventory so pages still resolve the original cN ids
         if (!C.LOAN_CARS_SEED) C.LOAN_CARS_SEED = C.LOAN_CARS;
+        // ⚠️ עמודות הגיליון שנצרכות בפועל: brand, name, trim, nameEn, engine, seats, m (החזר חודשי),
+        // p (מחיר), img, imgL/imgB/imgR (גלריה). שאר העמודות (salePrice, listPrice, directPrice,
+        // m50, down, commission, colors, code, notes) אינן נקראות — עריכתן בגיליון לא תשפיע על האתר.
         C.LOAN_CARS = rows.map(function (row, i) {
           // gallery priority (per user): the bundled rich gallery (6 photos incl. interior) FIRST,
           // then fall back to the sheet's own Drive photos where we don't have one.

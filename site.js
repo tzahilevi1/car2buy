@@ -694,7 +694,6 @@ window.C2B_consentOK = function (scope) {
   var nsForm = nsInput ? nsInput.closest('form') : null;
   if (nsInput && nsOut && window.Car2Buy) {
     var C = window.Car2Buy;
-    var MODELS = C.MODELS || [];
     var NIS = C.NIS || function (n) { return '₪' + Number(n).toLocaleString('en-US'); };
     var dB = C.dispBrand || function (b) { return b; };
     var eM = C.enModel || function (n) { return n; };
@@ -703,7 +702,7 @@ window.C2B_consentOK = function (scope) {
     function nsRender(q) {
       q = (q || '').trim().toLowerCase();
       if (!q) { nsOut.classList.remove('open'); nsOut.innerHTML = ''; return; }
-      var hits = MODELS.filter(function (m) {
+      var hits = (C.MODELS || []).filter(function (m) {
         return (m.brand + ' ' + m.name + ' ' + (m.trim || '') + ' ' + m.type + ' ' + dB(m.brand) + ' ' + eM(m.name)).toLowerCase().indexOf(q) !== -1;
       }).slice(0, 8);
       if (!hits.length) {

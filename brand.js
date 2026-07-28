@@ -36,10 +36,12 @@
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function fuelOf(c) {
-    var t = (c.type || '') + ' ' + (c.trim || '') + ' ' + (c.name || '');
-    if (/חשמלי|EV/i.test(t) || ['זיקר', 'אווטר', 'ליפמוטור', 'וויה', 'סקיוואל', 'סמארט'].indexOf(brand) >= 0 && !/DM-?i|נטען|PHEV/i.test(t)) return 'חשמלי';
-    if (/נטען|PHEV|DM-?i/i.test(t)) return 'היברידי נטען';
-    if (/היבריד|HEV/i.test(t)) return 'היברידי';
+    var t = (c.type || '') + ' ' + (c.trim || '') + ' ' + (c.name || '') + ' ' + (c.engine || '');
+    // סדר חשוב: בודקים פלאג-אין/היברידי לפני חשמלי, ומשתמשים בגבול-מילה \bEV\b/\bHEV\b
+    // אחרת "EV" נתפס בתוך "PHEV"/"HEV" וכל היברידי היה מסומן בטעות כ"חשמלי". כולל את שדה ה-engine מהגיליון.
+    if (/נטען|פלאג|PHEV|DM-?i/i.test(t)) return 'היברידי נטען';
+    if (/היבריד|\bHEV\b/i.test(t)) return 'היברידי';
+    if (/חשמל|\bEV\b/i.test(t) || (['זיקר', 'אווטר', 'ליפמוטור', 'וויה', 'סקיוואל', 'סמארט'].indexOf(brand) >= 0 && !/DM-?i|נטען|פלאג|PHEV/i.test(t))) return 'חשמלי';
     return 'בנזין';
   }
 

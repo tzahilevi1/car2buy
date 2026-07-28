@@ -140,17 +140,24 @@
 
     var want = { kind: '', brand: '', model: '', car: null };
     var kindWrap = $('lnmKind'), carPick = $('lnmCarPick'), brandSel = $('lnmBrand'), modelSel = $('lnmModel'), carCard = $('lnmCarCard');
-    var CARS = (window.Car2Buy && window.Car2Buy.LOAN_CARS) || [];
+    // קוראים את המלאי בזמן-שימוש (db-cars.js מחליף את LOAN_CARS מהגיליון החי) ולא תופסים פעם אחת בטעינה.
+    function cars() { return (window.Car2Buy && window.Car2Buy.LOAN_CARS) || []; }
     function uniq(a) { return a.filter(function (v, i) { return a.indexOf(v) === i; }); }
     function carLabel(c) { var mdl = (window.Car2Buy && window.Car2Buy.enModel) ? window.Car2Buy.enModel(c.name) : c.name; return mdl + (c.trim ? ' · ' + c.trim : ''); }
-    if (CARS.length) {
+    function populateBrands() {
+      var CARS = cars();
+      if (!CARS.length) return;
       var brands = uniq(CARS.map(function (c) { return c.brand; }));
       var dB = (window.Car2Buy && window.Car2Buy.dispBrand) ? window.Car2Buy.dispBrand : function (b) { return b; };
+      var cur = brandSel.value;
       brandSel.innerHTML = '<option value="">בחרו יצרן</option>' + brands.map(function (b) { return '<option value="' + b + '">' + dB(b) + '</option>'; }).join('');
+      if (cur) brandSel.value = cur;
     }
+    populateBrands();
+    document.addEventListener('c2b:cars-updated', populateBrands);
     brandSel.addEventListener('change', function () {
       want.brand = brandSel.value; want.model = ''; want.car = null; if (carCard) carCard.hidden = true;
-      var list = want.brand ? CARS.filter(function (c) { return c.brand === want.brand; }) : [];
+      var list = want.brand ? cars().filter(function (c) { return c.brand === want.brand; }) : [];
       modelSel.innerHTML = '<option value="">' + (want.brand ? 'בחרו דגם' : 'בחרו יצרן תחילה') + '</option>' + list.map(function (c, i) { return '<option value="' + i + '">' + carLabel(c) + '</option>'; }).join('');
       modelSel.disabled = !want.brand; modelSel._list = list;
     });
@@ -201,7 +208,7 @@
     // open pre-filled for a specific inventory car (by id)
     window.openLoanModalWithCar = function (carId) {
       open();
-      var c = null;
+      var c = null, CARS = cars();
       for (var i = 0; i < CARS.length; i++) { if (CARS[i].id === carId) { c = CARS[i]; break; } }
       if (!c) { goStep(1); return; }
       [].forEach.call(kindWrap.children, function (x) { x.classList.toggle('active', x.dataset.v === 'רכב חדש'); });

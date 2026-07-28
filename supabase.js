@@ -84,10 +84,10 @@
     if (found) { try { sessionStorage.setItem('c2b_attr', JSON.stringify(cur)); } catch (e) {} return cur; }
     return stored;
   }
-  // best-effort public IP (never blocks the save for more than ~1.2s)
+  // best-effort public IP (never blocks the save for more than ~0.7s; ipify usually answers <300ms)
   function getIp() {
     return new Promise(function (resolve) {
-      var done = false, t = setTimeout(function () { if (!done) { done = true; resolve(null); } }, 1200);
+      var done = false, t = setTimeout(function () { if (!done) { done = true; resolve(null); } }, 700);
       fetch('https://api.ipify.org?format=json').then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) { if (!done) { done = true; clearTimeout(t); resolve(j && j.ip || null); } })
         .catch(function () { if (!done) { done = true; clearTimeout(t); resolve(null); } });

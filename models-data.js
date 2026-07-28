@@ -216,7 +216,7 @@
     { brand:'Tesla', name:'דגם 3', trim:'RWD', year:2022, km:135080, hand:1, price:125900, monthly:1460, cat:'ev', type:'חשמלי', color:'אפור כהה מטלי', plate:'853-97-502', slug:'tesla', img:'' },
     { brand:'Hyundai', name:'טוסון', trim:'PANORAMIC', year:2022, km:85000, hand:2, price:119900, monthly:1390, cat:'suv', type:'בנזין', color:'אפור כהה מטלי', plate:'760-05-202', slug:'hyundai', img:'' },
     { brand:'Peugeot', name:'3008', trim:'PREMIUM', year:2022, km:138478, hand:2, price:77900, monthly:900, cat:'suv', type:'בנזין', color:'אפור כהה', plate:'683-01-602', slug:'peugeot', img:'' },
-    { brand:'Kia', name:'פיקנטו', trim:'LX', year:2022, km:0, hand:2, price:60900, monthly:710, cat:'sedan', type:'בנזין', color:'שנהב לבן', plate:'857-01-502', slug:'kia', img:'' },
+    { brand:'Kia', name:'פיקנטו', trim:'LX', year:2022, km:34000, hand:2, price:60900, monthly:710, cat:'sedan', type:'בנזין', color:'שנהב לבן', plate:'857-01-502', slug:'kia', img:'' },
     { brand:'BMW', name:'X2', trim:'M-SPORT', year:2021, km:79919, hand:3, price:174900, monthly:2030, cat:'suv', type:'היברידי', color:'שנהב לבן', plate:'452-88-502', slug:'bmw', img:'' },
     { brand:'BMW', name:'X2', trim:'M-SPORT', year:2021, km:45222, hand:2, price:174900, monthly:2030, cat:'suv', type:'היברידי', color:'אפור כהה מטלי', plate:'452-90-702', slug:'bmw', img:'' },
     { brand:'Toyota', name:'RAV4 ארוך', trim:'E-VOLVE', year:2021, km:198000, hand:2, price:149900, monthly:1740, cat:'suv', type:'בנזין', color:'אפור כהה מטלי', plate:'437-06-702', slug:'toyota', img:'' },
@@ -243,7 +243,6 @@
     { brand:'Mitsubishi', name:'אאוטלנדר', trim:'INSTYLE', year:2015, km:242300, hand:3, price:31000, monthly:360, cat:'suv', type:'בנזין', color:'שנהב לבן', plate:'37-713-37', slug:'mitsubishi', img:'' },
     { brand:'Chevrolet', name:'אימפלה', trim:'LTZ', year:2014, km:133000, hand:4, price:35000, monthly:410, cat:'sedan', type:'בנזין', color:'אפור כהה מטלי', plate:'30-238-32', slug:'chevrolet', img:'' },
     { brand:'Citroen', name:'ברלינגו החדשה', trim:'COMFORT', year:2013, km:345000, hand:3, price:8000, monthly:300, cat:'sedan', type:'דיזל', color:'שנהב לבן', plate:'75-636-12', slug:'citroen', img:'' },
-    { brand:'Hyundai', name:'i25', trim:'INSPIRE', year:2013, km:0, hand:2, price:2000, monthly:300, cat:'sedan', type:'בנזין', color:'כסף', plate:'12-177-11', slug:'hyundai', img:'' },
   ];
 
   // magazine / blog
