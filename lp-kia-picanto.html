@@ -313,7 +313,7 @@ if(/lp-|jaecoo|\/(car|model|used-car|brand)\.html/.test(location.pathname)){fbq(
   ['top','power','space','deal','lead','reviews'].forEach(function(id){var el=document.getElementById(id);if(el)spy.observe(el);});
   var f=document.getElementById('leadForm'),d=document.getElementById('leadDone');
   f.addEventListener('submit',function(e){e.preventDefault();var n=(f.name.value||'').trim(),p=(f.phone.value||'').trim();
-    if(n.length<2){f.name.focus();return;} if(p.replace(/\D/g,'').length<9){f.phone.focus();return;}
+    if(n.length<2){f.name.focus();return;} if(!/^0(5\d{8}|7\d{8}|[234689]\d{7})$/.test(p.replace(/\D/g,'').replace(/^972/,'0'))){f.phone.focus();f.phone.style.borderColor='#e25555';return;}
     if(window.submitLead)submitLead({name:n,phone:p,car:"Kia Picanto",source:"landing_kia_picanto",message:"דף נחיתה Kia Picanto",company_url:(f.company_url&&f.company_url.value)||''});
     f.style.display='none';d.classList.add('on');});
 })();

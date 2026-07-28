@@ -118,7 +118,7 @@
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = 'var(--gold-deep)'; ok = false; } else f.style.borderColor = ''; });
       if (consent && !consent.checked) { consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
       // ולידציית פורמט טלפון (מינימום ספרות) — כמו בדפי הנחיתה, כדי לא לאבד ליד עם מספר קצר.
-      if (phone.value.trim() && phone.value.replace(/\D/g, '').length < 9) { phone.style.borderColor = 'var(--gold-deep)'; ok = false; }
+      if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = 'var(--gold-deep)'; ok = false; }
       if (!ok) return;
       if (window.c2bTrack) c2bTrack('lead_form_submit', { car: (carSelect && carSelect.value) || '' });
       const payload = window.collectForm ? collectForm(form, { source: 'contact' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'contact' };
@@ -804,6 +804,7 @@
       const consent = document.getElementById('qcConsent');
       let ok = true;
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = 'var(--gold-deep)'; ok = false; } else f.style.borderColor = ''; });
+      if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = 'var(--gold-deep)'; ok = false; }
       if (consent && !consent.checked) { consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
       if (!ok) return;
       if (window.submitLead) submitLead(window.collectForm ? collectForm(quickForm, { source: 'home_quick' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'home_quick' });
@@ -1271,6 +1272,7 @@
       const name = $('wizName'), phone = $('wizPhone');
       let ok = true;
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = '#e25555'; ok = false; } else f.style.borderColor = ''; });
+      if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = '#e25555'; ok = false; }
       if (!ok) return;
       let interest = want.kind || 'טרם הוחלט';
       if (want.kind === 'רכב חדש' && want.decide === 'specific' && want.brand) interest += ' · ' + want.brand + (want.model ? ' ' + want.model : '');

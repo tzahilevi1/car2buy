@@ -191,6 +191,8 @@
     var name = nm ? nm.value.trim() : '';
     var phone = ph ? ph.value.trim() : '';
     var timePref = tm ? tm.value : '';
+    // חובה טלפון תקין לפני שליחה
+    if (window.C2B_validPhone && !C2B_validPhone(phone)) { if (ph) { ph.style.borderColor = '#e25555'; ph.focus(); } return; }
     // שמירת הליד בפועל (וירי פיקסל Lead) לפני החלפת תוכן הטופס — אחרת הקלט אבד.
     if (window.submitLead) submitLead({ name: name, phone: phone, source: 'recommended_appt', message: 'קביעת פגישה' + (timePref ? ' · העדפת שעה: ' + timePref : '') });
     if (window.c2bTrack) c2bTrack('lead_submit', { source: 'recommended_appt' });

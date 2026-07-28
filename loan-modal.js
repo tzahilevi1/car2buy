@@ -192,6 +192,7 @@
     $('lnmSubmit').addEventListener('click', function () {
       var name = $('lnmName'), phone = $('lnmPhone'), consent = $('lnmConsent'), ok = true;
       [name, phone].forEach(function (f) { if (!f.value.trim()) { f.style.borderColor = '#e25555'; ok = false; } else f.style.borderColor = ''; });
+      if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = '#e25555'; ok = false; }
       if (!consent.checked) { consent.parentNode.style.color = 'var(--gold)'; ok = false; } else consent.parentNode.style.color = '';
       if (!ok) return;
       var carLine = want.kind || '—';

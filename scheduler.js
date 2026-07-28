@@ -151,6 +151,7 @@
       const email = root.querySelector('#sEmail').value.trim();
       if (!selDate || !selTime) { err.textContent = 'בחרו תאריך ושעה לפגישה.'; return; }
       if (!name || !phone || !email) { err.textContent = 'מלאו שם, טלפון ואימייל.'; return; }
+      if (window.C2B_validPhone && !C2B_validPhone(phone)) { err.textContent = 'נא להזין מספר טלפון תקין.'; return; }
       if (window.C2B_consentOK && !window.C2B_consentOK(root.querySelector('#schedForm'))) { err.textContent = 'יש לאשר את מדיניות הפרטיות.'; return; }
       err.textContent = '';
       const carVal = (root.querySelector('#sCar') && root.querySelector('#sCar').value.trim()) || '';

@@ -98,6 +98,7 @@
     const phone = el.querySelector('#exitPhone');
     const err = el.querySelector('#exitErr');
     if (!name.value.trim() || !phone.value.trim()) { err.textContent = 'מלאו שם וטלפון.'; return; }
+    if (window.C2B_validPhone && !C2B_validPhone(phone.value)) { err.textContent = 'נא להזין מספר טלפון תקין.'; return; }
     if (window.C2B_consentOK && !window.C2B_consentOK(el.querySelector('#exitForm'))) { err.textContent = 'יש לאשר את מדיניות הפרטיות.'; return; }
     err.textContent = '';
     if (window.submitLead) submitLead({ name: name.value.trim(), phone: phone.value.trim(), source: 'exit_popup' });

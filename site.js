@@ -79,6 +79,14 @@ window.C2B_consentOK = function (scope) {
   return true;
 };
 
+// ולידציית טלפון ישראלי משותפת לכל הטפסים — נייד (05x/07x, 10 ספרות) או קווי (0x, 9 ספרות).
+// מקבל גם קידומת +972/972. מחזיר true רק למספר תקין.
+window.C2B_validPhone = function (v) {
+  var d = String(v == null ? '' : v).replace(/\D/g, '');
+  if (d.indexOf('972') === 0) d = '0' + d.slice(3);
+  return /^0(5\d{8}|7\d{8}|[234689]\d{7})$/.test(d);
+};
+
 (function () {
   const PAGES = [
     { id: 'models',   href: 'models.html',       label: 'דגמים' },
