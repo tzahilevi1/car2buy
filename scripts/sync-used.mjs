@@ -23,7 +23,7 @@ const BR = {
   "גי'פ / Jeep": ['Jeep', 'jeep'], 'פולקסווגן': ['Volkswagen', 'volkswagen'], 'סיטרואן': ['Citroen', 'citroen'],
   "ג'יי.איי.סי / JAC": ['JAC', 'jac'], 'אקספנג / XPENG': ['Xpeng', 'xpeng'], 'סוזוקי': ['Suzuki', 'suzuki'], 'וולוו': ['Volvo', 'volvo']
 };
-const SUV = /X\d|טיגו|tiggo|טוסון|tucson|atto|אטו|gle|glc|q5|q3|q7|q8|x-?trail|אקס.?טרייל|2008|3008|5008|kona|קונה|ehs|\bhs\b|outlander|אאוטלנדר|santa|סנטה|kodiaq|קודיאק|karoq|קארוק|rav4|cx-?\d|kamiq|kicks|קיקס|juke|טוארג|touareg|tiguan|טיגואן|sportage|ספורטג|sorento|creta|קרטה|venue|nx\b|קרוסאובר|arona|ateca|pajero|eclipse|seal.?u|song|g6|g9|d-?max|דימקס|קרוס|cross|jimny|ויטרה|vitara|קורולה קרוס|ix\b|טרייל|kuga|escape|tucson/i;
+const SUV = /X\d|טיגו|tiggo|טוסון|tucson|atto|אטו|gle|glc|q5|q3|q7|q8|x-?trail|אקס.?טרייל|2008|3008|5008|kona|קונה|ehs|\bhs\b|outlander|אאוטלנדר|santa|סנטה|kodiaq|קודיאק|karoq|קארוק|rav4|cx-?\d|kamiq|kicks|קיקס|juke|טוארג|touareg|tiguan|טיגואן|sportage|ספורטג|sorento|creta|קרטה|venue|nx\b|קרוסאובר|arona|ateca|pajero|eclipse|seal.?u|song|tang|טאנג|g6|g9|d-?max|דימקס|קרוס|cross|jimny|ויטרה|vitara|קורולה קרוס|ix\b|טרייל|kuga|escape|tucson/i;
 const COUPE = /coupe|קופה|gran coupe|\b4-?series\b|סדרה 4/i;
 
 function parseCSV(t) {
