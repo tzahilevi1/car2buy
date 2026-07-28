@@ -1059,7 +1059,7 @@ function renderCarDetail() {
                   '<span class="cd-trim-name"><bdi>' + esc(t.trim || 'סטנדרט') + '</bdi></span>' +
                   (cur ? '<span class="cd-trim-badge">הגרסה שנבחרה</span>' : '') +
                 '</div>' +
-                '<div class="cd-trim-mo"><b>' + fmt(t.m) + '</b><small>לחודש</small></div>' +
+                '<div class="cd-trim-mo">' + (t.m > 0 ? '<b>' + fmt(t.m) + '</b><small>לחודש</small>' : '<b>לפרטים</b>') + '</div>' +
                 '<div class="cd-trim-price">מחיר רכב: ' + fmt(t.p) + '</div>' +
                 '<span class="cd-trim-cta">' + (cur ? 'מוצג כעת' : 'לצפייה בגרסה') +
                   (cur ? '' : ' <span aria-hidden="true">←</span>') + '</span>' +
@@ -1130,7 +1130,7 @@ function renderCarDetail() {
     '<section class="section" style="padding-block:clamp(20px,3vw,32px);">' +
       '<div class="wrap">' +
         '<div class="cd-payband">' +
-          '<div class="cd-payband-main"><div class="lab">החזר חודשי החל מ-</div><div class="big">' + fmt(car.monthly60) + '<small> / חודש</small></div></div>' +
+          '<div class="cd-payband-main">' + (car.monthly60 > 0 ? '<div class="lab">החזר חודשי החל מ-</div><div class="big">' + fmt(car.monthly60) + '<small> / חודש</small></div>' : '<div class="lab">תמחור אישי</div><div class="big">דברו איתנו להצעה</div>') + '</div>' +
           '<div class="cd-payband-facts">' + factsHtml + '</div>' +
           '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
             '<a class="btn btn-gold btn-lg" href="car-loan.html#wizard">קבלו הצעת מימון</a>' +
@@ -1463,7 +1463,7 @@ function renderCarDetail() {
           '<span class="cd-sim-brand">' + esc(window.Car2Buy.dispBrand ? window.Car2Buy.dispBrand(c.brand) : c.brand) + '</span>' +
           '<span class="cd-sim-name">' + esc(window.Car2Buy.enModel ? window.Car2Buy.enModel(c.name) : c.name) + '</span>' +
           '<span class="cd-sim-spec">' + esc(c.type || '') + ' · ' + fuelOf(c) + '</span>' +
-          '<span class="cd-sim-pay"><span class="lbl">החזר חודשי</span><span class="amt">' + fmt(c.m) + '<small> / חודש</small></span></span>' +
+          '<span class="cd-sim-pay"><span class="lbl">החזר חודשי</span><span class="amt">' + (c.m > 0 ? fmt(c.m) + '<small> / חודש</small>' : 'לפרטים') + '</span></span>' +
         '</div>' +
       '</a>';
     }).join('');

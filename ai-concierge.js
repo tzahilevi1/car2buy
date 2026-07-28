@@ -1,7 +1,8 @@
 /* ============================================================
    Car2Buy — AI Concierge (חכמת רכב)
-   Floating assistant that recommends cars from the catalog
-   via window.claude.complete. Injected site-wide by site.js.
+   Floating assistant that recommends cars from the catalog using a
+   local, backend-free matcher (budget + intent keywords) and hands
+   off to a human via WhatsApp. Injected site-wide by site.js.
    ============================================================ */
 (function () {
   if (!window.Car2Buy) return;
@@ -74,46 +75,59 @@
       <span class="ai-rec-go">←</span></a>`;
   }
 
-  // compact catalog for the model
-  const catalog = MODELS.map((m) =>
-    `${m.id} | ${dB(m.brand)} ${eM(m.name)} (${m.brand} ${m.name}) | קטגוריה:${m.cat} | ${m.fuel} | ${m.power}כ״ס | 0-100:${m.accel}שנ | ${m.seats}מושבים | החזר:${m.monthly}₪ | מחירון:${m.list}₪`
-  ).join('\n');
+  // WhatsApp handoff button — pre-filled with the customer's request.
+  const WA = '972723319929';
+  function waBtn(q) {
+    const href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('היי, אני מחפש/ת רכב: ' + q);
+    return `<a class="ai-wa" href="${href}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:#25D366;color:#fff;font-weight:700;padding:10px 16px;border-radius:10px;text-decoration:none;">💬 ייעוץ אישי בוואטסאפ</a>`;
+  }
+
+  // Local, backend-free recommender: score the live catalog by budget + intent keywords.
+  function recommend(q) {
+    const MODELS = (window.Car2Buy && window.Car2Buy.MODELS) || [];
+    const t = (q || '').toLowerCase();
+    let budget = 0;
+    const nums = (q.replace(/,/g, '').match(/\d{3,6}/g) || []).map(Number).filter((n) => n >= 500 && n <= 20000);
+    if (nums.length) budget = Math.max.apply(null, nums);
+    const wantEV = /חשמל|electric|\bev\b/.test(t);
+    const wantHybrid = /היבריד|hybrid|נטען|phev|hev/.test(t);
+    const wantSUV = /suv|שטח|פנאי|ג׳יפ|גיפ|גבוה|קרוסאובר/.test(t);
+    const wantFamily = /משפח|ילדים|7 |שבעה|מרווח/.test(t);
+    const wantSport = /ספורט|יוקר|מהיר|רווק|צעיר|sport|luxury/.test(t);
+    const wantCity = /עיר|קטן|חסכ|קומפקט|city|ראשון|זול/.test(t);
+    const scored = MODELS.map((m) => {
+      let s = 0;
+      const cat = ((m.cat || '') + ' ' + (m.type || '') + ' ' + (m.body || '')).toLowerCase();
+      const fuel = (m.fuel || '');
+      if (budget && m.monthly > 0) { if (m.monthly <= budget) s += 3; else if (m.monthly <= budget * 1.15) s += 1; else s -= 3; }
+      if (wantEV) { if (/חשמל/.test(fuel)) s += 3; else s -= 1; }
+      if (wantHybrid && /היבריד|נטען/.test(fuel)) s += 3;
+      if (wantSUV && /suv|פנאי|קרוסאובר|שטח/.test(cat)) s += 2;
+      if (wantFamily) { if (m.seats >= 7) s += 3; else if (m.seats >= 5) s += 1; }
+      if (wantSport && /ספורט|יוקר|קופה|קופ/.test(cat)) s += 2;
+      if (wantCity && /עיר|קומפקט|מיני|קטן|סופרמיני/.test(cat)) s += 2;
+      return { m, s };
+    }).filter((x) => x.s > 0 && x.m.monthly > 0)
+      .sort((a, b) => b.s - a.s || a.m.monthly - b.m.monthly);
+    return scored.slice(0, 3).map((x) => x.m);
+  }
 
   async function ask(q) {
     addMsg('user', `<p>${q.replace(/</g, '&lt;')}</p>`);
     text.value = '';
     chips.style.display = 'none';
     const load = typing();
-
-    const prompt = `אתה יועץ מכירות מקצועי, חם ואדיב של חברת "Car2Buy" לליסינג מימoני פרטי. ענה בעברית בלבד, בקצרה (2-4 משפטים), בגוף ראשון.
-
-הקטלוג שלנו (id | דגם | מאפיינים):
-${catalog}
-
-בקשת הלקוח: "${q}"
-
-המלץ על 1-3 דגמים מהקטלוג שהכי מתאימים לבקשה. הסבר במשפט קצר למה הם מתאימים. אל תמציא דגמים שלא ברשימה.
-החזר JSON תקין בלבד בפורמט הזה (בלי טקסט נוסף, בלי markdown):
-{"reply":"תשובה חמה ואישית ללקוח","ids":["id1","id2"]}`;
-
-    let data = null;
-    try {
-      const raw = await window.claude.complete(prompt);
-      const match = raw.match(/\{[\s\S]*\}/);
-      data = JSON.parse(match ? match[0] : raw);
-    } catch (e) {
-      data = null;
-    }
+    await new Promise((r) => setTimeout(r, 450)); // תחושת "חשיבה" טבעית
     load.remove();
 
-    if (!data || !data.reply) {
-      addMsg('bot', `<p>סליחה, נתקלתי בתקלה קטנה. אפשר לנסות שוב, או <a href="contact.html" style="color:var(--gold);text-decoration:underline;">להשאיר פרטים</a> ויועץ אנושי יחזור אליכם.</p>`);
-      return;
+    const cars = recommend(q);
+    if (cars.length) {
+      const reply = 'הנה כמה דגמים מהקטלוג שנראים מתאימים לכם 👇 רוצים שנתפור הצעת מימון אישית? דברו איתנו בוואטסאפ ונחזור אליכם.';
+      addMsg('bot', `<p>${reply}</p><div class="ai-recs">${cars.map(carChip).join('')}</div>${waBtn(q)}`);
+    } else {
+      const reply = 'בשמחה נעזור למצוא בדיוק את מה שמתאים לכם. יועץ אנושי שלנו ימליץ בהתאמה אישית — דברו איתנו בוואטסאפ ונחזור אליכם במהירות. 🚗';
+      addMsg('bot', `<p>${reply}</p>${waBtn(q)}`);
     }
-    const cars = (data.ids || []).map((id) => MODELS.find((m) => m.id === id)).filter(Boolean);
-    let html = `<p>${data.reply}</p>`;
-    if (cars.length) html += `<div class="ai-recs">${cars.map(carChip).join('')}</div>`;
-    addMsg('bot', html);
   }
 
   form.addEventListener('submit', (e) => {

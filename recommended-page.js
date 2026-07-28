@@ -185,6 +185,15 @@
   var apptForm = document.getElementById('rcApptForm');
   if (apptForm) apptForm.addEventListener('submit', function (e) {
     e.preventDefault();
+    var nm = apptForm.querySelector('input[type="text"]');
+    var ph = apptForm.querySelector('input[type="tel"]');
+    var tm = apptForm.querySelector('select');
+    var name = nm ? nm.value.trim() : '';
+    var phone = ph ? ph.value.trim() : '';
+    var timePref = tm ? tm.value : '';
+    // שמירת הליד בפועל (וירי פיקסל Lead) לפני החלפת תוכן הטופס — אחרת הקלט אבד.
+    if (window.submitLead) submitLead({ name: name, phone: phone, source: 'recommended_appt', message: 'קביעת פגישה' + (timePref ? ' · העדפת שעה: ' + timePref : '') });
+    if (window.c2bTrack) c2bTrack('lead_submit', { source: 'recommended_appt' });
     apptForm.innerHTML = '<div style="text-align:center;color:#1f8a4c;font-weight:700;padding:20px 0;">תודה! ניצור קשר בהקדם לתיאום הפגישה ✓</div>';
   });
 })();

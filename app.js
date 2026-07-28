@@ -117,11 +117,29 @@
       let ok = true;
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = 'var(--gold-deep)'; ok = false; } else f.style.borderColor = ''; });
       if (consent && !consent.checked) { consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
+      // ולידציית פורמט טלפון (מינימום ספרות) — כמו בדפי הנחיתה, כדי לא לאבד ליד עם מספר קצר.
+      if (phone.value.trim() && phone.value.replace(/\D/g, '').length < 9) { phone.style.borderColor = 'var(--gold-deep)'; ok = false; }
       if (!ok) return;
-      if (window.submitLead) submitLead(window.collectForm ? collectForm(form, { source: 'contact' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'contact' });
       if (window.c2bTrack) c2bTrack('lead_form_submit', { car: (carSelect && carSelect.value) || '' });
-      form.style.display = 'none';
-      if (success) success.classList.add('show');
+      const payload = window.collectForm ? collectForm(form, { source: 'contact' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'contact' };
+      const p = window.submitLead ? submitLead(payload) : Promise.resolve(false);
+      p.then((saved) => {
+        if (saved) {
+          form.style.display = 'none';
+          if (success) success.classList.add('show');
+        } else {
+          // אף פעם לא לאבד ליד בשקט: להשאיר את הטופס ולהציע ערוץ חלופי.
+          let note = document.getElementById('formErr');
+          if (!note) {
+            note = document.createElement('div');
+            note.id = 'formErr';
+            note.setAttribute('role', 'alert');
+            note.style.cssText = 'margin-top:14px;padding:12px 14px;border-radius:10px;background:#fff4f4;color:#b23b3b;font-weight:600;line-height:1.6;';
+            form.appendChild(note);
+          }
+          note.innerHTML = 'לא הצלחנו לשלוח את הפנייה כרגע. חייגו <a href="tel:+972723319929" style="color:inherit;text-decoration:underline;">072-3319929</a> או כתבו לנו ב<a href="https://wa.me/972723319929" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">וואטסאפ</a> ונחזור אליכם.';
+        }
+      });
     });
     form.addEventListener('focusin', function once() { if (window.c2bTrack) c2bTrack('lead_form_start'); form.removeEventListener('focusin', once); });
   }
@@ -191,22 +209,25 @@
         if (!map.has(key)) {
           map.set(key, { brand: c.brand, name: c.name, nameEn: c.nameEn || '', type: c.type || '',
             img: c.img, hero: c.hero, fuel: loanFuel(c), year: c.year || 2026,
-            minM: c.m, minP: c.p, trims: 0, slug: FLAG[key] || c.id, cat: c.cat || loanCat(c) });
+            minM: (c.m > 0 ? c.m : Infinity), minP: c.p, trims: 0, slug: FLAG[key] || c.id, cat: c.cat || loanCat(c) });
         }
         const g = map.get(key);
         g.trims++;
-        if (c.m < g.minM) g.minM = c.m;
+        // מתעלמים מהחזר חודשי 0 (רכב שטרם תומחר בגיליון) כדי שלא יקרוס ל-₪0 את המחיר של דגם מתומחר.
+        if (c.m > 0 && c.m < g.minM) g.minM = c.m;
         if (c.p < g.minP) g.minP = c.p;
         if (!g.img && c.img) g.img = c.img;
       });
-      return [...map.values()];
+      const arr = [...map.values()];
+      arr.forEach((g) => { if (!isFinite(g.minM)) g.minM = 0; }); // 0 = אין מחיר להצגה
+      return arr;
     })();
 
     const loanCard = (g) => {
       const href = `car.html?car=${g.slug}`;
       const full = (window.Car2Buy.enName ? window.Car2Buy.enName(g) : g.brand + ' ' + g.name);
       const searchName = full + ' ' + g.brand + ' ' + g.name + ' ' + (g.trim || '') + ' ' + (g.nameEn || '') + ' ' + (BRAND_ALIASES[g.brand] || '');
-      return `<article class="car ccard reveal" data-cat="${g.cat}" data-brand="${g.brand}" data-fuel="${g.fuel}" data-monthly="${g.minM}" data-name="${searchName}">
+      return `<article class="car ccard reveal" data-cat="${g.cat}" data-brand="${g.brand}" data-fuel="${g.fuel}" data-monthly="${g.minM > 0 ? g.minM : 999999}" data-name="${searchName}">
         <a class="car-hit" href="${href}">
           <div class="ccard-ph">
             <span class="ccard-fuel">${g.fuel}</span>
@@ -215,7 +236,7 @@
           </div>
           <div class="ccard-body">
             <div class="ccard-name">${full}</div>
-            <div class="ccard-pay">החזר חודשי החל מ- <b>${NIS(g.minM)}</b></div>
+            <div class="ccard-pay">${g.minM > 0 ? 'החזר חודשי החל מ- <b>' + NIS(g.minM) + '</b>' : '<b>דברו איתנו להצעה</b>'}</div>
           </div>
         </a>
       </article>`;
@@ -927,7 +948,7 @@
           <span class="brand-logo detail-brand-logo reveal"><img src="${LOGO(m.brand)}" alt="${m.brand}"></span>
           <span class="eyebrow reveal">${m.brand} · ${m.type}</span>
           <h1 class="reveal">${m.name}</h1>
-          <div class="detail-price reveal">${NIS(m.monthly)}<small> / חודש בליסינג מימוני</small></div>
+          <div class="detail-price reveal">${m.monthly > 0 ? NIS(m.monthly) + '<small> / חודש בליסינג מימוני</small>' : 'דברו איתנו להצעה<small> · תמחור אישי</small>'}</div>
           <div class="mh-actions reveal">
             <a href="contact.html?car=${carQ}" class="btn btn-gold btn-lg">קבלו הצעה</a>
             <a href="calculator.html" class="btn btn-ghost btn-lg">חשבו החזר</a>
@@ -965,7 +986,7 @@
                 <div class="spec"><span>מחיר מחירון</span><b>${NIS(m.list)}</b></div>
               </div>
               <div class="spec-cta">
-                <div class="spec-price">${NIS(m.monthly)}<small> / חודש</small></div>
+                <div class="spec-price">${m.monthly > 0 ? NIS(m.monthly) + '<small> / חודש</small>' : 'דברו איתנו<small> · תמחור אישי</small>'}</div>
                 <a href="contact.html?car=${carQ}" class="btn btn-gold" style="width:100%;">כמה זה יעלה לי?</a>
                 <a href="calculator.html" class="btn btn-ghost" style="width:100%;margin-top:10px;">למחשבון ההחזר</a>
               </div>
@@ -1268,7 +1289,24 @@
       };
       try { sessionStorage.setItem('c2b_trade', JSON.stringify(data)); } catch (e) {}
       if (window.c2bTrack) c2bTrack('trade_in_submit', { car: data.car || '' });
-      location.href = 'thank-you.html';
+      // שמירת הליד ל-Supabase (וירי פיקסל Lead) לפני הניווט לעמוד התודה.
+      // ממתינים לסיום השמירה כדי שהניווט לא יבטל את הבקשה באמצע; fallback מנווט
+      // בכל מקרה תוך 1.5ש' כדי לא לתקוע את המשתמש אם הרשת איטית.
+      var navigated = false;
+      var goThanks = function () { if (!navigated) { navigated = true; location.href = 'thank-you.html'; } };
+      if (window.submitLead) {
+        submitLead({
+          name: data.name,
+          phone: data.phone,
+          car: data.car || (want.brand ? want.brand + (want.model ? ' ' + want.model : '') : '') || interest,
+          source: 'trade_in_wizard',
+          message: 'טרייד-אין' + (data.plate ? ' · לוחית ' + data.plate : '') + (data.km ? ' · ' + data.km + ' ק״מ' : '') + (data.interest ? ' · מתעניין ב-' + data.interest : ''),
+          meta: { trade_car: data.car, year: data.year, trim: data.trim, color: data.color, plate: data.plate, km: data.km, interest: data.interest }
+        }).then(goThanks, goThanks);
+        setTimeout(goThanks, 1500);
+      } else {
+        goThanks();
+      }
     });
   }
 
@@ -1305,7 +1343,7 @@
             <a href="models.html" class="btn btn-gold btn-lg">בחרו את הרכב הבא</a>
             <a href="index.html" class="btn btn-ghost btn-lg">חזרה לדף הבית</a>
           </div>
-          <p class="calc-disclaimer" style="text-align:center;">* הפרטים נשמרו לצורך ההדגמה בלבד. במערכת החיה הם נשלחים לצוות המכירות.</p>
+          <p class="calc-disclaimer" style="text-align:center;">* הפרטים נשלחו לצוות המכירות של Car2Buy ונחזור אליכם בהקדם.</p>
         </div>`;
     }
   }
