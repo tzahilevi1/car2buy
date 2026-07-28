@@ -95,8 +95,12 @@
     // "מחיר הרכב בנוסף על התשלום הראשוני" = מחיר הרכב + יתרת המקדמה שנותרה לתשלום (זהה למוצג בהסכם ה-CRM)
     var downBal=(d.down_balance!=null)?Number(d.down_balance):((Number(d.down_total)||0)-(Number(d.down_initial)||0));
     var carPlusBal=(Number(d.car_price)||0)+(downBal>0?downBal:0);
-    content.innerHTML=
-      '<div class="card" id="doc">'+
+    // מקור-אמת יחיד: אם קיים contract_html שנשמר ע"י הסוכן — מציגים בדיוק אותו (זהה למה שהסוכן ראה).
+    // אחרת (עסקאות ישנות) — בונים תצוגה מקומית תואמת, כולל סעיף הבעלות.
+    var own=(d.ownership||'01');
+    var ownStmt=(own==='00')?'הרכב יירשם על שם הלקוח כרכב פרטי יד ראשונה 00.':'הלקוח מצהיר ומסכים כי ידוע לו והובהר לו ע״י החברה כי הרכישה מכוח ההסכם הנה במסגרת "עסקת 01" והרכב נרשם במסגרת עסקת ליסינג.';
+    var ownBox='<div style="border:1.5px solid #F5691E;background:#fff7f2;border-radius:8px;padding:10px 14px;margin:10px 0;font-weight:600">'+esc(ownStmt)+'</div>';
+    var docInner = d.contract_html ? d.contract_html : (
         '<h2 style="text-align:center;color:#F5691E;margin:0 0 2px;font-size:22px;font-weight:800">קליק אנד דרייב</h2>'+
         '<p style="text-align:center;color:#444;margin:0 0 8px;font-size:12.5px">באמצעות חברת גלובל דרייב בע״מ ח.פ 516685898 (להלן: "גלובל דרייב")</p>'+
         '<div class="sub">מספר הזמנה: '+esc(d.order_no||'—')+' · תאריך: '+today+'</div>'+
@@ -104,10 +108,13 @@
         '<h3>פרטי הרכב</h3><table>'+row('יצרן ודגם',esc(((d.car_make||'')+' '+(d.car_model||'')).trim())+' '+esc(d.car_trim||''))+row('שנה',esc(d.car_year||''))+row('צבע',esc(d.car_color||''))+row('מנוע',esc(d.car_engine||''))+row('תיבת הילוכים',esc(d.car_gearbox||''))+'</table>'+
         '<h3>תנאי העסקה</h3><table>'+row('תשלום ראשוני',nis(d.down_total))+row('מחיר הרכב בנוסף על התשלום הראשוני',nis(carPlusBal))+row('החזר חודשי משוער',nis(d.monthly))+row('מועד אספקה משוער',(d.delivery_days||'—')+' ימים')+'</table>'+'<h3>תוספות</h3><table>'+[['אביזרים נלווים',(d.addons||{}).accessories],['עמדת טעינה',(d.addons||{}).charging],['מיגון לפי דרישת ביטוח',(d.addons||{}).armor],['40% הנחה על ביטוח חובה (חברת הכשרה)',(d.addons||{}).insurance]].map(function(r){return row(esc(r[0]),r[1]?'כן':'—');}).join('')+'</table>'+
         '<p style="font-size:12px;margin:8px 0;text-align:right">מחיר התשלום הראשוני לא יורד ממחיר הרכב. עסקה בת 36–60 חודשים — תלוי חברת מימון וכפוף לאישורה. בתום התקופה מספר אופציות: (1) החזרת הרכב; (2) החלפת הרכב לחדש ללא תשלום ראשוני נוסף בעסקה הבאה; (3) פריסה נוספת של היתרה עד 60 תשלומים נוספים; (4) מכירת הרכב עצמאית ופירעון המימון. (כפוף לתקנון ותנאי מחירון לוי יצחק.)</p>'+
+        ownBox+
         (d.spec?'<h3>מפרט והערות</h3><p>'+esc(d.spec)+'</p>':'')+
         '<h3>תנאי ההזמנה וההסכם</h3>'+clausesHtml(d)+
-        '<p class="note">ההחזר החודשי משוער בלבד וכפוף לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. חתימת הלקוח מהווה אישור להזמנה בכפוף לתנאים ולכל הסעיפים לעיל.</p>'+
-      '</div>'+
+        '<p class="note">ההחזר החודשי משוער בלבד וכפוף לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. חתימת הלקוח מהווה אישור להזמנה בכפוף לתנאים ולכל הסעיפים לעיל.</p>'
+    );
+    content.innerHTML=
+      '<div class="card" id="doc">'+docInner+'</div>'+
       '<div class="card"><h3>חתימת הלקוח</h3><p class="sub" style="text-align:right;margin-bottom:8px">חתמו באזור הלבן (עכבר / אצבע):</p>'+
         '<canvas id="sig"></canvas>'+
         '<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="doSign">✍ אני מאשר/ת וחותם/ת</button><button class="btn ghost" id="clr">נקה</button><button class="btn ghost" id="dlPdf">📄 הורד / הדפס PDF</button></div>'+
