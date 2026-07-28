@@ -12,6 +12,31 @@ const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=
 // synchronous JS (like loan-cars.js) so pages get USED before render — no fetch/re-render needed
 const OUT = new URL('../used-cars.js', import.meta.url);
 
+// ---- אוטומציה: תמונות פר-רכב מתיקיות Google Drive לפי מספר רישוי ----
+// תיקיית-שורש ("רכבי יד 2") עם תת-תיקייה לכל רכב ששמה מכיל את הרישוי (למשל "מאזדה 6 | רישוי 510-75-503").
+// דורש DRIVE_API_KEY (סוד ב-GitHub Actions) + שהתיקיות משותפות ציבורית. אין מפתח → מדלגים
+// ונופלים לעמודות "תמונת הרכב" שבשיטס. כך: תיקייה חדשה עם הרישוי → מצטרפת אוטומטית לרכב.
+const DRIVE_KEY = process.env.DRIVE_API_KEY || '';
+const PHOTOS_ROOT = '1gRvD3bb1yd8E77WyaCL4A0vTti4wCcfR';
+async function driveList(q) {
+  const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&key=${DRIVE_KEY}&fields=files(id,name)&pageSize=1000&orderBy=name`;
+  try { const r = await fetch(url); if (!r.ok) { console.warn('drive list failed', r.status); return []; } return (await r.json()).files || []; }
+  catch (e) { console.warn('drive list error', e.message); return []; }
+}
+async function drivePhotosByPlate() {
+  if (!DRIVE_KEY) { console.log('DRIVE_API_KEY not set — using Sheet photo columns only'); return {}; }
+  const folders = await driveList(`'${PHOTOS_ROOT}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+  const map = {};
+  for (const f of folders) {
+    const m = String(f.name).match(/\d{2,3}-\d{2,3}-\d{2,3}/); // חילוץ רישוי משם התיקייה
+    if (!m) continue;
+    const imgs = await driveList(`'${f.id}' in parents and mimeType contains 'image/' and trashed=false`);
+    if (imgs.length) map[m[0]] = imgs.map((i) => `https://drive.google.com/thumbnail?id=${i.id}&sz=w1600`);
+  }
+  console.log('Drive photos matched for', Object.keys(map).length, 'plates');
+  return map;
+}
+
 // CSV Hebrew brand -> [display (English), logo slug]
 const BR = {
   'ב מ וו': ['BMW', 'bmw'], "צ'רי": ['Chery', 'chery'], 'מרצדס': ['Mercedes', 'mercedes-benz'],
@@ -45,6 +70,7 @@ const res = await fetch(CSV_URL, { redirect: 'follow' });
 if (!res.ok) { console.error('sheet fetch failed', res.status); process.exit(1); }
 const rows = parseCSV(await res.text());
 const data = rows.slice(1).filter((r) => r[1] && r[1].trim());
+const platePhotos = await drivePhotosByPlate();
 
 const cars = data.filter((r) => (r[13] || '').trim() === 'למכירה').map((r) => {
   const [brand, slug] = fixBrand(r[1]);
@@ -53,7 +79,8 @@ const cars = data.filter((r) => (r[13] || '').trim() === 'למכירה').map((r)
   const price = num(r[11]) || num(r[12]) || num(r[10]);
   const ft = fuel(r[5]);
   const hay = model + ' ' + trim;
-  const gallery = [r[15], r[16], r[17]].map(cleanUrl).filter(Boolean);
+  // תמונות פר-רכב מ-Drive (לפי רישוי) קודמות; אחרת עמודות "תמונת הרכב" מהשיטס.
+  const gallery = platePhotos[(r[4] || '').trim()] || [r[15], r[16], r[17]].map(cleanUrl).filter(Boolean);
   return {
     brand, name: model, trim,
     year: num(r[7]), km: num(r[6]), hand: num(r[8]) || 1,

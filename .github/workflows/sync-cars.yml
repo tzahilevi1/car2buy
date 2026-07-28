@@ -25,6 +25,8 @@ jobs:
       - name: Fetch new-car sheet → cars.json
         run: node scripts/sync-cars.mjs
       - name: Fetch used-car (יד 2) sheet → used-cars.js
+        env:
+          DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
         run: node scripts/sync-used.mjs
       - name: Commit if changed
         run: |
