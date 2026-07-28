@@ -38,6 +38,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" integrity="sha384-XQqX/4yiUGu+oyr87jvWzRuqBUK/adrY0DunhL+tID9m/9dwSpV8h9Fk/Sg6ifVQ" crossorigin="anonymous"></script>
 <script>
 (function () {
   var db = window.supabase.createClient(
@@ -100,7 +101,7 @@
     var own=(d.ownership||'01');
     var ownStmt=(own==='00')?'הרכב יירשם על שם הלקוח כרכב פרטי יד ראשונה 00.':'הלקוח מצהיר ומסכים כי ידוע לו והובהר לו ע״י החברה כי הרכישה מכוח ההסכם הנה במסגרת "עסקת 01" והרכב נרשם במסגרת עסקת ליסינג.';
     var ownBox='<div style="border:1.5px solid #F5691E;background:#fff7f2;border-radius:8px;padding:10px 14px;margin:10px 0;font-weight:600">'+esc(ownStmt)+'</div>';
-    var docInner = d.contract_html ? d.contract_html : (
+    var localBuild = (
         '<h2 style="text-align:center;color:#F5691E;margin:0 0 2px;font-size:22px;font-weight:800">קליק אנד דרייב</h2>'+
         '<p style="text-align:center;color:#444;margin:0 0 8px;font-size:12.5px">באמצעות חברת גלובל דרייב בע״מ ח.פ 516685898 (להלן: "גלובל דרייב")</p>'+
         '<div class="sub">מספר הזמנה: '+esc(d.order_no||'—')+' · תאריך: '+today+'</div>'+
@@ -113,6 +114,8 @@
         '<h3>תנאי ההזמנה וההסכם</h3>'+clausesHtml(d)+
         '<p class="note">ההחזר החודשי משוער בלבד וכפוף לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. חתימת הלקוח מהווה אישור להזמנה בכפוף לתנאים ולכל הסעיפים לעיל.</p>'
     );
+    // ה-contract_html מוזרק רק לאחר סניטציה (DOMPurify) למניעת XSS. אם הספרייה לא נטענה — בונים מקומית מנתונים מובְנים (בטוח, ללא HTML גולמי).
+    var docInner = (d.contract_html && window.DOMPurify) ? window.DOMPurify.sanitize(d.contract_html) : localBuild;
     content.innerHTML=
       '<div class="card" id="doc">'+docInner+'</div>'+
       '<div class="card"><h3>חתימת הלקוח</h3><p class="sub" style="text-align:right;margin-bottom:8px">חתמו באזור הלבן (עכבר / אצבע):</p>'+
