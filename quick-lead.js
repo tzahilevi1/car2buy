@@ -41,7 +41,7 @@
         '<form class="ql-form" id="qlForm" novalidate>' +
           '<input type="text" id="qlHp" name="company_url" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;">' +
           '<label class="ql-field"><span>הרכב שמעניין אתכם</span>' +
-            '<input type="text" id="qlCar" list="qlCarList" placeholder="הקלידו או בחרו דגם מהקטלוג" autocomplete="off">' +
+            '<input type="text" id="qlCar" list="qlCarList" placeholder="הקלידו או בחרו דגם מהקטלוג" aria-label="דגם רכב" autocomplete="off">' +
             '<datalist id="qlCarList">' + opts + '</datalist>' +
           '</label>' +
           '<div class="ql-row">' +

@@ -25,7 +25,7 @@
   // build the next N available days (skip Saturday)
   function availableDays(n) {
     const days = [], d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 1);
-    while (days.length < n) { if (d.getDay() !== 6) days.push(new Date(d)); d.setDate(d.getDate() + 1); }
+    while (days.length < n) { if (d.getDay() !== 6 && d.getDay() !== 5) days.push(new Date(d)); d.setDate(d.getDate() + 1); }
     return days;
   }
   function slotsFor(d) {
@@ -96,13 +96,13 @@
       <div class="sched-success">
         <div class="sched-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></div>
         <h2>הפגישה נקבעה!</h2>
-        <p class="sched-sub">שלחנו אישור עם כל הפרטים אל <b>${data.email}</b>.<br>היועץ שלנו (${ADVISOR_EMAIL}) קיבל עותק וייצור קשר לאישור סופי.</p>
+        <p class="sched-sub">שלחנו אישור עם כל הפרטים אל <b>${escAttr(data.email)}</b>.<br>היועץ שלנו (${ADVISOR_EMAIL}) קיבל עותק וייצור קשר לאישור סופי.</p>
         <div class="sched-card">
           <div class="sched-card-row"><span>מתי</span><b>${data.date} · ${data.time}</b></div>
           <div class="sched-card-row"><span>סוג פגישה</span><b>${data.type}</b></div>
           <div class="sched-card-row"><span>מיקום</span><b>${data.branch}</b></div>
           ${data.car ? `<div class="sched-card-row"><span>רכב</span><b>${escAttr(data.car)}</b></div>` : ''}
-          <div class="sched-card-row"><span>על שם</span><b>${data.name}</b></div>
+          <div class="sched-card-row"><span>על שם</span><b>${escAttr(data.name)}</b></div>
         </div>
         <div class="sched-prep">
           <div class="sched-prep-h">מה להכין לפני הפגישה</div>

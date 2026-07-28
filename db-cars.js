@@ -61,5 +61,5 @@
       }
       done();
     })
-    .catch(function () { done(); });
+    .catch(function (e) { console.warn('[Car2Buy] cars.json load/parse failed — showing seed inventory', e); done(); });
 })();

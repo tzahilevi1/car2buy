@@ -1327,17 +1327,19 @@
         ['שם', d.name || '—'],
         ['טלפון', d.phone || '—'],
       ];
+      // קלט מ-sessionStorage (המשתמש עצמו) — עדיין בורחים כדי לא להזריק HTML ל-innerHTML.
+      const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       thankView.innerHTML = `
         <div class="thanks">
           <div class="thanks-head">
             <div class="check">✓</div>
-            <h1>תודה, ${d.name ? d.name.split(' ')[0] : ''}! קיבלנו את הפרטים</h1>
-            <p>נציג אישי של Car2Buy יחזור אליכם בהקדם עם הצעת טריד-אין מותאמת${d.interest ? ' והצעה ל' + d.interest.split(' · ')[0] : ''}.</p>
+            <h1>תודה, ${d.name ? esc(d.name.split(' ')[0]) : ''}! קיבלנו את הפרטים</h1>
+            <p>נציג אישי של Car2Buy יחזור אליכם בהקדם עם הצעת טריד-אין מותאמת${d.interest ? ' והצעה ל' + esc(d.interest.split(' · ')[0]) : ''}.</p>
           </div>
-          ${d.img ? `<div class="thanks-car"><img src="${d.img}" alt="${d.car}"></div>` : ''}
+          ${d.img ? `<div class="thanks-car"><img src="${esc(d.img)}" alt="${esc(d.car)}"></div>` : ''}
           <div class="thanks-card">
             <div class="thanks-card-h">סיכום הפנייה</div>
-            ${rows.map(([k, v]) => `<div class="thanks-row"><span>${k}</span><b>${v}</b></div>`).join('')}
+            ${rows.map(([k, v]) => `<div class="thanks-row"><span>${k}</span><b>${esc(v)}</b></div>`).join('')}
           </div>
           <div class="mh-actions" style="justify-content:center;">
             <a href="models.html" class="btn btn-gold btn-lg">בחרו את הרכב הבא</a>

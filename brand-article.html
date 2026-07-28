@@ -199,7 +199,7 @@
 <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 fbq('init','1196820580974819');fbq('track','PageView');
 if(/lp-|jaecoo|\/(car|model|used-car|brand)\.html/.test(location.pathname)){fbq('track','ViewContent');}</script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1196820580974819&ev=PageView&noscript=1"/></noscript>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1196820580974819&ev=PageView&noscript=1"/></noscript>
 <!-- End Meta Pixel Code -->
 </head>
 <body data-page="magazine">
@@ -535,10 +535,10 @@ if(/lp-|jaecoo|\/(car|model|used-car|brand)\.html/.test(location.pathname)){fbq(
         + '<div class="side-card side-form">'
           + '<h3>רוצים לדבר איתנו? השאירו פרטים ונחזור אליכם בהקדם</h3>'
           + '<form id="sideForm">'
-            + '<input type="text" name="name" placeholder="שם מלא" required>'
-            + '<input type="tel" name="phone" placeholder="מספר טלפון" required>'
-            + '<input type="email" name="email" placeholder="אימייל">'
-            + '<label class="side-consent"><input type="checkbox" checked required> <span>אני מאשר/ת את <a href="#">מדיניות הפרטיות</a> ומסכים/ה לקבל מידע פרסומי מ-Car2Buy</span></label>'
+            + '<input type="text" name="name" placeholder="שם מלא" aria-label="שם מלא" required>'
+            + '<input type="tel" name="phone" placeholder="מספר טלפון" aria-label="טלפון" required>'
+            + '<input type="email" name="email" placeholder="אימייל" aria-label="אימייל">'
+            + '<label class="side-consent"><input type="checkbox" checked required> <span>אני מאשר/ת את <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a> ומסכים/ה לקבל מידע פרסומי מ-Car2Buy</span></label>'
             + '<button type="submit" class="submit">צרו איתי קשר</button>'
           + '</form>'
           + '<div class="side-thanks" id="sideThanks">תודה! ניצור איתכם קשר בהקדם ✓</div>'
@@ -560,8 +560,8 @@ if(/lp-|jaecoo|\/(car|model|used-car|brand)\.html/.test(location.pathname)){fbq(
         + '<h3>קבלו מידע נוסף על ' + esc(brandDisp) + '</h3>'
         + '<p>השאירו פרטים ונחזור אליכם עם כל המידע וההצעה המשתלמת ביותר.</p>'
         + '<form id="infoForm">'
-          + '<input type="text" name="name" placeholder="שם מלא" required>'
-          + '<input type="tel" name="phone" placeholder="מספר טלפון" required>'
+          + '<input type="text" name="name" placeholder="שם מלא" aria-label="שם מלא" required>'
+          + '<input type="tel" name="phone" placeholder="מספר טלפון" aria-label="טלפון" required>'
           + (window.C2B_consentHTML ? window.C2B_consentHTML() : '')
           + '<button type="submit" class="submit">שליחה</button>'
         + '</form>'

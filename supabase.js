@@ -98,7 +98,9 @@
     payload = payload || {};
     // ---- anti-spam / abuse guards (defense-in-depth; forms also validate) ----
     // 1) honeypot — bots fill hidden fields real users never see; drop silently.
-    if (payload.hp || payload._hp || payload.website || payload.company_url) return Promise.resolve(true);
+    // collectForm מנתב שדות לא-מוכרים ל-payload.meta, לכן בודקים גם שם (אחרת honeypot בטפסים אלה לא נתפס).
+    var _hpm = payload.meta || {};
+    if (payload.hp || payload._hp || payload.website || payload.company_url || _hpm.hp || _hpm.website || _hpm.company_url) return Promise.resolve(true);
     // 2) require a plausible contact channel (phone / email / message).
     var digits = String(payload.phone || '').replace(/\D/g, '');
     var hasEmail = /.+@.+\..+/.test(String(payload.email || ''));

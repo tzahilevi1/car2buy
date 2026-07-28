@@ -145,7 +145,6 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; l
 .brand-img { height: 46px; width: auto; display: block; }
 .footer-brand { margin-bottom: 18px; }
 .footer-brand .brand-img { height: 88px; background: none; padding: 0; border-radius: 0; }
-.nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; height: 80px; flex-wrap: nowrap; }
 /* two-tier header (Capital-style) */
 .nav-top-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; height: 72px; max-width: none; padding-inline: clamp(20px,3vw,44px); }
 .nav-search { justify-self: start; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 0 8px 0 16px; max-width: 240px; }
@@ -233,7 +232,6 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; l
 .mega-logo:not(:has(img)) .mega-mono { display: flex; }
 .mega-all { display: inline-block; margin-top: auto; padding-top: 14px !important; color: var(--gold); font-size: 13.5px; font-weight: 600; border: 0 !important; }
 .mega-all:hover { padding-inline-start: 0 !important; opacity: 0.8; }
-.mega-col-btn:hover { padding-inline-start: 26px !important; color: #fff !important; }
 .mega-foot { border-top: 1px solid rgba(0,0,0,0.08); padding-block: 16px; }
 /* force readable black text across the light catalog panel */
 .mega-panel .mega-name, .mega-panel .mega-col > a { color: #1a1712 !important; }
@@ -1116,7 +1114,7 @@ image-slot { display: block; }
 }
 
 /* ===== magazine / blog ===== */
-.posts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.posts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .post { display: block; background: var(--bg-card); border: 1px solid var(--line-2); border-radius: var(--radius); overflow: hidden; transition: 0.45s var(--ease); }
 .post:hover { border-color: var(--gold-line); transform: translateY(-5px); }
 .post-img { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--bg-3); }
@@ -1133,7 +1131,6 @@ image-slot { display: block; }
 /* magazine layout: main + sidebar */
 .mag-layout { display: grid; grid-template-columns: 1fr 320px; gap: clamp(28px, 4vw, 52px); align-items: start; }
 .mag-grid-h { font-family: var(--display); font-size: 24px; margin: 40px 0 20px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
-.posts { grid-template-columns: repeat(2, 1fr); }
 
 /* category filter chips */
 .mag-filter { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 28px; }
