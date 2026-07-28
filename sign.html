@@ -107,9 +107,27 @@
       '</div>'+
       '<div class="card"><h3>חתימת הלקוח</h3><p class="sub" style="text-align:right;margin-bottom:8px">חתמו באזור הלבן (עכבר / אצבע):</p>'+
         '<canvas id="sig"></canvas>'+
-        '<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="doSign">✍ אני מאשר/ת וחותם/ת</button><button class="btn ghost" id="clr">נקה</button></div>'+
+        '<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="doSign">✍ אני מאשר/ת וחותם/ת</button><button class="btn ghost" id="clr">נקה</button><button class="btn ghost" id="dlPdf">📄 הורד / הדפס PDF</button></div>'+
         '<div class="msg" id="msg"></div></div>';
     setupCanvas();
+    document.getElementById('dlPdf').addEventListener('click',function(){ printDoc(d); });
+  }
+
+  // PDF מושלם דרך מנוע ההדפסה של הדפדפן — bidi עברית ללא פגם, טקסט וקטורי אמיתי (לא תמונה)
+  function printDoc(d){
+    var doc=document.getElementById('doc'); if(!doc)return;
+    var w=window.open('','_blank');
+    if(!w){alert('חלון ההדפסה נחסם — אפשרו חלונות קופצים ונסו שוב.');return;}
+    w.document.write('<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>הסכם'+(d.order_no?' #'+esc(d.order_no):'')+' — Car2Buy</title><style>'+
+      '@page{size:A4;margin:11mm 13mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+      'body{margin:0;background:#fff;color:#111;font-family:Arial,\'Segoe UI\',sans-serif;direction:rtl;text-align:right;line-height:1.7;font-size:13px}'+
+      '.sheet{max-width:820px;margin:0 auto;padding:4px 8px}'+
+      'table{width:100%;border-collapse:collapse;margin:0 0 12px}td{padding:7px 10px;border-bottom:1px solid #eee}'+
+      'h2{text-align:center;color:#F5691E;margin:0 0 2px}h3{margin:16px 0 6px;color:#111}'+
+      '.c2b-clause{page-break-inside:avoid}.note,.sub{color:#666;font-size:12px}'+
+      '</style></head><body><div class="sheet">'+doc.innerHTML+'</div></body></html>');
+    w.document.close(); w.focus();
+    setTimeout(function(){ try{w.print();}catch(e){} }, 350);
   }
 
   function setupCanvas(){
