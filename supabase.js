@@ -50,17 +50,18 @@
       var els = form.querySelectorAll('input, select, textarea');
       for (var i = 0; i < els.length; i++) {
         var el = els[i];
-        if (!el.name && !el.id) continue;
         if ((el.type === 'checkbox' || el.type === 'radio') && !el.checked) continue;
         var v = (el.value || '').trim();
         if (!v) continue;
         var key = (el.name || el.id || '').toLowerCase();
+        // מזהים לפי type קודם (עובד גם ל-inputs ללא name/id, למשל טפסי used-car), ואז לפי מילות-מפתח בשם.
         if (el.type === 'tel' || /phone|tel|נייד|טלפון/.test(key)) out.phone = out.phone || v;
         else if (el.type === 'email' || /mail|אימייל/.test(key)) out.email = out.email || v;
         else if (/name|שם|fname|fullname/.test(key)) out.name = out.name || v;
         else if (el.tagName === 'TEXTAREA' || /msg|message|note|הערה/.test(key)) out.message = out.message || v;
         else if (/car|רכב|model|דגם/.test(key)) out.car = out.car || v;
-        out.meta[el.name || el.id] = v;
+        else if (el.type === 'text' && !el.name && !el.id && !out.name) out.name = v; // שדה טקסט ללא שם → שם מלא
+        if (el.name || el.id) out.meta[el.name || el.id] = v;
       }
     }
     if (extra) { for (var k in extra) { if (extra[k] != null) out[k] = extra[k]; } }
