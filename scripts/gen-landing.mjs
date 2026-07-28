@@ -94,6 +94,11 @@ function page(x) {
   const title = `${fullEn} חדש${hasPrice ? ' · החל מ-' + nis(x.m) + ' לחודש' : ''} | Car2Buy`;
   const desc = `${fullEn} חדש 0 ק"מ${hasPrice ? ', החל מ-' + nis(x.m) + ' לחודש' : ''} — 100% מימון בריבית הטובה בישראל, טרייד-אין וליווי אישי עד קבלת המפתח. קבלו הצעה אישית עוד היום.`;
 
+  const SITE = 'https://tzahilevi1.github.io/car2buy/';
+  const canon = SITE + 'lp-' + x.folder + '.html';
+  const ogImg = SITE + heroImg;
+  const ld = { '@context': 'https://schema.org', '@type': 'Product', name: fullEn, image: ogImg, description: desc, brand: { '@type': 'Brand', name: brandEn } };
+
   const cust = ['01','05','07'];
   const quotes = [
     { q: `קיבלנו את הרכב תוך כמה ימים, בהחזר חודשי שלא האמנו שאפשרי. ליווי אישי לאורך כל הדרך — פשוט מקצועיים.`, n: 'אלירן ואבי', c: 'טבריה' },
@@ -113,6 +118,19 @@ function page(x) {
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self'; connect-src 'self' https://tdxhqpauuqawcoivjnnm.supabase.co https://api.ipify.org https://www.facebook.com https://connect.facebook.net; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${canon}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Car2Buy">
+<meta property="og:locale" content="he_IL">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:url" content="${canon}">
+<meta property="og:image" content="${ogImg}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:image" content="${ogImg}">
+<script type="application/ld+json">${JSON.stringify(ld)}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 ${STYLE}
