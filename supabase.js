@@ -113,6 +113,18 @@
       _hist.push(_now); localStorage.setItem('c2b_lead_rl', JSON.stringify(_hist));
     } catch (e) {}
     var attr = attribution(), meta = payload.meta || {};
+    // ---- כללי ייחוס (attribution) ללידים מהאתר של Car2Buy ----
+    var src = payload.source || (document.body && document.body.dataset ? document.body.dataset.page : null) || '';
+    // (1) קביעת פגישה דרך האתר → סטטוס "פגישה נקבעה" (meeting_set). זיהוי לפי מקור/הודעה/פרטי-פגישה.
+    var isMeeting = payload.status === 'meeting_set'
+      || /appt|scheduler|meeting|פגיש/i.test(String(src))
+      || /פגיש/.test(String(payload.message || ''))
+      || !!(meta && (meta.date || meta.time || meta.type))
+      || !!payload.appt_at;
+    var leadStatus = payload.status || (isMeeting ? 'meeting_set' : null);
+    // (2) כניסה אורגנית (ללא קליק בתשלום — אין utm_source/gclid) → medium = 'Seo'
+    var isOrganic = !attr.utm_source && !attr.gclid;
+    var medium = attr.utm_medium || (isOrganic ? 'Seo' : null);
     return getIp().then(function (ip) {
       var body = {
         name: payload.name || null,
@@ -120,22 +132,24 @@
         email: payload.email || null,
         car: payload.car || null,
         message: payload.message || null,
-        source: payload.source || (document.body && document.body.dataset ? document.body.dataset.page : null) || null,
+        source: src || null,
         page_url: location.href,
         ip: ip,
         city: payload.city || meta.city || meta['עיר'] || null,
         // כל ליד מהאתר הציבורי שייך למותג-השיווקי "Car2Buy" (היצרן/דגם נשמרים בשדה car).
         // כך דוח "לידים לפי מותג" ב-CRM משקף מותגי-שיווק ולא יצרנים.
         brand: 'Car2Buy',
-        marketing_company: payload.marketing_company || attr.utm_source || null,
+        // (3) לידים מהאתר = "שיווק פנימי" (אלא אם צוין אחרת מפורשות)
+        marketing_company: payload.marketing_company || 'שיווק פנימי',
         utm_source: attr.utm_source || null,
         utm_campaign: attr.utm_campaign || null,
-        utm_medium: attr.utm_medium || null,
+        utm_medium: medium,
         utm_content: attr.utm_content || null,
         utm_term: attr.utm_term || null,
         ad_group: attr.ad_group || attr.adgroup || null,
         meta: payload.meta || null
       };
+      if (leadStatus) body.status = leadStatus;
       return fetch(SUPABASE_URL + '/rest/v1/leads', {
         method: 'POST',
         headers: {
