@@ -49,8 +49,22 @@
   };
 
   window.Car2Buy.USED_GALLERIES = G;
-  // gallery for a used car: its own sheet photos first, else the model gallery
+
+  // ===== תמונות אמיתיות פר-רכב, לפי מספר רישוי (plate) =====
+  // מקור: תיקיות Drive לפי רישוי → הורדו והוקטנו ל-images/used/<רישוי>/.
+  // סדר מוקפד: hero חיצוני קדמי → זוויות חוץ → פנים.
+  var UP = 'images/used/';
+  var PLATE_PHOTOS = {
+    '510-75-503': ['510-75-503/2.webp', '510-75-503/4.webp', '510-75-503/3.webp', '510-75-503/1.webp'],           // מאזדה 6
+    '60-555-81':  ['60-555-81/3.webp', '60-555-81/5.webp', '60-555-81/1.webp', '60-555-81/4.webp', '60-555-81/6.webp', '60-555-81/2.webp'], // מרצדס S500
+    '636-96-803': ['636-96-803/1.webp', '636-96-803/7.webp', '636-96-803/2.webp', '636-96-803/3.webp', '636-96-803/4.webp', '636-96-803/5.webp', '636-96-803/6.webp', '636-96-803/8.webp', '636-96-803/9.webp'] // BYD Tang
+  };
+  Object.keys(PLATE_PHOTOS).forEach(function (k) { PLATE_PHOTOS[k] = PLATE_PHOTOS[k].map(function (f) { return UP + f; }); });
+  window.Car2Buy.USED_PLATE_PHOTOS = PLATE_PHOTOS;
+
+  // gallery for a used car: real per-car photos (by plate) → its own sheet photos → model gallery
   window.Car2Buy.usedGallery = function (u) {
+    if (u && u.plate && PLATE_PHOTOS[u.plate]) return PLATE_PHOTOS[u.plate];
     if (u && u.gallery && u.gallery.length) return u.gallery;
     return (u && G[u.brand + '|' + u.name]) || [];
   };
