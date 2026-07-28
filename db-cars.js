@@ -10,6 +10,13 @@
   var C = window.Car2Buy;
   if (!C || !C.LOAN_CARS) return;
 
+  // תיקוני תמונה עמידים-לסנכרון: הגיליון מתעדכן אוטומטית ודורס עריכות ידניות ב-cars.json,
+  // לכן לרשומות עם תמונה שגויה/שבורה בגיליון נגדיר כאן תמונה נכונה. מפתח = "brand|name" מנורמל.
+  var IMG_OVERRIDE = {
+    // "האמר 2X" (GMC Hummer EV) — בגיליון הוגדרה בטעות תמונת שברולט סילברדו.
+    'האמר|2x': 'images/cars/gmc-hummer-ev-2x.webp'
+  };
+
   C.carsLoading = true; // app.js defers the catalog render until we merge
 
   function done() {
@@ -48,11 +55,13 @@
           var _n = function (s) { return String(s == null ? '' : s).replace(/['׳"`]/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); };
           var _mine = C.MODEL_GALLERIES && C.MODEL_GALLERIES[_n(row.brand) + '|' + _n(row.name)];
           var gallery = (_mine && _mine.length) ? _mine.slice() : [row.imgL, row.imgB, row.imgR].map(driveUrl).filter(Boolean);
+          var _ov = IMG_OVERRIDE[_n(row.brand) + '|' + _n(row.name)];
+          if (_ov && !gallery.length) gallery = [_ov];
           return {
             brand: clean(row.brand), name: clean(row.name), trim: clean(row.trim),
             nameEn: clean(row.nameEn), engine: clean(row.engine), seats: int(row.seats),
             m: int(row.m), p: int(row.p),
-            img: cleanImg(row.img) || gallery[0] || '',
+            img: _ov || cleanImg(row.img) || gallery[0] || '',
             gallery: gallery,
             id: 'sheet' + i
           };
