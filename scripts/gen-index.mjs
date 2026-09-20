@@ -20,6 +20,13 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-WK4JC6C');</script>
+<!-- End Google Tag Manager -->
 <title>דפי הנחיתה של Car2Buy · כל הרכבים החדשים</title>
 <meta name="description" content="דפי נחיתה לכל הרכבים החדשים של Car2Buy — רכב חדש 0 ק&quot;מ, 100% מימון בריבית הטובה בישראל, טרייד-אין וליווי אישי.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,6 +59,10 @@ const html = `<!DOCTYPE html>
 </style>
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WK4JC6C"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <header class="top"><span class="b">Car<i>2</i>Buy</span><a class="tel" href="tel:+972723319929">072-3319929</a></header>
 <section class="hero"><div class="wrap">
   <div class="k">דפי הנחיתה שלנו</div>
