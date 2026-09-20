@@ -201,7 +201,12 @@
     "אאודי|A3 ספורטבק חבילת SLINE LUX": ["images/gallery/audi-a3/ext1.jpg","images/gallery/audi-a3/ext2.jpg","images/gallery/audi-a3/ext3.jpg","images/gallery/audi-a3/ext4.jpg","images/gallery/audi-a3/int5.jpg","images/gallery/audi-a3/int6.jpg"],
     "ליפמוטור|C10": ["images/gallery/leapmotor-c10/ext1.jpg","images/gallery/leapmotor-c10/ext2.jpg","images/gallery/leapmotor-c10/ext3.jpg","images/gallery/leapmotor-c10/ext4.jpg","images/gallery/leapmotor-c10/int5.jpg","images/gallery/leapmotor-c10/int6.jpg"],
     "טויוטה|יאריס קרוס": ["images/gallery/toyota-yariscross/ext2.jpg","images/gallery/toyota-yariscross/ext3.jpg","images/gallery/toyota-yariscross/ext4.jpg"],
-    "דונפנג|בוקס": ["images/gallery/dongfeng-box/ext1.jpg","images/gallery/dongfeng-box/ext2.jpg","images/gallery/dongfeng-box/ext3.jpg","images/gallery/dongfeng-box/ext4.jpg","images/gallery/dongfeng-box/int5.jpg"]
+    "דונפנג|בוקס": ["images/gallery/dongfeng-box/ext1.jpg","images/gallery/dongfeng-box/ext2.jpg","images/gallery/dongfeng-box/ext3.jpg","images/gallery/dongfeng-box/ext4.jpg","images/gallery/dongfeng-box/int5.jpg"],
+    // דגמים שהיו בקטלוג ללא גלריה — צילומי יצרן מאתרי היבואן הרשמיים, סטים חלקיים.
+    "צ'רי|FX": ["images/gallery/chery-fx/ext1.jpg","images/gallery/chery-fx/ext2.jpg","images/gallery/chery-fx/ext3.jpg","images/gallery/chery-fx/int5.jpg"],
+    "צ'רי|FX EV": ["images/gallery/chery-fx-ev/ext1.jpg","images/gallery/chery-fx-ev/ext2.jpg","images/gallery/chery-fx-ev/ext3.jpg","images/gallery/chery-fx-ev/ext4.jpg","images/gallery/chery-fx-ev/int5.jpg"],
+    "אמ.ג'י|S9": ["images/gallery/mg-s9/ext1.png","images/gallery/mg-s9/ext2.png","images/gallery/mg-s9/int5.png","images/gallery/mg-s9/int6.png"],
+    "סיאט|ארונה": ["images/gallery/seat-arona/ext1.webp","images/gallery/seat-arona/ext2.webp","images/gallery/seat-arona/ext3.webp","images/gallery/seat-arona/ext4.webp"]
   };
   C.forEach(function (c) { var g = GALLERIES[c.brand + '|' + c.name]; if (g) c.gallery = g; });
   // expose galleries with a normalized key (apostrophes/spaces stripped) so db-cars.js can apply them
