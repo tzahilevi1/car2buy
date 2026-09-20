@@ -94,7 +94,7 @@ function page(x) {
   const title = `${fullEn} חדש${hasPrice ? ' · החל מ-' + nis(x.m) + ' לחודש' : ''} | Car2Buy`;
   const desc = `${fullEn} חדש 0 ק"מ${hasPrice ? ', החל מ-' + nis(x.m) + ' לחודש' : ''} — 100% מימון בריבית הטובה בישראל, טרייד-אין וליווי אישי עד קבלת המפתח. קבלו הצעה אישית עוד היום.`;
 
-  const SITE = 'https://tzahilevi1.github.io/car2buy/';
+  const SITE = 'https://car2buy.co.il/';
   const canon = SITE + 'lp-' + x.folder + '.html';
   const ogImg = SITE + heroImg;
   const ld = { '@context': 'https://schema.org', '@type': 'Product', name: fullEn, image: ogImg, description: desc, brand: { '@type': 'Brand', name: brandEn } };
