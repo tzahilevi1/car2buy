@@ -6,6 +6,8 @@
    ============================================================ */
 (function () {
   if (sessionStorage.getItem('c2b_exit_done')) return;
+  // מי שכבר שלח ליד — לא מציגים לו יותר את הפופאפ האוטומטי (בכל הביקורים).
+  try { if (localStorage.getItem('c2b_lead_done')) return; } catch (e) {}
 
   const IDLE_MS = 90000; // 1.5 minutes
   let fired = false, idleT;

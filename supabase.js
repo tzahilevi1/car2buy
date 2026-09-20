@@ -177,6 +177,14 @@
         try { (window.dataLayer = window.dataLayer || []).push({ event: 'lead_saved', lead_source: body.source || null, lead_brand: body.brand || null, lead_car: body.car || null }); } catch (e) {}
         // Meta Pixel — אירוע Lead (המרה) נורה רק כשליד נשמר בפועל
         if (window.fbq) { try { fbq('track', 'Lead', { content_name: body.car || body.source || 'lead', content_category: body.brand || undefined }); } catch (e) {} }
+        // סימון שהמשתמש כבר שלח ליד — לחסימת פופאפים אוטומטיים בהמשך
+        try { localStorage.setItem('c2b_lead_done', '1'); } catch (e) {}
+        // הפניה לדף תודה (טפסי לידים; לא מנוי ניוזלטר). setTimeout מאפשר
+        // לאירועי ההמרה (fbq/dataLayer) להישלח לפני הניווט.
+        if (!/newsletter/i.test(body.source || '')) {
+          try { sessionStorage.setItem('c2b_ty', JSON.stringify({ car: body.car || null, source: body.source || null, brand: body.brand || null })); } catch (e) {}
+          setTimeout(function () { try { location.href = 'thank-you.html'; } catch (e) {} }, 700);
+        }
         return true;
       });
     }).catch(function (e) {

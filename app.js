@@ -116,7 +116,7 @@
         consent = document.getElementById('fconsent');
       let ok = true;
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = 'var(--gold-deep)'; ok = false; } else f.style.borderColor = ''; });
-      if (consent && !consent.checked) { consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
+      if (consent && !consent.checked) { if (window.C2B_consentWarn) C2B_consentWarn(consent); else consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
       // ולידציית פורמט טלפון (מינימום ספרות) — כמו בדפי הנחיתה, כדי לא לאבד ליד עם מספר קצר.
       if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = 'var(--gold-deep)'; ok = false; }
       if (!ok) return;
@@ -805,7 +805,7 @@
       let ok = true;
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = 'var(--gold-deep)'; ok = false; } else f.style.borderColor = ''; });
       if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = 'var(--gold-deep)'; ok = false; }
-      if (consent && !consent.checked) { consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
+      if (consent && !consent.checked) { if (window.C2B_consentWarn) C2B_consentWarn(consent); else consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
       if (!ok) return;
       if (window.submitLead) submitLead(window.collectForm ? collectForm(quickForm, { source: 'home_quick' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'home_quick' });
       quickForm.classList.add('sent');

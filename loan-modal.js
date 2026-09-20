@@ -193,7 +193,7 @@
       var name = $('lnmName'), phone = $('lnmPhone'), consent = $('lnmConsent'), ok = true;
       [name, phone].forEach(function (f) { if (!f.value.trim()) { f.style.borderColor = '#e25555'; ok = false; } else f.style.borderColor = ''; });
       if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = '#e25555'; ok = false; }
-      if (!consent.checked) { consent.parentNode.style.color = 'var(--gold)'; ok = false; } else consent.parentNode.style.color = '';
+      if (!consent.checked) { if (window.C2B_consentWarn) C2B_consentWarn(consent); else consent.parentNode.style.color = 'var(--gold)'; ok = false; } else consent.parentNode.style.color = '';
       if (!ok) return;
       var carLine = want.kind || '—';
       if (want.kind === 'רכב חדש' || want.kind === 'רכב יד 2') { if (want.brand) carLine += ' · ' + want.brand + (want.model ? ' ' + want.model : ''); }

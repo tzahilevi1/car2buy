@@ -70,12 +70,25 @@ window.C2B_carPicker = function (input, opts) {
   input.addEventListener('blur', function () { setTimeout(function () { box.hidden = true; }, 160); });
 };
 
+// מציג הודעה ברורה ליד צ'קבוקס הסכמה שבוטל — "חובה לאשר כדי לשלוח".
+window.C2B_consentWarn = function (cb) {
+  if (!cb) return;
+  var lbl = cb.closest('label') || cb.parentNode; if (!lbl) return;
+  lbl.style.color = '#d24b4b';
+  var host = lbl.parentNode || lbl;
+  var err = host.querySelector('.c2b-consent-err');
+  if (!err) {
+    err = document.createElement('div'); err.className = 'c2b-consent-err';
+    err.style.cssText = 'color:#d24b4b;font-size:12.5px;font-weight:700;margin-top:6px';
+    if (lbl.nextSibling) host.insertBefore(err, lbl.nextSibling); else host.appendChild(err);
+  }
+  err.textContent = 'יש לאשר קבלת פנייה כדי לשלוח';
+  try { cb.focus(); } catch (e) {}
+  clearTimeout(cb._cwt); cb._cwt = setTimeout(function () { lbl.style.color = ''; if (err && err.parentNode) err.parentNode.removeChild(err); }, 4500);
+};
 window.C2B_consentOK = function (scope) {
   var cb = (scope && scope.querySelector) ? scope.querySelector('.c2b-consent-cb') : null;
-  if (cb && !cb.checked) {
-    var l = cb.closest('.c2b-consent'); if (l) { l.style.color = '#d24b4b'; setTimeout(function () { l.style.color = ''; }, 2200); }
-    return false;
-  }
+  if (cb && !cb.checked) { window.C2B_consentWarn(cb); return false; }
   return true;
 };
 
