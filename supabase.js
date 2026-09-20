@@ -77,11 +77,14 @@
   // session so it survives navigation between the landing page and the form.
   function qp(name) { try { return new URLSearchParams(location.search).get(name); } catch (e) { return null; } }
   function attribution() {
-    var keys = ['utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term', 'ad_group', 'adgroup', 'gclid'];
+    var keys = ['utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term', 'ad_group', 'adgroup',
+      'gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid', 'msclkid', 'twclid', 'li_fat_id'];
     var stored = {};
     try { stored = JSON.parse(sessionStorage.getItem('c2b_attr') || '{}'); } catch (e) {}
     var found = false, cur = {};
     keys.forEach(function (k) { var v = qp(k); if (v) { cur[k] = v; found = true; } });
+    // referrer חיצוני (מגע ראשון) — לסיווג ערוץ אורגני/סושיאל כשאין UTM/מזהה קליק
+    try { var _ref = document.referrer || ''; if (_ref && _ref.indexOf(location.origin) !== 0) { cur.referrer = _ref; found = true; } } catch (e) {}
     if (found) { try { sessionStorage.setItem('c2b_attr', JSON.stringify(cur)); } catch (e) {} return cur; }
     return stored;
   }
@@ -126,6 +129,10 @@
     // (2) כניסה אורגנית (ללא קליק בתשלום — אין utm_source/gclid) → medium = 'Seo'
     var isOrganic = !attr.utm_source && !attr.gclid;
     var medium = attr.utm_medium || (isOrganic ? 'Seo' : null);
+    // מזהי קליק + referrer נשמרים ב-meta לסיווג ערוץ בצד השרת (גם בלי UTM)
+    var attrMeta = {};
+    ['fbclid', 'ttclid', 'msclkid', 'gbraid', 'wbraid', 'twclid', 'li_fat_id', 'gclid', 'referrer'].forEach(function (k) { if (attr[k]) attrMeta[k] = attr[k]; });
+    var mergedMeta = payload.meta ? Object.assign({}, payload.meta, attrMeta) : (Object.keys(attrMeta).length ? attrMeta : null);
     return getIp().then(function (ip) {
       var body = {
         name: payload.name || null,
@@ -148,7 +155,7 @@
         utm_content: attr.utm_content || null,
         utm_term: attr.utm_term || null,
         ad_group: attr.ad_group || attr.adgroup || null,
-        meta: payload.meta || null
+        meta: mergedMeta
       };
       if (leadStatus) body.status = leadStatus;
       return fetch(SUPABASE_URL + '/rest/v1/leads', {
@@ -165,6 +172,9 @@
           return res.text().then(function (t) { console.warn('[Car2Buy] lead save failed', res.status, t); return false; });
         }
         if (window.c2bTrack) { try { c2bTrack('lead_saved', { source: body.source }); } catch (e) {} }
+        // דחיפה ישירה ל-dataLayer — עובד גם בדפי נחיתה שאין בהם c2bTrack,
+        // כדי ש-GTM/GA4/Google Ads יתפסו את המרת הליד בכל עמוד.
+        try { (window.dataLayer = window.dataLayer || []).push({ event: 'lead_saved', lead_source: body.source || null, lead_brand: body.brand || null, lead_car: body.car || null }); } catch (e) {}
         // Meta Pixel — אירוע Lead (המרה) נורה רק כשליד נשמר בפועל
         if (window.fbq) { try { fbq('track', 'Lead', { content_name: body.car || body.source || 'lead', content_category: body.brand || undefined }); } catch (e) {} }
         return true;
