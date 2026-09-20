@@ -79,5 +79,5 @@ ${cards}
 </script>
 </body>
 </html>`;
-fs.writeFileSync(ROOT + '/landings.html', html, 'utf8');
-console.log('wrote landings.html with', items.length, 'cars');
+fs.writeFileSync(ROOT + '/landings', html, 'utf8');
+console.log('wrote landings with', items.length, 'cars');

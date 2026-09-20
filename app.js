@@ -224,7 +224,7 @@
     })();
 
     const loanCard = (g) => {
-      const href = `car.html?car=${g.slug}`;
+      const href = `car?car=${g.slug}`;
       const full = (window.Car2Buy.enName ? window.Car2Buy.enName(g) : g.brand + ' ' + g.name);
       const searchName = full + ' ' + g.brand + ' ' + g.name + ' ' + (g.trim || '') + ' ' + (g.nameEn || '') + ' ' + (BRAND_ALIASES[g.brand] || '');
       return `<article class="car ccard reveal" data-cat="${g.cat}" data-brand="${g.brand}" data-fuel="${g.fuel}" data-monthly="${g.minM > 0 ? g.minM : 999999}" data-name="${searchName}">
@@ -396,7 +396,7 @@
     feat.innerHTML = picks.map(card).join('');
   }
 
-  /* ---------- full brands directory (brands.html) ---------- */
+  /* ---------- full brands directory (brands) ---------- */
   const dirGrid = document.getElementById('dirGrid');
   if (dirGrid && window.Car2Buy) {
     const { BRANDS_ALL, dirCard } = window.Car2Buy;

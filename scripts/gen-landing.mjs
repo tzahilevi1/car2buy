@@ -1,9 +1,9 @@
-// Generates a bold cinematic landing page per catalog model, based on jaecoo8-bold.html.
+// Generates a bold cinematic landing page per catalog model, based on jaecoo8-bold.
 // Honest content only: real catalog data (name/brand/monthly/seats/photos) + Car2Buy's real offer.
 import fs from 'fs';
 
 const ROOT = process.cwd();
-const tpl = fs.readFileSync(ROOT + '/jaecoo8-bold.html', 'utf8');
+const tpl = fs.readFileSync(ROOT + '/jaecoo8-bold', 'utf8');
 const STYLE = tpl.match(/<style>[\s\S]*?<\/style>/)[0]
   // add a text brand-name style (most brands have no local logo)
   .replace('</style>', `  .brandname{font-weight:900;font-size:clamp(15px,1.9vw,21px);letter-spacing:.22em;color:#fff;opacity:.92;margin:22px 0 0;text-transform:uppercase;text-shadow:0 2px 14px rgba(0,0,0,.5);}\n</style>`);
