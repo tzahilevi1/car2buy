@@ -290,7 +290,7 @@
 
       const emptyEl = document.createElement('div');
       emptyEl.className = 'shop-empty'; emptyEl.hidden = true;
-      emptyEl.innerHTML = `<div class="cmp-empty-ic">⌕</div><h3>אין כרגע דגמים תואמים</h3><p>היצרן או הסינון שבחרתם עדיין לא בקטלוג — אבל אנחנו משיגים <strong>כל רכב</strong>. השאירו פרטים ונאתר עבורכם.</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;"><a href="contact.html" class="btn btn-gold">השאירו פרטים</a><button class="btn btn-ghost" type="button" id="emptyReset">איפוס סינון</button></div>`;
+      emptyEl.innerHTML = `<div class="cmp-empty-ic">⌕</div><h3>אין כרגע דגמים תואמים</h3><p>היצרן או הסינון שבחרתם עדיין לא בקטלוג — אבל אנחנו משיגים <strong>כל רכב</strong>. השאירו פרטים ונאתר עבורכם.</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;"><a href="contact" class="btn btn-gold">השאירו פרטים</a><button class="btn btn-ghost" type="button" id="emptyReset">איפוס סינון</button></div>`;
       grid.after(emptyEl);
       emptyEl.querySelector('#emptyReset').addEventListener('click', () => filters.querySelector('#fReset').click());
 
@@ -409,7 +409,7 @@
   if (brandsStrip && window.Car2Buy) {
     const { BRANDS_ALL, LOGO } = window.Car2Buy;
     brandsStrip.innerHTML = BRANDS_ALL.map((b) =>
-      `<a class="brand-chip reveal" href="models.html?brand=${encodeURIComponent(b.name)}"><span class="brand-logo"><img loading="lazy" src="${LOGO(b.name)}" alt="${b.name}"></span>${b.name}</a>`).join('');
+      `<a class="brand-chip reveal" href="models?brand=${encodeURIComponent(b.name)}"><span class="brand-logo"><img loading="lazy" src="${LOGO(b.name)}" alt="${b.name}"></span>${b.name}</a>`).join('');
   }
 
   /* ---------- used cars grid (יד 2) + smart search ---------- */
@@ -454,7 +454,7 @@
 
       const emptyEl = document.createElement('div');
       emptyEl.className = 'shop-empty'; emptyEl.hidden = true;
-      emptyEl.innerHTML = `<div class="cmp-empty-ic">⌕</div><h3>אין כרגע רכב תואם</h3><p>נסו להרחיב את הסינון, או <a href="contact.html">השאירו פרטים</a> ונאתר עבורכם.</p>`;
+      emptyEl.innerHTML = `<div class="cmp-empty-ic">⌕</div><h3>אין כרגע רכב תואם</h3><p>נסו להרחיב את הסינון, או <a href="contact">השאירו פרטים</a> ונאתר עבורכם.</p>`;
       usedGrid.after(emptyEl);
 
       function paint(el) { const min = +el.min, max = +el.max, v = +el.value; const pct = ((v - min) / (max - min)) * 100; el.style.background = `linear-gradient(90deg, var(--bg-3) 0 ${100 - pct}%, var(--gold-deep) ${100 - pct}% 100%)`; }
@@ -505,7 +505,7 @@
     const featuredWrap = document.getElementById('magFeatured');
     const f = ARTICLES[0];
     if (featuredWrap && f) {
-      featuredWrap.innerHTML = `<a class="mag-feat" href="article.html?id=${f.id}">
+      featuredWrap.innerHTML = `<a class="mag-feat" href="article?id=${f.id}">
         <div class="mag-feat-img"><img src="${f.img}" alt="${f.title}"><span class="post-cat">${f.cat}</span></div>
         <div class="mag-feat-body">
           <div class="post-date">${f.date} · ${readTime(f)}</div>
@@ -559,7 +559,7 @@
     const pop = document.getElementById('magPopular');
     if (pop) {
       pop.innerHTML = ARTICLES.slice(0, 4).map((a, i) =>
-        `<a class="mag-pop" href="article.html?id=${a.id}"><span class="mag-pop-n">${i + 1}</span><span class="mag-pop-t">${a.title}</span></a>`).join('');
+        `<a class="mag-pop" href="article?id=${a.id}"><span class="mag-pop-n">${i + 1}</span><span class="mag-pop-t">${a.title}</span></a>`).join('');
     }
 
     // sidebar: search
@@ -638,7 +638,7 @@
     const id = new URLSearchParams(location.search).get('id');
     const a = ARTICLES.find((x) => x.id === id);
     if (!a) {
-      artView.innerHTML = `<section class="section" style="padding-top:160px;"><div class="wrap center"><h2 class="h-sec">הכתבה לא נמצאה</h2><div style="margin-top:24px;"><a href="magazine.html" class="btn btn-gold btn-lg">למגזין</a></div></div></section>`;
+      artView.innerHTML = `<section class="section" style="padding-top:160px;"><div class="wrap center"><h2 class="h-sec">הכתבה לא נמצאה</h2><div style="margin-top:24px;"><a href="magazine" class="btn btn-gold btn-lg">למגזין</a></div></div></section>`;
     } else {
       document.title = `${a.title} · מגזין Car2Buy`;
       if (a.desc) { let m = document.querySelector('meta[name="description"]'); if (!m) { m = document.createElement('meta'); m.name = 'description'; document.head.appendChild(m); } m.content = a.desc; }
@@ -678,24 +678,24 @@
       // ---- internal-link engine: promote key pages/models organically inside every post ----
       // phrase (regex) -> destination. Highlighted links; each destination capped per article.
       const LINK_MAP = [
-        { re: /טריי?ד[\s‑-]?אין/, href: 'trade-in.html' },
-        { re: /מחשבון(?:\s?ההחזר(?:\s?החודשי)?|\s?המימון)?/, href: 'calculator.html' },
-        { re: /קטלוג\s?הדגמים|קטלוג\s?הרכבים|הרכבים\s?החדשים|הדגמים\s?החדשים/, href: 'models.html' },
-        { re: /רכבים\s?חשמליים|רכב\s?חשמלי|דגמים\s?חשמליים/, href: 'models.html' },
-        { re: /להשוות|השוואת\s?רכבים|עמוד\s?ההשוואה|כלי\s?ההשוואה/, href: 'compare.html' },
-        { re: /יבוא\s?אישי/, href: 'personal-import.html' },
-        { re: /רכבי\s?יד\s?שנייה|יד\s?2(?!\d)|יד2/, href: 'yad2.html' },
-        { re: /הצעת\s?מימון|מסלול\s?מימון|תנאי\s?מימון|מימון\s?אישי/, href: 'car-loan.html' },
-        { re: /ליסינג\s?מימוני/, href: 'financing.html' },
-        { re: /החזר\s?חודשי/, href: 'calculator.html' },
-        { re: /דירוג\s?אשראי/, href: 'car-loan.html' },
-        { re: /רכב\s?משפחתי|רכבים\s?משפחתיים/, href: 'models.html' },
-        { re: /חוזה\s?ליסינג/, href: 'financing.html' },
-        { re: /היברידי|רכב\s?היברידי/, href: 'models.html' },
-        { re: /ליסינג/, href: 'financing.html' },
-        { re: /הרכב\s?הבא|הרכב\s?החדש|רכב\s?חדש/, href: 'models.html' }
+        { re: /טריי?ד[\s‑-]?אין/, href: 'trade-in' },
+        { re: /מחשבון(?:\s?ההחזר(?:\s?החודשי)?|\s?המימון)?/, href: 'calculator' },
+        { re: /קטלוג\s?הדגמים|קטלוג\s?הרכבים|הרכבים\s?החדשים|הדגמים\s?החדשים/, href: 'models' },
+        { re: /רכבים\s?חשמליים|רכב\s?חשמלי|דגמים\s?חשמליים/, href: 'models' },
+        { re: /להשוות|השוואת\s?רכבים|עמוד\s?ההשוואה|כלי\s?ההשוואה/, href: 'compare' },
+        { re: /יבוא\s?אישי/, href: 'personal-import' },
+        { re: /רכבי\s?יד\s?שנייה|יד\s?2(?!\d)|יד2/, href: 'yad2' },
+        { re: /הצעת\s?מימון|מסלול\s?מימון|תנאי\s?מימון|מימון\s?אישי/, href: 'car-loan' },
+        { re: /ליסינג\s?מימוני/, href: 'financing' },
+        { re: /החזר\s?חודשי/, href: 'calculator' },
+        { re: /דירוג\s?אשראי/, href: 'car-loan' },
+        { re: /רכב\s?משפחתי|רכבים\s?משפחתיים/, href: 'models' },
+        { re: /חוזה\s?ליסינג/, href: 'financing' },
+        { re: /היברידי|רכב\s?היברידי/, href: 'models' },
+        { re: /ליסינג/, href: 'financing' },
+        { re: /הרכב\s?הבא|הרכב\s?החדש|רכב\s?חדש/, href: 'models' }
       ];
-      const linkCap = { 'models.html': 2, 'financing.html': 2, 'calculator.html': 2 };
+      const linkCap = { 'models': 2, 'financing': 2, 'calculator': 2 };
       const linkCount = {};
       const linkify = (html) => {
         if (typeof html !== 'string') return html;
@@ -736,7 +736,7 @@
           <div class="mh-bg"><img src="${a.img}" alt="${a.title}"></div>
           <div class="mh-overlay"></div>
           <div class="wrap"><div class="mh-content">
-            <a href="magazine.html" class="back-link reveal">← למגזין</a>
+            <a href="magazine" class="back-link reveal">← למגזין</a>
             <span class="eyebrow reveal">${a.cat} · ${a.date} · ${readMin} דק׳ קריאה</span>
             <h1 class="reveal" style="font-size:clamp(32px,4.4vw,56px);">${a.title}</h1>
           </div></div>
@@ -745,7 +745,7 @@
           ${a.excerpt ? `<p class="art-lead reveal">${a.excerpt}</p>` : ''}
           ${toc}
           ${blocksWithIds}
-          <div class="article-cta reveal"><h3>מוכנים לרכב הבא שלכם?</h3><p class="article-cta-sub">קבלו הצעה אישית עם ההחזר החודשי הכי נמוך בישראל — בלי התחייבות.</p><div class="mh-actions" style="justify-content:center;margin-top:20px;"><button type="button" class="btn btn-gold btn-lg" data-open-lead data-source="article_end">קבלו הצעה אישית</button><a href="models.html" class="btn btn-ghost btn-lg">לקטלוג הדגמים</a></div></div>
+          <div class="article-cta reveal"><h3>מוכנים לרכב הבא שלכם?</h3><p class="article-cta-sub">קבלו הצעה אישית עם ההחזר החודשי הכי נמוך בישראל — בלי התחייבות.</p><div class="mh-actions" style="justify-content:center;margin-top:20px;"><button type="button" class="btn btn-gold btn-lg" data-open-lead data-source="article_end">קבלו הצעה אישית</button><a href="models" class="btn btn-ghost btn-lg">לקטלוג הדגמים</a></div></div>
         </div></section>
         <section class="section testi-section"><div class="wrap">
           <span class="eyebrow reveal">עוד במגזין</span>
@@ -830,12 +830,12 @@
         (m.brand + ' ' + m.name + ' ' + (m.trim || '') + ' ' + m.type + ' ' + dB(m.brand) + ' ' + eM(m.name)).toLowerCase().includes(query)
       ).slice(0, 8);
       if (!hits.length) {
-        out.innerHTML = `<div class="ir-empty">לא נמצא דגם תואם — <a href="contact.html">נאתר עבורכם כל רכב</a></div>`;
+        out.innerHTML = `<div class="ir-empty">לא נמצא דגם תואם — <a href="contact">נאתר עבורכם כל רכב</a></div>`;
         out.classList.add('show');
         return;
       }
       out.innerHTML = hits.map((m) =>
-        `<a class="ir-row" href="car.html?car=${m.id}">
+        `<a class="ir-row" href="car?car=${m.id}">
           <img class="ir-thumb" loading="lazy" src="${m.img}" alt="${eM(m.name)}">
           <span class="brand-logo ir-logo"><img src="${LOGO(m.brand)}" alt="" onerror="this.closest('.ir-logo').style.display='none'"></span>
           <span class="ir-meta"><b>${dB(m.brand)} ${eM(m.name)}</b><span>${m.power} כ״ס · ${m.fuel}</span></span>
@@ -869,7 +869,7 @@
       if (c && c !== 'all') p.set('cat', c);
       if (b) p.set('brand', b);
       if (mx) p.set('max', mx);
-      location.href = 'models.html' + (p.toString() ? '?' + p.toString() : '');
+      location.href = 'models' + (p.toString() ? '?' + p.toString() : '');
     });
   }
 
@@ -896,7 +896,7 @@
     if (!m) {
       detailEl.innerHTML = `<section class="section" style="padding-top:160px;"><div class="wrap center">
         <h2 class="h-sec">הדגם לא נמצא</h2><p class="lead" style="margin-inline:auto;">ייתכן שהקישור שגוי.</p>
-        <div style="margin-top:30px;"><a href="models.html" class="btn btn-gold btn-lg">לכל הדגמים</a></div></div></section>`;
+        <div style="margin-top:30px;"><a href="models" class="btn btn-gold btn-lg">לכל הדגמים</a></div></div></section>`;
     } else {
       document.title = `${m.brand} ${m.name} · Car2Buy`;
       try { window.C2B_setMeta && C2B_setMeta({ description: `${m.brand} ${m.name} — מפרט, ביצועים והחזר חודשי מוערך של ${window.Car2Buy && Car2Buy.NIS ? Car2Buy.NIS(m.monthly) : m.monthly + '₪'} לחודש ב-Car2Buy.`, image: m.img }); } catch (e) {}
@@ -945,14 +945,14 @@
         <div class="mh-bg"><img src="${g[0]}" alt="${m.brand} ${m.name}"></div>
         <div class="mh-overlay"></div>
         <div class="wrap"><div class="mh-content">
-          <a href="models.html" class="back-link reveal">← כל הדגמים</a>
+          <a href="models" class="back-link reveal">← כל הדגמים</a>
           <span class="brand-logo detail-brand-logo reveal"><img src="${LOGO(m.brand)}" alt="${m.brand}"></span>
           <span class="eyebrow reveal">${m.brand} · ${m.type}</span>
           <h1 class="reveal">${m.name}</h1>
           <div class="detail-price reveal">${m.monthly > 0 ? NIS(m.monthly) + '<small> / חודש בליסינג מימוני</small>' : 'דברו איתנו להצעה<small> · תמחור אישי</small>'}</div>
           <div class="mh-actions reveal">
-            <a href="contact.html?car=${carQ}" class="btn btn-gold btn-lg">קבלו הצעה</a>
-            <a href="calculator.html" class="btn btn-ghost btn-lg">חשבו החזר</a>
+            <a href="contact?car=${carQ}" class="btn btn-gold btn-lg">קבלו הצעה</a>
+            <a href="calculator" class="btn btn-ghost btn-lg">חשבו החזר</a>
           </div>
         </div></div>
       </section>
@@ -988,8 +988,8 @@
               </div>
               <div class="spec-cta">
                 <div class="spec-price">${m.monthly > 0 ? NIS(m.monthly) + '<small> / חודש</small>' : 'דברו איתנו<small> · תמחור אישי</small>'}</div>
-                <a href="contact.html?car=${carQ}" class="btn btn-gold" style="width:100%;">כמה זה יעלה לי?</a>
-                <a href="calculator.html" class="btn btn-ghost" style="width:100%;margin-top:10px;">למחשבון ההחזר</a>
+                <a href="contact?car=${carQ}" class="btn btn-gold" style="width:100%;">כמה זה יעלה לי?</a>
+                <a href="calculator" class="btn btn-ghost" style="width:100%;margin-top:10px;">למחשבון ההחזר</a>
               </div>
             </div>
           </aside>
@@ -1295,7 +1295,7 @@
       // ממתינים לסיום השמירה כדי שהניווט לא יבטל את הבקשה באמצע; fallback מנווט
       // בכל מקרה תוך 1.5ש' כדי לא לתקוע את המשתמש אם הרשת איטית.
       var navigated = false;
-      var goThanks = function () { if (!navigated) { navigated = true; location.href = 'thank-you.html'; } };
+      var goThanks = function () { if (!navigated) { navigated = true; location.href = 'thank-you'; } };
       if (window.submitLead) {
         submitLead({
           name: data.name,
@@ -1318,7 +1318,7 @@
     let d = null;
     try { d = JSON.parse(sessionStorage.getItem('c2b_trade')); } catch (e) {}
     if (!d) {
-      thankView.innerHTML = `<div class="wiz-success" style="padding:40px 0;"><div class="check">✓</div><h1>תודה!</h1><p>קיבלנו את פנייתכם, נציג יחזור אליכם בהקדם.</p><div class="mh-actions" style="justify-content:center;"><a href="models.html" class="btn btn-gold">לקטלוג הדגמים</a></div></div>`;
+      thankView.innerHTML = `<div class="wiz-success" style="padding:40px 0;"><div class="check">✓</div><h1>תודה!</h1><p>קיבלנו את פנייתכם, נציג יחזור אליכם בהקדם.</p><div class="mh-actions" style="justify-content:center;"><a href="models" class="btn btn-gold">לקטלוג הדגמים</a></div></div>`;
     } else {
       const rows = [
         ['רכב לטרייד-אין', d.car ? `${d.car}${d.year ? ' · ' + d.year : ''}` : '—'],
@@ -1344,8 +1344,8 @@
             ${rows.map(([k, v]) => `<div class="thanks-row"><span>${k}</span><b>${esc(v)}</b></div>`).join('')}
           </div>
           <div class="mh-actions" style="justify-content:center;">
-            <a href="models.html" class="btn btn-gold btn-lg">בחרו את הרכב הבא</a>
-            <a href="index.html" class="btn btn-ghost btn-lg">חזרה לדף הבית</a>
+            <a href="models" class="btn btn-gold btn-lg">בחרו את הרכב הבא</a>
+            <a href="/" class="btn btn-ghost btn-lg">חזרה לדף הבית</a>
           </div>
           <p class="calc-disclaimer" style="text-align:center;">* הפרטים נשלחו לצוות המכירות של Car2Buy ונחזור אליכם בהקדם.</p>
         </div>`;
@@ -1380,7 +1380,7 @@
       const m = byId(id); if (!m) return '';
       return `<div class="ct-item"><span class="brand-logo ct-logo"><img src="${LOGO(m.brand)}" alt=""></span><div class="ct-meta"><div class="ct-name">${m.name}</div><div class="ct-price">${NIS(m.monthly)} / ח׳</div></div><button class="ct-remove" data-compare-remove="${id}" aria-label="הסר">×</button></div>`;
     }).join('');
-    tray.innerHTML = `<div class="wrap ct-inner"><div class="ct-head"><div class="ct-title">השוואת רכבים <span>${ids.length}/${CMP_MAX}</span></div><button class="ct-clear" data-compare-clear aria-label="נקה">נקה הכל</button></div><div class="ct-items">${items}</div><a class="btn btn-gold ct-go${ids.length < 2 ? ' disabled' : ''}" href="compare.html">השוו ${ids.length} רכבים ←</a></div>`;
+    tray.innerHTML = `<div class="wrap ct-inner"><div class="ct-head"><div class="ct-title">השוואת רכבים <span>${ids.length}/${CMP_MAX}</span></div><button class="ct-clear" data-compare-clear aria-label="נקה">נקה הכל</button></div><div class="ct-items">${items}</div><a class="btn btn-gold ct-go${ids.length < 2 ? ' disabled' : ''}" href="compare">השוו ${ids.length} רכבים ←</a></div>`;
     tray.classList.add('show');
     document.body.classList.add('tray-open');
   }
@@ -1390,7 +1390,7 @@
     const { byId, LOGO, NIS } = window.Car2Buy;
     const cars = getCmp().map(byId).filter(Boolean);
     if (cars.length < 1) {
-      view.innerHTML = `<div class="cmp-empty"><div class="cmp-empty-ic">⇄</div><h3>עדיין לא בחרתם רכבים להשוואה</h3><p>עברו לקטלוג, לחצו "+ השוואה" על עד 3 רכבים, וחזרו לכאן.</p><a href="models.html" class="btn btn-gold btn-lg">לקטלוג הדגמים</a></div>`;
+      view.innerHTML = `<div class="cmp-empty"><div class="cmp-empty-ic">⇄</div><h3>עדיין לא בחרתם רכבים להשוואה</h3><p>עברו לקטלוג, לחצו "+ השוואה" על עד 3 רכבים, וחזרו לכאן.</p><a href="models" class="btn btn-gold btn-lg">לקטלוג הדגמים</a></div>`;
       return;
     }
     const specs = [
@@ -1404,7 +1404,7 @@
       { label: 'שנתון', get: (m) => m.year, fmt: (v) => v, dir: 'higher' },
       { label: 'מרכב', get: (m) => m.body, fmt: (v) => v, dir: null },
     ];
-    const heads = cars.map((m) => `<th><div class="cmp-card"><a href="model.html?id=${m.id}" class="cmp-img"><img src="${m.img}" alt="${m.name}"><span class="brand-logo cmp-logo"><img src="${LOGO(m.brand)}" alt=""></span></a><div class="cmp-tier">${m.brand}</div><a href="model.html?id=${m.id}" class="cmp-name">${m.name}</a><button class="cmp-remove" data-compare-remove="${m.id}">הסר ×</button></div></th>`).join('');
+    const heads = cars.map((m) => `<th><div class="cmp-card"><a href="model?id=${m.id}" class="cmp-img"><img src="${m.img}" alt="${m.name}"><span class="brand-logo cmp-logo"><img src="${LOGO(m.brand)}" alt=""></span></a><div class="cmp-tier">${m.brand}</div><a href="model?id=${m.id}" class="cmp-name">${m.name}</a><button class="cmp-remove" data-compare-remove="${m.id}">הסר ×</button></div></th>`).join('');
     const rows = specs.map((s) => {
       const vals = cars.map(s.get);
       const same = vals.every((v) => v === vals[0]);
@@ -1419,8 +1419,8 @@
       }).join('');
       return `<tr class="${same ? 'cmp-same' : ''}"><td class="cmp-lbl">${s.label}</td>${tds}</tr>`;
     }).join('');
-    const ctaRow = `<tr><td class="cmp-lbl"></td>${cars.map((m) => `<td><a href="contact.html?car=${encodeURIComponent(m.brand + ' ' + m.name)}" class="btn btn-gold" style="width:100%;">קבלו הצעה</a></td>`).join('')}</tr>`;
-    view.innerHTML = `<div class="cmp-bar"><label class="cmp-toggle"><input type="checkbox" id="cmpDiff"> הצג רק הבדלים</label><span class="cmp-hint">★ = הערך המשתלם ביותר</span></div><div class="cmp-wrap"><table class="cmp" id="cmpTable"><thead><tr><th class="cmp-corner"></th>${heads}</tr></thead><tbody>${rows}${ctaRow}</tbody></table></div>${cars.length < CMP_MAX ? `<p class="plans-note">אפשר להוסיף עוד רכב להשוואה — <a href="models.html">לקטלוג</a>.</p>` : ''}`;
+    const ctaRow = `<tr><td class="cmp-lbl"></td>${cars.map((m) => `<td><a href="contact?car=${encodeURIComponent(m.brand + ' ' + m.name)}" class="btn btn-gold" style="width:100%;">קבלו הצעה</a></td>`).join('')}</tr>`;
+    view.innerHTML = `<div class="cmp-bar"><label class="cmp-toggle"><input type="checkbox" id="cmpDiff"> הצג רק הבדלים</label><span class="cmp-hint">★ = הערך המשתלם ביותר</span></div><div class="cmp-wrap"><table class="cmp" id="cmpTable"><thead><tr><th class="cmp-corner"></th>${heads}</tr></thead><tbody>${rows}${ctaRow}</tbody></table></div>${cars.length < CMP_MAX ? `<p class="plans-note">אפשר להוסיף עוד רכב להשוואה — <a href="models">לקטלוג</a>.</p>` : ''}`;
     const diffBox = view.querySelector('#cmpDiff');
     if (diffBox) diffBox.addEventListener('change', () => view.querySelector('#cmpTable').classList.toggle('diff-only', diffBox.checked));
   }
@@ -1448,7 +1448,7 @@
     if (d.seoSeats) list = list.filter((m) => m.seats >= +d.seoSeats);
     list.sort((a, b) => a.monthly - b.monthly);
     seoGrid.innerHTML = list.length ? list.map(card).join('')
-      : '<p class="mag-empty">בקרוב דגמים נוספים בקטגוריה זו. <a href="contact.html">השאירו פרטים</a> ונאתר עבורכם.</p>';
+      : '<p class="mag-empty">בקרוב דגמים נוספים בקטגוריה זו. <a href="contact">השאירו פרטים</a> ונאתר עבורכם.</p>';
     const cnt = document.getElementById('seoCount');
     if (cnt) cnt.textContent = list.length;
   }

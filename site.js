@@ -23,7 +23,7 @@ window.C2B_IMAGIN_KEY = '';
 // shared consent checkbox — pre-checked by default; leads can't be sent while unchecked.
 window.C2B_consentHTML = function () {
   return '<label class="c2b-consent"><input type="checkbox" class="c2b-consent-cb" checked>' +
-    '<span>אני מאשר/ת יצירת קשר וקבלת מידע מ-Car2Buy בהתאם ל<a href="privacy.html" target="_blank" rel="noopener noreferrer">מדיניות הפרטיות</a></span></label>';
+    '<span>אני מאשר/ת יצירת קשר וקבלת מידע מ-Car2Buy בהתאם ל<a href="privacy" target="_blank" rel="noopener noreferrer">מדיניות הפרטיות</a></span></label>';
 };
 // visual car picker: attaches an image+name autocomplete dropdown to a text input.
 window.C2B_carPicker = function (input, opts) {
@@ -102,16 +102,16 @@ window.C2B_validPhone = function (v) {
 
 (function () {
   const PAGES = [
-    { id: 'models',   href: 'models.html',       label: 'דגמים' },
-    { id: 'recommended', href: 'recommended.html', label: 'רכבים מומלצים' },
-    { id: 'yad2',     href: 'yad2.html',         label: 'יד 2' },
-    { id: 'tradein',  href: 'trade-in.html',     label: 'טרייד-אין' },
-    { id: 'compare',  href: 'compare.html',      label: 'השוואה' },
-    { id: 'calc',     href: 'calculator.html',   label: 'מחשבון' },
-    { id: 'finance',  href: 'financing.html',    label: 'השיטה שלנו' },
-    { id: 'customers', href: 'customers.html',   label: 'לקוחות' },
-    { id: 'magazine', href: 'magazine.html',     label: 'מגזין' },
-    { id: 'contact',  href: 'contact.html',      label: 'צור קשר' },
+    { id: 'models',   href: 'models',       label: 'דגמים' },
+    { id: 'recommended', href: 'recommended', label: 'רכבים מומלצים' },
+    { id: 'yad2',     href: 'yad2',         label: 'יד 2' },
+    { id: 'tradein',  href: 'trade-in',     label: 'טרייד-אין' },
+    { id: 'compare',  href: 'compare',      label: 'השוואה' },
+    { id: 'calc',     href: 'calculator',   label: 'מחשבון' },
+    { id: 'finance',  href: 'financing',    label: 'השיטה שלנו' },
+    { id: 'customers', href: 'customers',   label: 'לקוחות' },
+    { id: 'magazine', href: 'magazine',     label: 'מגזין' },
+    { id: 'contact',  href: 'contact',      label: 'צור קשר' },
   ];
   const active = document.body.dataset.page || 'home';
 
@@ -138,11 +138,11 @@ window.C2B_validPhone = function (v) {
 
   function buildMega() {
     const C = window.Car2Buy;
-    if (!C) return `<a href="models.html"${active === 'models' ? ' class="active"' : ''}>קטלוג רכבים</a>`;
+    if (!C) return `<a href="models"${active === 'models' ? ' class="active"' : ''}>קטלוג רכבים</a>`;
     const cats = C.CATS.filter((c) => c.id !== 'all')
-      .map((c) => `<a href="models.html?cat=${c.id}">${c.label}</a>`).join('');
+      .map((c) => `<a href="models?cat=${c.id}">${c.label}</a>`).join('');
     const prices = PRICE_RANGES
-      .map((r) => `<a href="models.html${r.max ? '?max=' + r.max : ''}">${r.label}</a>`).join('');
+      .map((r) => `<a href="models${r.max ? '?max=' + r.max : ''}">${r.label}</a>`).join('');
     const inv = C.LOAN_CARS || [];
     let brands;
     if (inv.length) {
@@ -157,42 +157,42 @@ window.C2B_validPhone = function (v) {
         const mono = he.replace(/[^A-Za-z\u0590-\u05FF]/g, '').charAt(0) || '•';
         const img = engName ? `<img loading="lazy" src="${C.LOGO(engName)}" alt="${he}" onerror="this.remove()">` : '';
         const disp = C.dispBrand ? C.dispBrand(he) : he;
-        return `<a href="brand.html?brand=${encodeURIComponent(he)}"><span class="mega-logo">${img}<b class="mega-mono">${mono}</b></span><span class="mega-name">${disp}</span></a>`;
+        return `<a href="brand?brand=${encodeURIComponent(he)}"><span class="mega-logo">${img}<b class="mega-mono">${mono}</b></span><span class="mega-name">${disp}</span></a>`;
       }).join('');
     } else {
       brands = C.BRANDS_ALL
         .map((b) => {
           const mono = (b.he || b.name).replace(/[^A-Za-z\u0590-\u05FF]/g, '').charAt(0) || '•';
           const img = b.slug ? `<img loading="lazy" src="${C.LOGO(b.name)}" alt="${b.he || b.name}" onerror="this.remove()">` : '';
-          return `<a href="models.html?brand=${encodeURIComponent(b.name)}"><span class="mega-logo">${img}<b class="mega-mono">${mono}</b></span><span class="mega-name">${b.he || b.name}</span></a>`;
+          return `<a href="models?brand=${encodeURIComponent(b.name)}"><span class="mega-logo">${img}<b class="mega-mono">${mono}</b></span><span class="mega-name">${b.he || b.name}</span></a>`;
         }).join('');
     }
     const needs = [
-      ['finance-budget.html', 'רכבים עד ₪3,000 לחודש'],
-      ['finance-electric.html', 'רכבים חשמליים'],
-      ['finance-family.html', 'רכבי משפחה'],
-      ['finance-business.html', 'רכב לעסק'],
-      ['finance-luxury.html', 'רכבי יוקרה'],
+      ['finance-budget', 'רכבים עד ₪3,000 לחודש'],
+      ['finance-electric', 'רכבים חשמליים'],
+      ['finance-family', 'רכבי משפחה'],
+      ['finance-business', 'רכב לעסק'],
+      ['finance-luxury', 'רכבי יוקרה'],
     ].map(([h, l]) => `<a href="${h}">${l}</a>`).join('');
     return `<div class="nav-mega" id="navMega">
-      <a href="models.html" class="mega-trigger${active === 'models' ? ' active' : ''}">קטלוג רכבים <span class="caret">▾</span></a>
+      <a href="models" class="mega-trigger${active === 'models' ? ' active' : ''}">קטלוג רכבים <span class="caret">▾</span></a>
       <div class="mega-panel"><div class="wrap mega-inner">
-        <a class="mega-promo" href="car-loan.html"><img src="promo-finance.jpg" alt="הלוואה לרכב — מימון עד 100% בהחזר חודשי נוח"></a>
+        <a class="mega-promo" href="car-loan"><img src="promo-finance.jpg" alt="הלוואה לרכב — מימון עד 100% בהחזר חודשי נוח"></a>
         <div class="mega-grid">
           <div class="mega-col mega-brands">
             <div class="mega-h">יצרנים</div>
             <div class="mega-brand-grid">${brands}</div>
-            <a class="mega-all" href="brands.html">לכל היצרנים «</a>
+            <a class="mega-all" href="brands">לכל היצרנים «</a>
           </div>
           <div class="mega-col">
             <div class="mega-h">סוג רכב</div>
             ${cats}
-            <a class="mega-all" href="models.html">לכל הקטגוריות «</a>
+            <a class="mega-all" href="models">לכל הקטגוריות «</a>
           </div>
           <div class="mega-col">
             <div class="mega-h">טווח החזר חודשי</div>
             ${prices}
-            <a class="btn btn-gold mega-col-btn" href="models.html">לכל הרכבים</a>
+            <a class="btn btn-gold mega-col-btn" href="models">לכל הרכבים</a>
           </div>
         </div>
       </div>
@@ -222,13 +222,13 @@ window.C2B_validPhone = function (v) {
               <button type="button" data-lang="ru">🇷🇺 Русский</button>
             </div>
           </div>
-          <form class="nav-search" action="models.html" role="search">
+          <form class="nav-search" action="models" role="search">
             <button type="submit" aria-label="חיפוש"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
             <input type="search" name="q" placeholder="חיפוש דגם" aria-label="חיפוש דגם" id="navSearchInput" autocomplete="off">
             <div class="nav-search-results" id="navSearchResults"></div>
           </form>
         </div>
-        <a href="index.html" class="brand nav-logo" aria-label="Car2Buy"><img class="brand-img" src="logo.png" alt="Car2Buy — רכב חדש, קל ופשוט"></a>
+        <a href="/" class="brand nav-logo" aria-label="Car2Buy"><img class="brand-img" src="logo.png" alt="Car2Buy — רכב חדש, קל ופשוט"></a>
         <div class="nav-cta">
           <a href="tel:+972723319929" class="nav-phone-pill">חייגו 072-3319929</a>
           <button type="button" class="btn nav-meeting" id="openScheduler">לתיאום פגישה</button>
@@ -255,28 +255,28 @@ window.C2B_validPhone = function (v) {
         </div>
         <div class="footer-col">
           <h5>ניווט</h5>
-          <a href="models.html">קטלוג רכבים</a>
-          <a href="yad2.html">רכבי יד 2</a>
-          <a href="how-it-works.html">איך זה עובד</a>
-          <a href="financing.html">השיטה שלנו</a>
-          <a href="about.html">אודות</a>
+          <a href="models">קטלוג רכבים</a>
+          <a href="yad2">רכבי יד 2</a>
+          <a href="how-it-works">איך זה עובד</a>
+          <a href="financing">השיטה שלנו</a>
+          <a href="about">אודות</a>
         </div>
         <div class="footer-col">
           <h5>כלים ושירותים</h5>
-          <a href="calculator.html">מחשבון החזר</a>
-          <a href="trade-in.html">טרייד-אין</a>
-          <a href="compare.html">השוואת רכבים</a>
-          <a href="personal-import.html">יבוא מקביל</a>
-          <a href="magazine.html">מגזין</a>
-          <a href="faq.html">שאלות נפוצות</a>
+          <a href="calculator">מחשבון החזר</a>
+          <a href="trade-in">טרייד-אין</a>
+          <a href="compare">השוואת רכבים</a>
+          <a href="personal-import">יבוא מקביל</a>
+          <a href="magazine">מגזין</a>
+          <a href="faq">שאלות נפוצות</a>
         </div>
         <div class="footer-col">
           <h5>לפי צורך</h5>
-          <a href="finance-budget.html">רכבים עד ₪3,000</a>
-          <a href="finance-electric.html">רכבים חשמליים</a>
-          <a href="finance-family.html">רכבי משפחה</a>
-          <a href="finance-business.html">רכב לעסק</a>
-          <a href="finance-luxury.html">רכבי יוקרה</a>
+          <a href="finance-budget">רכבים עד ₪3,000</a>
+          <a href="finance-electric">רכבים חשמליים</a>
+          <a href="finance-family">רכבי משפחה</a>
+          <a href="finance-business">רכב לעסק</a>
+          <a href="finance-luxury">רכבי יוקרה</a>
         </div>
         <div class="footer-col">
           <h5>צרו קשר</h5>
@@ -293,10 +293,10 @@ window.C2B_validPhone = function (v) {
       </div>
       <div class="footer-seo">
         <h2 class="footer-seo-h">ליסינג מימוני, מימון רכב וטרייד-אין — הכל ב-Car2Buy</h2>
-        <p class="footer-seo-p">Car2Buy מציעה <a href="financing.html">עסקאות מימון לרכב</a> חדש ויד שנייה ממגוון <a href="models.html">יצרנים ומותגים מובילים</a>, עם <a href="calculator.html">מחשבון החזר חודשי</a> שקוף, <a href="trade-in.html">הערכת טרייד-אין אונליין</a> ו<a href="compare.html">השוואת רכבים</a> חכמה. מחפשים <a href="finance-budget.html">רכב בהחזר חודשי נמוך</a>, <a href="finance-electric.html">רכב חשמלי במימון</a>, <a href="finance-family.html">רכב משפחתי</a>, <a href="finance-business.html">רכב לעסק</a> או <a href="finance-luxury.html">רכב יוקרה</a> — נבנה לכם החזר חודשי מותאם אישית. רוצים להעמיק? קראו את <a href="magazine.html">המגזין שלנו</a> או בדקו את <a href="faq.html">השאלות הנפוצות</a>.</p>
+        <p class="footer-seo-p">Car2Buy מציעה <a href="financing">עסקאות מימון לרכב</a> חדש ויד שנייה ממגוון <a href="models">יצרנים ומותגים מובילים</a>, עם <a href="calculator">מחשבון החזר חודשי</a> שקוף, <a href="trade-in">הערכת טרייד-אין אונליין</a> ו<a href="compare">השוואת רכבים</a> חכמה. מחפשים <a href="finance-budget">רכב בהחזר חודשי נמוך</a>, <a href="finance-electric">רכב חשמלי במימון</a>, <a href="finance-family">רכב משפחתי</a>, <a href="finance-business">רכב לעסק</a> או <a href="finance-luxury">רכב יוקרה</a> — נבנה לכם החזר חודשי מותאם אישית. רוצים להעמיק? קראו את <a href="magazine">המגזין שלנו</a> או בדקו את <a href="faq">השאלות הנפוצות</a>.</p>
       </div>
       <div class="footer-bottom">
-        <p class="footer-legal">© 2026 Car2Buy. כל הזכויות שמורות. ההחזר החודשי המוצג באתר הינו משוער בלבד ואינו מהווה הצעה מחייבת. תנאי העסקה כפופים לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. טרייד-אין בהתאם לבדיקה ולתנאי העסקה. אי‑עמידה בהחזרים עלולה לגרור עלויות נוספות. תמונות הרכבים להמחשה. <a href="privacy.html" style="color:inherit;text-decoration:underline;">מדיניות פרטיות ותנאי שימוש</a>.</p>
+        <p class="footer-legal">© 2026 Car2Buy. כל הזכויות שמורות. ההחזר החודשי המוצג באתר הינו משוער בלבד ואינו מהווה הצעה מחייבת. תנאי העסקה כפופים לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. טרייד-אין בהתאם לבדיקה ולתנאי העסקה. אי‑עמידה בהחזרים עלולה לגרור עלויות נוספות. תמונות הרכבים להמחשה. <a href="privacy" style="color:inherit;text-decoration:underline;">מדיניות פרטיות ותנאי שימוש</a>.</p>
         <p>עוצב ונבנה עבור Car2Buy</p>
       </div>
     </div>
@@ -401,7 +401,7 @@ window.C2B_validPhone = function (v) {
     const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     function carFrom(btn) {
       const card = btn.closest('.ucard, .car, article'); if (!card) return null;
-      const link = card.querySelector('a.uc-hit, a.car-hit, a[href*="used-car.html"], a[href*="car.html"]');
+      const link = card.querySelector('a.uc-hit, a.car-hit, a[href*="used-car"], a[href*="car"]');
       const img = card.querySelector('img');
       const pay = card.querySelector('.uc-pay, .ccard-pay');
       const nm = card.dataset.name || (card.querySelector('.uc-name, .ccard-name') || {}).textContent || '';
@@ -584,8 +584,8 @@ window.C2B_validPhone = function (v) {
     document.body.insertAdjacentHTML('beforeend',
       '<div id="mobileBar" class="mbar">' +
         '<a class="mbar-btn wa" href="https://wa.me/972723319929" target="_blank" rel="noopener" data-track="whatsapp_click"><span class="mbar-ic">✆</span>וואטסאפ</a>' +
-        '<a class="mbar-btn primary" href="contact.html" data-open-lead data-source="mobilebar_finance" data-track="finance_offer_click"><span class="mbar-ic">₪</span>הצעת מימון</a>' +
-        '<a class="mbar-btn" href="contact.html" data-open-scheduler data-track="schedule_meeting_click"><span class="mbar-ic">☕</span>פגישה</a>' +
+        '<a class="mbar-btn primary" href="contact" data-open-lead data-source="mobilebar_finance" data-track="finance_offer_click"><span class="mbar-ic">₪</span>הצעת מימון</a>' +
+        '<a class="mbar-btn" href="contact" data-open-scheduler data-track="schedule_meeting_click"><span class="mbar-ic">☕</span>פגישה</a>' +
       '</div>');
   }
 
@@ -603,7 +603,7 @@ window.C2B_validPhone = function (v) {
           "inLanguage": "he-IL",
           "potentialAction": {
             "@type": "SearchAction",
-            "target": { "@type": "EntryPoint", "urlTemplate": BASE + "models.html?q={search_term_string}" },
+            "target": { "@type": "EntryPoint", "urlTemplate": BASE + "models?q={search_term_string}" },
             "query-input": "required name=search_term_string"
           }
         },
@@ -690,7 +690,7 @@ window.C2B_validPhone = function (v) {
   if (!localStorage.getItem('c2b_consent') && !document.getElementById('cookieBar')) {
     document.body.insertAdjacentHTML('beforeend',
       '<div id="cookieBar" class="cookie-bar">' +
-        '<p>אנו משתמשים בעוגיות לשיפור החוויה ולמדידה שיווקית. המשך הגלישה מהווה הסכמה. <a href="privacy.html">למדיניות הפרטיות</a>.</p>' +
+        '<p>אנו משתמשים בעוגיות לשיפור החוויה ולמדידה שיווקית. המשך הגלישה מהווה הסכמה. <a href="privacy">למדיניות הפרטיות</a>.</p>' +
         '<div class="cookie-actions"><button class="btn btn-ghost" id="cookieDecline">דחייה</button><button class="btn btn-gold" id="cookieOk">אישור</button></div>' +
       '</div>');
     const close = (v) => { localStorage.setItem('c2b_consent', v); const b = document.getElementById('cookieBar'); if (b) b.remove(); window.c2bTrack && c2bTrack('consent_' + v); };
@@ -741,11 +741,11 @@ window.C2B_validPhone = function (v) {
         return (m.brand + ' ' + m.name + ' ' + (m.trim || '') + ' ' + m.type + ' ' + dB(m.brand) + ' ' + eM(m.name)).toLowerCase().indexOf(q) !== -1;
       }).slice(0, 8);
       if (!hits.length) {
-        nsOut.innerHTML = '<div class="ns-empty">לא נמצא דגם תואם — <a href="contact.html">נאתר עבורכם כל רכב</a></div>';
+        nsOut.innerHTML = '<div class="ns-empty">לא נמצא דגם תואם — <a href="contact">נאתר עבורכם כל רכב</a></div>';
         nsOut.classList.add('open'); return;
       }
       nsOut.innerHTML = hits.map(function (m) {
-        return '<a class="ns-row" href="car.html?car=' + m.id + '">' +
+        return '<a class="ns-row" href="car?car=' + m.id + '">' +
           '<img class="ns-thumb" loading="lazy" src="' + esc(m.img) + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
           '<span class="ns-meta"><b>' + esc(dB(m.brand)) + ' ' + esc(eM(m.name)) + '</b><span>' + (m.power ? m.power + ' כ״ס · ' : '') + esc(m.fuel) + '</span></span>' +
           '<span class="ns-price">' + NIS(m.monthly) + '<small> /ח׳</small></span></a>';

@@ -15,12 +15,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <title>מאמר · Car2Buy</title>
 <meta name="description" id="metaDesc" content="">
 <!-- static social/canonical (scraper-visible; site.js augments at runtime) -->
-<link rel="canonical" href="https://car2buy.co.il/brand-article.html">
+<link rel="canonical" href="https://car2buy.co.il/brand-article">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Car2Buy">
 <meta property="og:locale" content="he_IL">
 <meta property="og:title" content="מאמר · Car2Buy">
-<meta property="og:url" content="https://car2buy.co.il/brand-article.html">
+<meta property="og:url" content="https://car2buy.co.il/brand-article">
 <meta property="og:image" content="https://car2buy.co.il/og-default.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="מאמר · Car2Buy">
@@ -377,7 +377,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   if (!brand || !models.length) {
     root.innerHTML = '<section class="section"><div class="wrap" style="text-align:center;padding:100px 0;">'
       + '<h1 style="font-size:34px;">המאמר לא נמצא</h1>'
-      + '<a href="models.html" class="btn btn-gold" style="margin-top:22px;">חזרה לקטלוג</a></div></section>';
+      + '<a href="models" class="btn btn-gold" style="margin-top:22px;">חזרה לקטלוג</a></div></section>';
     return;
   }
 
@@ -450,7 +450,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var galImgs = imgs.slice(0, 9);
   var galleryHtml = galImgs.map(function (src, i) {
     var slug = models[i % models.length].slug;
-    return '<a href="car.html?car=' + slug + '"><img loading="lazy" src="' + esc(src) + '" alt="' + esc(enBrand) + '" onerror="this.parentNode.style.display=\'none\'"></a>';
+    return '<a href="car?car=' + slug + '"><img loading="lazy" src="' + esc(src) + '" alt="' + esc(enBrand) + '" onerror="this.parentNode.style.display=\'none\'"></a>';
   }).join('');
 
   // ---- "חדש במגזין" cross-brand teasers ----
@@ -463,19 +463,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return { brand: b, a: arts[idx], idx: idx, img: mm[mm.length - 1] ? mm[mm.length - 1].img : (mm[0] && mm[0].img) };
   });
   var teaserHtml = teasers.map(function (o) {
-    return '<a class="side-mag-item" href="brand-article.html?brand=' + encodeURIComponent(o.brand) + '&a=' + o.idx + '">'
+    return '<a class="side-mag-item" href="brand-article?brand=' + encodeURIComponent(o.brand) + '&a=' + o.idx + '">'
       + '<div class="ph"><img loading="lazy" src="' + esc(o.img) + '" alt="' + esc(o.a.title) + '" onerror="this.style.display=\'none\'"></div>'
       + '<div class="t">' + esc(o.a.title) + '</div></a>';
   }).join('');
 
   function ic(path) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>'; }
   var railItems = [
-    { t: 'עסקת טרייד-אין דיגיטלית', href: 'trade-in.html', p: '<path d="M3 7h13l5 5v5h-3M3 7v10h3"/><circle cx="7.5" cy="17" r="2"/><circle cx="17.5" cy="17" r="2"/>' },
-    { t: 'קבלו הלוואה לרכב חדש', href: 'car-loan.html', p: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>' },
-    { t: 'בואו אלינו לפגישה', href: 'contact.html', hot: true, p: '<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="5"/><line x1="10" y1="2" x2="10" y2="5"/>' },
+    { t: 'עסקת טרייד-אין דיגיטלית', href: 'trade-in', p: '<path d="M3 7h13l5 5v5h-3M3 7v10h3"/><circle cx="7.5" cy="17" r="2"/><circle cx="17.5" cy="17" r="2"/>' },
+    { t: 'קבלו הלוואה לרכב חדש', href: 'car-loan', p: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>' },
+    { t: 'בואו אלינו לפגישה', href: 'contact', hot: true, p: '<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="5"/><line x1="10" y1="2" x2="10" y2="5"/>' },
     { t: 'דברו איתנו בוואטסאפ', href: 'https://wa.me/972723319929', hot: true, p: '<path d="M21 11.5a8.5 8.5 0 0 1-12.8 7.3L3 21l2.3-5.1A8.5 8.5 0 1 1 21 11.5Z"/>' },
-    { t: 'השוואת סוגי רכבים', href: 'compare.html', p: '<line x1="12" y1="3" x2="12" y2="21"/><path d="M6 8 3 14h6ZM18 8l-3 6h6Z"/>' },
-    { t: 'המומלצים של Car2Buy', href: 'models.html', p: '<path d="m12 3 2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5-2.9 1-5.5-4-3.9 5.5-.8Z"/>' }
+    { t: 'השוואת סוגי רכבים', href: 'compare', p: '<line x1="12" y1="3" x2="12" y2="21"/><path d="M6 8 3 14h6ZM18 8l-3 6h6Z"/>' },
+    { t: 'המומלצים של Car2Buy', href: 'models', p: '<path d="m12 3 2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5-2.9 1-5.5-4-3.9 5.5-.8Z"/>' }
   ];
   var railHtml = railItems.map(function (r) {
     return '<a class="rail-card' + (r.hot ? ' hot' : '') + '" href="' + r.href + '">'
@@ -488,8 +488,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       + '<div class="art-hero-bg"><img src="' + esc(art.heroImg) + '" alt="' + esc(art.title) + '" onerror="this.style.display=\'none\'"></div>'
       + '<div class="art-hero-tint"></div>'
       + '<div class="wrap">'
-        + '<nav class="art-crumb"><a href="index.html">ראשי</a> <span>›</span> <a href="models.html">קטלוג רכבים</a> <span>›</span> '
-        + '<a href="brand.html?brand=' + brandEnc + '">' + esc(brandDisp) + '</a> <span>›</span> <b>' + esc(art.tag) + '</b></nav>'
+        + '<nav class="art-crumb"><a href="/">ראשי</a> <span>›</span> <a href="models">קטלוג רכבים</a> <span>›</span> '
+        + '<a href="brand?brand=' + brandEnc + '">' + esc(brandDisp) + '</a> <span>›</span> <b>' + esc(art.tag) + '</b></nav>'
         + '<div class="art-head">'
           + '<span class="art-tag">' + esc(art.tag) + '</span>'
           + '<h1 class="art-title">' + esc(art.title) + '</h1>'
@@ -518,7 +518,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           + '<h3>מחליפים רכב?</h3>'
           + '<div class="side-swap-btns">'
             + '<a class="sell" href="#" data-open-tradein>מכירת הרכב הישן</a>'
-            + '<a class="buy" href="models.html">חיפוש רכב חדש</a>'
+            + '<a class="buy" href="models">חיפוש רכב חדש</a>'
           + '</div>'
           + '<div class="side-google" data-open-grev>'
             + '<span class="g"><b>G</b><b>o</b><b>o</b><b>g</b><b>l</b><b>e</b></span>'
@@ -549,7 +549,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             + '<input type="text" name="name" placeholder="שם מלא" aria-label="שם מלא" required>'
             + '<input type="tel" name="phone" placeholder="מספר טלפון" aria-label="טלפון" required>'
             + '<input type="email" name="email" placeholder="אימייל" aria-label="אימייל">'
-            + '<label class="side-consent"><input type="checkbox" checked required> <span>אני מאשר/ת את <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a> ומסכים/ה לקבל מידע פרסומי מ-Car2Buy</span></label>'
+            + '<label class="side-consent"><input type="checkbox" checked required> <span>אני מאשר/ת את <a href="privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a> ומסכים/ה לקבל מידע פרסומי מ-Car2Buy</span></label>'
             + '<button type="submit" class="submit">צרו איתי קשר</button>'
           + '</form>'
           + '<div class="side-thanks" id="sideThanks">תודה! ניצור איתכם קשר בהקדם ✓</div>'

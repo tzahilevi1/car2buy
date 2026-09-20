@@ -69,7 +69,7 @@
   }
 
   function carChip(m) {
-    return `<a class="ai-rec" href="car.html?car=${m.id}">
+    return `<a class="ai-rec" href="car?car=${m.id}">
       <span class="brand-logo ai-rec-logo"><img src="${LOGO(m.brand)}" alt="" onerror="this.closest('.ai-rec-logo').style.display='none'"></span>
       <span class="ai-rec-meta"><b>${dB(m.brand)} ${eM(m.name)}</b><span>${NIS(m.monthly)} / חודש · ${m.power} כ״ס · ${m.fuel}</span></span>
       <span class="ai-rec-go">←</span></a>`;

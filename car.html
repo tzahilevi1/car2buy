@@ -14,12 +14,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>רכב חדש · מפרט, מחיר והחזר חודשי · Car2Buy</title>
 <!-- static social/canonical (scraper-visible; site.js augments at runtime) -->
-<link rel="canonical" href="https://car2buy.co.il/car.html">
+<link rel="canonical" href="https://car2buy.co.il/car">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Car2Buy">
 <meta property="og:locale" content="he_IL">
 <meta property="og:title" content="רכב חדש · מפרט, מחיר והחזר חודשי · Car2Buy">
-<meta property="og:url" content="https://car2buy.co.il/car.html">
+<meta property="og:url" content="https://car2buy.co.il/car">
 <meta property="og:image" content="https://car2buy.co.il/og-default.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="רכב חדש · מפרט, מחיר והחזר חודשי · Car2Buy">
@@ -615,7 +615,7 @@ function renderCarDetail() {
   if (!car) {
     root.innerHTML = '<div class="wrap cd-missing"><h1>הרכב לא נמצא</h1>' +
       '<p>ייתכן שהקישור שגוי או שהדגם עדיין לא הועלה.</p>' +
-      '<div class="mh-actions" style="justify-content:center;margin-top:24px;"><a class="btn btn-gold btn-lg" href="models.html">חזרה לקטלוג רכבים</a></div></div>';
+      '<div class="mh-actions" style="justify-content:center;margin-top:24px;"><a class="btn btn-gold btn-lg" href="models">חזרה לקטלוג רכבים</a></div></div>';
     return;
   }
 
@@ -1076,7 +1076,7 @@ function renderCarDetail() {
           '<div class="cd-trims-grid">' +
             trims.map(function (t) {
               var cur = t.id === slug;
-              return '<a class="cd-trim' + (cur ? ' is-cur' : '') + '" href="car.html?car=' + encodeURIComponent(t.id) + '">' +
+              return '<a class="cd-trim' + (cur ? ' is-cur' : '') + '" href="car?car=' + encodeURIComponent(t.id) + '">' +
                 '<div class="cd-trim-head">' +
                   '<span class="cd-trim-name"><bdi>' + esc(t.trim || 'סטנדרט') + '</bdi></span>' +
                   (cur ? '<span class="cd-trim-badge">הגרסה שנבחרה</span>' : '') +
@@ -1098,7 +1098,7 @@ function renderCarDetail() {
       '<div class="cd-hero-tint"></div>' +
       (heroCarSrc ? '<div class="cd-hero-car"><img src="' + esc(heroCarSrc) + '" alt="' + esc(fullName) + '" onerror="this.parentNode.style.display=\'none\'"></div>' : '') +
       '<div class="wrap cd-hero-inner">' +
-        '<nav class="cd-crumb"><a href="index.html">ראשי</a><span>›</span><a href="models.html">קטלוג רכבים</a><span>›</span><b>' + esc(modelDisp) + '</b></nav>' +
+        '<nav class="cd-crumb"><a href="/">ראשי</a><span>›</span><a href="models">קטלוג רכבים</a><span>›</span><b>' + esc(modelDisp) + '</b></nav>' +
         '<div class="cd-eyebrow">' + esc(brandDisp) + ' · ' + esc(car.type) + '</div>' +
         '<h1 class="cd-title">' + esc(modelDisp) + (car.trim ? ' <span class="gold-text">' + esc(car.trim) + '</span>' : '') + '</h1>' +
         '<p class="cd-tagline">' + esc(car.tagline || '') + '</p>' +
@@ -1136,7 +1136,7 @@ function renderCarDetail() {
             (carVideo ? '<button type="button" class="cd-vbtn cd-vbtn-wide" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפו בסרטון הרכב</button>' : '') +
             '<div class="cd-lead-cta">' +
               '<button type="button" class="btn btn-gold btn-lg" data-open-lead>לרכישת ' + esc(fullName) + ' החדשה</button>' +
-              '<a class="btn btn-ghost btn-lg" href="calculator.html">חשבו החזר חודשי</a>' +
+              '<a class="btn btn-ghost btn-lg" href="calculator">חשבו החזר חודשי</a>' +
             '</div>' +
           '</div>' +
           '<div class="cd-article">' +
@@ -1155,7 +1155,7 @@ function renderCarDetail() {
           '<div class="cd-payband-main">' + (car.monthly60 > 0 ? '<div class="lab">החזר חודשי החל מ-</div><div class="big">' + fmt(car.monthly60) + '<small> / חודש</small></div>' : '<div class="lab">תמחור אישי</div><div class="big">דברו איתנו להצעה</div>') + '</div>' +
           '<div class="cd-payband-facts">' + factsHtml + '</div>' +
           '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
-            '<a class="btn btn-gold btn-lg" href="car-loan.html#wizard">קבלו הצעת מימון</a>' +
+            '<a class="btn btn-gold btn-lg" href="car-loan#wizard">קבלו הצעת מימון</a>' +
             (carVideo ? '<button type="button" class="cd-vbtn" data-open-video>' + ic('<path d="m9 8 7 4-7 4V8Z"/><rect x="2" y="3" width="20" height="18" rx="3"/>') + 'צפו בסרטון</button>' : '') +
           '</div>' +
         '</div>' +
@@ -1174,7 +1174,7 @@ function renderCarDetail() {
           '<div class="cd-stats">' + statsHtml + '</div>' +
           '<div class="cd-acc">' + accHtml + '</div>' +
           '<div class="cd-card-cta">' +
-            '<a class="btn btn-gold btn-lg" href="car-loan.html#wizard">קבלו הצעת מימון לרכב זה</a>' +
+            '<a class="btn btn-gold btn-lg" href="car-loan#wizard">קבלו הצעת מימון לרכב זה</a>' +
             '<a class="btn btn-ghost" href="tel:+972723319929">דברו עם יועץ · 072-3319929</a>' +
             '<div class="cd-card-note">המפרט להמחשה בלבד וייתכנו הבדלים בין רמות הגימור. ההחזר החודשי משוער ואינו מהווה הצעה מחייבת.</div>' +
           '</div>' +
@@ -1271,8 +1271,8 @@ function renderCarDetail() {
           '<h2 class="cd-cta-title">אהבתם את ה' + esc(car.model) + '?<br><span class="gold-text">בואו נתאים לכם מימון</span></h2>' +
           '<p class="cd-cta-sub">פתחו בקשה אונליין תוך 3 דקות וקבלו הצעת מימון אישית למימון הרכב שלכם.</p>' +
           '<div class="cd-cta-actions">' +
-            '<a class="btn btn-gold btn-lg" href="car-loan.html#wizard">פתחו בקשה ←</a>' +
-            '<a class="btn btn-ghost btn-lg" href="models.html">לכל הקטלוג</a>' +
+            '<a class="btn btn-gold btn-lg" href="car-loan#wizard">פתחו בקשה ←</a>' +
+            '<a class="btn btn-ghost btn-lg" href="models">לכל הקטלוג</a>' +
           '</div>' +
           '<div class="cd-cta-trust">' +
             '<span>' + ic('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>') + 'מענה תוך כ-30 דקות</span>' +
@@ -1432,7 +1432,7 @@ function renderCarDetail() {
     var html = '', ci = 0;
     for (var cell = 0; cell < 9; cell++) {
       if (cell === 4) {
-        html += '<a class="cd-cust-tile" href="customers.html">לאזור<br>הלקוחות ←</a>';
+        html += '<a class="cd-cust-tile" href="customers">לאזור<br>הלקוחות ←</a>';
       } else {
         var x = pics[ci];
         html += '<div class="mcell" data-cust="' + ci + '">' +
@@ -1477,7 +1477,7 @@ function renderCarDetail() {
     (window.Car2Buy.CARS || []).forEach(function (c) { FLAG[c.brand + '|' + c.model] = c.slug; });
     box.innerHTML = picks.map(function (c) {
       var slug = FLAG[c.brand + '|' + c.name];
-      var href = 'car.html?car=' + (slug || c.id);
+      var href = 'car?car=' + (slug || c.id);
       var full = (window.Car2Buy.enName ? window.Car2Buy.enName(c) : c.brand + ' ' + c.name);
       return '<a class="cd-sim-card" href="' + href + '">' +
         '<div class="cd-sim-img">' + (c.img ? '<img loading="lazy" src="' + esc(c.img) + '" alt="' + esc(full) + '">' : '') + '</div>' +
@@ -1510,7 +1510,7 @@ function renderCarDetail() {
     }
     var clk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
     box.innerHTML = arts.map(function (a, i) {
-      return '<a class="ba-card reveal" href="brand-article.html?brand=' + encodeURIComponent(car.brand) + '&a=' + i + '">' +
+      return '<a class="ba-card reveal" href="brand-article?brand=' + encodeURIComponent(car.brand) + '&a=' + i + '">' +
         '<div class="ba-ph">' +
           '<span class="ba-cat ' + catClass(a.tag) + '">' + catIcon(a.tag) + esc(a.tag) + '</span>' +
           '<img loading="lazy" src="' + esc(a.heroImg) + '" alt="' + esc(a.title) + '" onerror="this.style.visibility=\'hidden\'">' +

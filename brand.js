@@ -29,7 +29,7 @@
   brandDisp = brandDisp2;
   var wrap = root;
 
-  if (!brand) { location.href = 'models.html'; return; }
+  if (!brand) { location.href = 'models'; return; }
 
   document.title = brandDisp + ' · קטלוג רכבים · Car2Buy';
   try { window.C2B_setMeta && C2B_setMeta({ description: brandDisp + ' — כל הדגמים, המחירים וההחזר החודשי של ' + brandDisp + ' ב-Car2Buy. מצאו את הרכב המתאים לכם בליסינג מימוני.' }); } catch (e) {}
@@ -79,14 +79,14 @@
     var intro0 = (binfo && binfo.intro) || (brandDisp + ' היא יצרנית רכב מבוקשת, ו-Car2Buy יכולה להשיג עבורכם כל דגם שלה בעסקת מימון עם החזר חודשי נוח. אנחנו עובדים מול כל היבואנים ומתחייבים לתנאים ולריביות הטובים ביותר בשוק.');
     wrap.innerHTML =
       '<section class="brand-hero"><div class="wrap">'
-      + '<nav class="brand-crumb"><a href="index.html">ראשי</a> <span>›</span> <a href="models.html">קטלוג רכבים</a> <span>›</span> <b>' + esc(brandDisp) + '</b></nav>'
+      + '<nav class="brand-crumb"><a href="/">ראשי</a> <span>›</span> <a href="models">קטלוג רכבים</a> <span>›</span> <b>' + esc(brandDisp) + '</b></nav>'
       + '<div class="brand-head">' + (logoUrl ? '<div class="brand-logo-big"><img src="' + esc(logoUrl) + '" alt="' + esc(brand) + '" onerror="this.style.display=\'none\'"></div>' : '') + '<h1 class="brand-title">' + esc(brandDisp) + '</h1>'
       + '<div class="brand-count">משיגים לכם כל דגם של ' + esc(brandDisp) + '</div></div></div></section>'
       + '<section class="section brand-content-sec"><div class="wrap" style="max-width:860px;">'
       + '<div class="cd-section-k">אודות היצרן</div><h2 class="brand-content-h">' + esc(brandDisp) + ' ב-Car2Buy</h2>'
       + '<div class="brand-content"><p>' + esc(intro0) + '</p>'
       + '<p>גם אם דגם מסוים אינו מופיע כרגע בקטלוג המלאי שלנו — אנחנו נאתר ונשיג אותו עבורכם, בליווי אישי מלא ובמסלול מימון של עד 100% בהחזר חודשי מותאם. יש לכם רכב קיים? עסקת טרייד-אין תקזז את שוויו ותקטין עוד יותר את ההחזר.</p></div>'
-      + '<div class="mh-actions" style="margin-top:26px;"><a href="contact.html" class="btn btn-gold btn-lg">השאירו פרטים לרכב ' + esc(brandDisp) + '</a> <a href="https://wa.me/972723319929" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">שיחה בוואטסאפ</a></div>'
+      + '<div class="mh-actions" style="margin-top:26px;"><a href="contact" class="btn btn-gold btn-lg">השאירו פרטים לרכב ' + esc(brandDisp) + '</a> <a href="https://wa.me/972723319929" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">שיחה בוואטסאפ</a></div>'
       + '</div></section>';
     document.title = brandDisp + ' · Car2Buy';
     return;
@@ -98,7 +98,7 @@
 
   // ---------- models grid ----------
   var cards = models.map(function (g) {
-    var href = 'car.html?car=' + g.slug;
+    var href = 'car?car=' + g.slug;
     var full = (C.enName ? C.enName(g) : g.brand + ' ' + g.name);
     return '<article class="car ccard reveal">'
       + '<a class="car-hit" href="' + href + '">'
@@ -126,7 +126,7 @@
   // ---------- articles (3 original SEO articles per brand) ----------
   var brandArticles = (window.C2B_BRAND_ARTICLES ? window.C2B_BRAND_ARTICLES(brand, models, { esc: esc, NIS: NIS, fuelOf: fuelOf }) : []);
   var artCards = brandArticles.map(function (a, i) {
-    return '<a class="ba-card reveal" href="brand-article.html?brand=' + encodeURIComponent(brand) + '&a=' + i + '">'
+    return '<a class="ba-card reveal" href="brand-article?brand=' + encodeURIComponent(brand) + '&a=' + i + '">'
       + '<div class="ba-ph"><img loading="lazy" src="' + esc(a.heroImg) + '" alt="' + esc(a.title) + '" onerror="this.style.display=\'none\'"></div>'
       + '<div class="ba-body"><span class="ba-tag">' + esc(a.tag) + '</span>'
       + '<h4>' + esc(a.title) + '</h4><p>' + esc(a.dek) + '</p>'
@@ -137,12 +137,12 @@
   wrap.innerHTML =
     '<section class="brand-hero">'
     + '<div class="wrap">'
-    + '<nav class="brand-crumb"><a href="index.html">ראשי</a> <span>›</span> <a href="models.html">קטלוג רכבים</a> <span>›</span> <b>' + esc(brandDisp) + '</b></nav>'
+    + '<nav class="brand-crumb"><a href="/">ראשי</a> <span>›</span> <a href="models">קטלוג רכבים</a> <span>›</span> <b>' + esc(brandDisp) + '</b></nav>'
     + '<div class="brand-head">'
     + (logoImg ? '<div class="brand-logo-big">' + logoImg + '</div>' : '')
     + '<h1 class="brand-title">' + esc(brandDisp) + '</h1>'
     + '<div class="brand-count">מציג ' + models.length + ' דגמים</div>'
-    + '<a href="models.html" class="brand-back">חזרה לקטלוג ‹</a>'
+    + '<a href="models" class="brand-back">חזרה לקטלוג ‹</a>'
     + '</div>'
     + '</div>'
     + '</section>'

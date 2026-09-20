@@ -321,7 +321,7 @@ function boot(){
   var lo='<option value="">(ללא — טקסט)</option>'+LOGOS.map(function(s){return '<option value="images/brands/'+s+'.svg">'+s+'</option>';}).join('');
   $('logo').innerHTML=lo; syncLogo();
   // fetch shared style
-  fetch('jaecoo8-bold.html').then(function(r){return r.text();}).then(function(t){
+  fetch('jaecoo8-bold').then(function(r){return r.text();}).then(function(t){
     var m=t.match(/<style>[\s\S]*?<\/style>/); STYLE=m?m[0]:''; update();
   }).catch(function(){ STYLE='<style>body{background:#08090b;color:#fff;font-family:Heebo}</style>'; update(); });
   // fetch model list

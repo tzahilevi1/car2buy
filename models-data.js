@@ -442,7 +442,7 @@
       const dispFull = C2B.enName ? C2B.enName(m) : (m.brand + ' ' + m.name);
       return `<article class="car reveal" data-cat="${m.cat}" data-brand="${m.brand}" data-fuel="${m.fuel}" data-monthly="${m.monthly}" data-name="${dispFull}">
         <button class="car-compare" type="button" data-id="${m.id}">+ השוואה</button>
-        <a class="car-hit" href="car.html?car=${m.id}">
+        <a class="car-hit" href="car?car=${m.id}">
           <div class="car-ph car-ph-shot"><img loading="lazy" src="${m.img}" alt="${dispFull}">
             ${m.tag ? `<span class="car-badge">${m.tag}</span>` : ''}
             ${LOGO_SLUG[m.brand] ? `<span class="brand-logo car-logo-badge"><img loading="lazy" src="${LOGO(m.brand)}" alt="${dispB}" onerror="this.closest('.brand-logo').style.display='none'"></span>` : ''}
@@ -462,7 +462,7 @@
           </div>
         </a>
         <div class="car-actions">
-          <a class="car-cta-main" href="car.html?car=${m.id}">כמה יעלה לי להפוך את זה למציאות?</a>
+          <a class="car-cta-main" href="car?car=${m.id}">כמה יעלה לי להפוך את זה למציאות?</a>
         </div>
       </article>`;
     },
@@ -478,7 +478,7 @@
         : isHyb
           ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C9 6 6 9 6 13a6 6 0 0 0 12 0c0-4-3-7-6-11z"/></svg>'
           : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c3 4 5 6.5 5 9a5 5 0 0 1-10 0c0-2.5 2-5 5-9z"/></svg>';
-      const href = 'used-car.html?car=u' + i;
+      const href = 'used-car?car=u' + i;
       // photo priority: the car's own sheet photos → model gallery → branded placeholder
       const ucGal = (window.Car2Buy && window.Car2Buy.usedGallery) ? window.Car2Buy.usedGallery(u) : (u.gallery || []);
       const ucImg = u.img || ucGal[0] || '';
@@ -510,7 +510,7 @@
       </article>`;
     },
     articleCard(a) {
-      return `<a class="post reveal" href="article.html?id=${a.id}">
+      return `<a class="post reveal" href="article?id=${a.id}">
         <div class="post-img"><img loading="lazy" src="${a.img}" alt="${a.title}"><span class="post-cat">${a.cat}</span></div>
         <div class="post-body">
           <div class="post-date">${a.date}</div>
@@ -523,7 +523,7 @@
     dirCard(b) {
       const mono = (b.he || b.name).replace(/[^A-Za-z\u0590-\u05FF]/g, '').charAt(0) || '•';
       const img = b.slug ? `<img loading="lazy" src="${LOGO(b.name)}" alt="${b.name}" onerror="this.remove()">` : '';
-      return `<a class="dir-item" href="brand.html?brand=${encodeURIComponent(b.he || b.name)}">
+      return `<a class="dir-item" href="brand?brand=${encodeURIComponent(b.he || b.name)}">
         <span class="dir-name">${b.he || b.name}</span>
         <span class="dir-logo">${img}<b class="dir-mono">${mono}</b></span>
       </a>`;

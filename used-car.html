@@ -14,12 +14,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>רכב יד שנייה · מפרט ומחיר · Car2Buy</title>
 <!-- static social/canonical (scraper-visible; site.js augments at runtime) -->
-<link rel="canonical" href="https://car2buy.co.il/used-car.html">
+<link rel="canonical" href="https://car2buy.co.il/used-car">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Car2Buy">
 <meta property="og:locale" content="he_IL">
 <meta property="og:title" content="רכב יד שנייה · מפרט ומחיר · Car2Buy">
-<meta property="og:url" content="https://car2buy.co.il/used-car.html">
+<meta property="og:url" content="https://car2buy.co.il/used-car">
 <meta property="og:image" content="https://car2buy.co.il/og-default.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="רכב יד שנייה · מפרט ומחיר · Car2Buy">
@@ -725,7 +725,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   if (!car) {
     root.innerHTML = '<div class="wrap cd-missing"><h1>הרכב לא נמצא</h1>' +
       '<p>ייתכן שהקישור שגוי או שהדגם עדיין לא הועלה.</p>' +
-      '<div class="mh-actions" style="justify-content:center;margin-top:24px;"><a class="btn btn-gold btn-lg" href="models.html">חזרה לקטלוג רכבים</a></div></div>';
+      '<div class="mh-actions" style="justify-content:center;margin-top:24px;"><a class="btn btn-gold btn-lg" href="models">חזרה לקטלוג רכבים</a></div></div>';
     return;
   }
 
@@ -1356,9 +1356,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         '</form>' +
         '<label class="uc-consent"><input type="checkbox" checked required><span>אני מאשר/ת את <a href="#">מדיניות הפרטיות</a> ומסכים/ה לקבל מידע פרסומי מ-Car2Buy</span></label>' +
         '<div class="uc-help-cards">' +
-          '<a class="uc-help-card" href="finance-business.html"><h3>בעל עסק?</h3><span class="rule"></span><span class="lk">ליסינג לעסקים &raquo;</span></a>' +
-          '<a class="uc-help-card" href="models.html"><h3>מצא את הרכב הבא שלך</h3><span class="rule"></span><span class="lk">קטלוג רכבים &raquo;</span></a>' +
-          '<a class="uc-help-card" href="car-loan.html"><h3>בדוק זכאותך למימון</h3><span class="rule"></span><span class="lk">מימון אונליין &raquo;</span></a>' +
+          '<a class="uc-help-card" href="finance-business"><h3>בעל עסק?</h3><span class="rule"></span><span class="lk">ליסינג לעסקים &raquo;</span></a>' +
+          '<a class="uc-help-card" href="models"><h3>מצא את הרכב הבא שלך</h3><span class="rule"></span><span class="lk">קטלוג רכבים &raquo;</span></a>' +
+          '<a class="uc-help-card" href="car-loan"><h3>בדוק זכאותך למימון</h3><span class="rule"></span><span class="lk">מימון אונליין &raquo;</span></a>' +
         '</div>' +
       '</div>' +
     '</section>' +
@@ -1476,7 +1476,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var html = '', ci = 0;
     for (var cell = 0; cell < 9; cell++) {
       if (cell === 4) {
-        html += '<a class="cd-cust-tile" href="customers.html">לאזור<br>הלקוחות ←</a>';
+        html += '<a class="cd-cust-tile" href="customers">לאזור<br>הלקוחות ←</a>';
       } else {
         var x = pics[ci];
         html += '<div class="mcell" data-cust="' + ci + '">' +
@@ -1521,7 +1521,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     (window.Car2Buy.CARS || []).forEach(function (c) { FLAG[c.brand + '|' + c.model] = c.slug; });
     box.innerHTML = picks.map(function (c) {
       var slug = FLAG[c.brand + '|' + c.name];
-      var href = 'car.html?car=' + (slug || c.id);
+      var href = 'car?car=' + (slug || c.id);
       var full = (window.Car2Buy.enName ? window.Car2Buy.enName(c) : c.brand + ' ' + c.name);
       return '<a class="cd-sim-card" href="' + href + '">' +
         '<div class="cd-sim-img">' + (c.img ? '<img loading="lazy" src="' + esc(c.img) + '" alt="' + esc(full) + '">' : '') + '</div>' +
@@ -1554,7 +1554,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
     var clk = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
     box.innerHTML = arts.map(function (a, i) {
-      return '<a class="ba-card reveal" href="brand-article.html?brand=' + encodeURIComponent(car.brand) + '&a=' + i + '">' +
+      return '<a class="ba-card reveal" href="brand-article?brand=' + encodeURIComponent(car.brand) + '&a=' + i + '">' +
         '<div class="ba-ph">' +
           '<span class="ba-cat ' + catClass(a.tag) + '">' + catIcon(a.tag) + esc(a.tag) + '</span>' +
           '<img loading="lazy" src="' + esc(a.heroImg) + '" alt="' + esc(a.title) + '" onerror="this.style.visibility=\'hidden\'">' +

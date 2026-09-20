@@ -298,7 +298,7 @@ ${figs()}
 const list = Object.values(groups).sort((a, b) => (a.m || 9e9) - (b.m || 9e9));
 const built = [];
 for (const x of list) {
-  if (x.folder === 'jaecoo-8') { built.push({ ...x, file: 'jaecoo8-bold.html', special: true }); continue; }
+  if (x.folder === 'jaecoo-8') { built.push({ ...x, file: 'jaecoo8-bold', special: true }); continue; }
   const file = 'lp-' + x.folder + '.html';
   fs.writeFileSync(ROOT + '/' + file, page(x), 'utf8');
   built.push({ ...x, file });
