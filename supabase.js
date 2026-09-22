@@ -98,6 +98,25 @@
     });
   }
 
+  // הצגת שגיאה גלויה כשליד לא נשמר בפועל — כדי שלעולם לא "ייעלם" ליד בשקט
+  // (אותו עיקרון של טופס הקשר). מכסה כל טופס באתר, כולל דפי הנחיתה.
+  function C2B_leadFail() {
+    try {
+      var t = document.getElementById('c2bLeadFail');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'c2bLeadFail';
+        t.setAttribute('role', 'alert');
+        t.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2147483647;max-width:92vw;background:#fff4f4;color:#b23b3b;border:1px solid #f2c4c4;padding:14px 18px;border-radius:12px;font:600 14.5px/1.6 system-ui,-apple-system,"Heebo",sans-serif;box-shadow:0 16px 40px -12px rgba(0,0,0,.35);direction:rtl;text-align:center;';
+        document.body.appendChild(t);
+      }
+      t.innerHTML = 'לא הצלחנו לשלוח את הפנייה כרגע. נסו שוב, או חייגו <a href="tel:+972723319929" style="color:inherit;text-decoration:underline;">072-3319929</a> / <a href="https://wa.me/972723319929" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">וואטסאפ</a>.';
+      t.style.display = 'block';
+      clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = 'none'; }, 9000);
+    } catch (e) {}
+  }
+  window.C2B_leadFail = C2B_leadFail;
+
   window.submitLead = function (payload) {
     payload = payload || {};
     // ---- anti-spam / abuse guards (defense-in-depth; forms also validate) ----
@@ -169,7 +188,7 @@
         body: JSON.stringify(body)
       }).then(function (res) {
         if (!res.ok) {
-          return res.text().then(function (t) { console.warn('[Car2Buy] lead save failed', res.status, t); return false; });
+          return res.text().then(function (t) { console.warn('[Car2Buy] lead save failed', res.status, t); C2B_leadFail(); return false; });
         }
         if (window.c2bTrack) { try { c2bTrack('lead_saved', { source: body.source }); } catch (e) {} }
         // דחיפה ישירה ל-dataLayer — עובד גם בדפי נחיתה שאין בהם c2bTrack,
@@ -189,6 +208,7 @@
       });
     }).catch(function (e) {
       console.warn('[Car2Buy] lead save error', e);
+      C2B_leadFail();
       return false;
     });
   };

@@ -103,10 +103,14 @@
     if (window.C2B_validPhone && !C2B_validPhone(phone.value)) { err.textContent = 'נא להזין מספר טלפון תקין.'; return; }
     if (window.C2B_consentOK && !window.C2B_consentOK(el.querySelector('#exitForm'))) { err.textContent = 'יש לאשר את מדיניות הפרטיות.'; return; }
     err.textContent = '';
-    if (window.submitLead) submitLead({ name: name.value.trim(), phone: phone.value.trim(), source: 'exit_popup' });
     if (window.c2bTrack) c2bTrack('lead_submit', { source: 'exit_popup' });
-    modal.querySelector('.exit-grid').style.display = 'none';
-    el.querySelector('#exitSuccess').classList.add('show');
-    sessionStorage.setItem('c2b_exit_done', '1');
+    // מציגים הצלחה רק אם הליד נשמר בפועל; אחרת C2B_leadFail מציג שגיאה והטופס נשאר פתוח לניסיון חוזר.
+    var _ep = window.submitLead ? submitLead({ name: name.value.trim(), phone: phone.value.trim(), source: 'exit_popup' }) : Promise.resolve(true);
+    _ep.then(function (ok) {
+      if (!ok) return;
+      modal.querySelector('.exit-grid').style.display = 'none';
+      el.querySelector('#exitSuccess').classList.add('show');
+      sessionStorage.setItem('c2b_exit_done', '1');
+    });
   });
 })();

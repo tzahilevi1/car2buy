@@ -202,8 +202,9 @@
       rows.push(['מתעניינ/ת ב', carLine]); rows.push(['שם', name.value.trim()]); rows.push(['טלפון', phone.value.trim()]);
       $('lnmSummary').innerHTML = rows.map(function (r) { return '<div class="lnm-sum-row"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>'; }).join('');
       if (window.c2bTrack) window.c2bTrack('car_loan_submit', { amount: +amount.value, car: carLine });
-      if (window.submitLead) submitLead({ name: name.value.trim(), phone: phone.value.trim(), car: carLine, message: 'סכום מבוקש: ' + fmt(+amount.value), source: 'car_loan', meta: { amount: +amount.value, kind: want.kind, brand: want.brand, model: want.model } });
-      goStep(4);
+      // מציגים "נשלח" רק אם השמירה הצליחה בפועל; אחרת C2B_leadFail מציג שגיאה והטופס נשאר לניסיון חוזר.
+      var _lp = window.submitLead ? submitLead({ name: name.value.trim(), phone: phone.value.trim(), car: carLine, message: 'סכום מבוקש: ' + fmt(+amount.value), source: 'car_loan', meta: { amount: +amount.value, kind: want.kind, brand: want.brand, model: want.model } }) : Promise.resolve(true);
+      _lp.then(function (ok) { if (ok) goStep(4); });
     });
 
     // open pre-filled for a specific inventory car (by id)

@@ -807,10 +807,14 @@
       if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = 'var(--gold-deep)'; ok = false; }
       if (consent && !consent.checked) { if (window.C2B_consentWarn) C2B_consentWarn(consent); else consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
       if (!ok) return;
-      if (window.submitLead) submitLead(window.collectForm ? collectForm(quickForm, { source: 'home_quick' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'home_quick' });
-      quickForm.classList.add('sent');
-      const s = document.getElementById('qcSuccess');
-      if (s) s.classList.add('show');
+      // מציגים הצלחה רק אם הליד נשמר בפועל; אחרת C2B_leadFail מציג שגיאה והטופס נשאר לניסיון חוזר.
+      const _qp = window.submitLead ? submitLead(window.collectForm ? collectForm(quickForm, { source: 'home_quick' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'home_quick' }) : Promise.resolve(true);
+      _qp.then((ok) => {
+        if (!ok) return;
+        quickForm.classList.add('sent');
+        const s = document.getElementById('qcSuccess');
+        if (s) s.classList.add('show');
+      });
     });
   }
 
@@ -1304,8 +1308,8 @@
           source: 'trade_in_wizard',
           message: 'טרייד-אין' + (data.plate ? ' · לוחית ' + data.plate : '') + (data.km ? ' · ' + data.km + ' ק״מ' : '') + (data.interest ? ' · מתעניין ב-' + data.interest : ''),
           meta: { trade_car: data.car, year: data.year, trim: data.trim, color: data.color, plate: data.plate, km: data.km, interest: data.interest }
-        }).then(goThanks, goThanks);
-        setTimeout(goThanks, 1500);
+        }).then(function (ok) { if (ok) goThanks(); });
+        // אין ניווט "עיוור" בכישלון: אם השמירה נכשלה, C2B_leadFail מציג שגיאה והמשתמש נשאר לנסות שוב.
       } else {
         goThanks();
       }
