@@ -202,7 +202,7 @@
         // לאירועי ההמרה (fbq/dataLayer) להישלח לפני הניווט.
         if (!/newsletter/i.test(body.source || '')) {
           try { sessionStorage.setItem('c2b_ty', JSON.stringify({ car: body.car || null, source: body.source || null, brand: body.brand || null })); } catch (e) {}
-          setTimeout(function () { try { location.href = 'thank-you'; } catch (e) {} }, 700);
+          setTimeout(function () { try { location.href = '/thank-you'; } catch (e) {} }, 700);
         }
         return true;
       });

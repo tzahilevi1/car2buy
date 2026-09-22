@@ -1299,7 +1299,7 @@
       // ממתינים לסיום השמירה כדי שהניווט לא יבטל את הבקשה באמצע; fallback מנווט
       // בכל מקרה תוך 1.5ש' כדי לא לתקוע את המשתמש אם הרשת איטית.
       var navigated = false;
-      var goThanks = function () { if (!navigated) { navigated = true; location.href = 'thank-you'; } };
+      var goThanks = function () { if (!navigated) { navigated = true; location.href = '/thank-you'; } };
       if (window.submitLead) {
         submitLead({
           name: data.name,
