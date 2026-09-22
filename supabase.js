@@ -130,9 +130,9 @@
     if (digits.length < 7 && !hasEmail && !payload.message) return Promise.resolve(false);
     // 3) per-session rate limit — cap bursts from one browser.
     try {
-      var _now = Date.now(), _win = 600000, _cap = 8;
+      var _now = Date.now(), _win = 600000, _cap = 40;
       var _hist = JSON.parse(localStorage.getItem('c2b_lead_rl') || '[]').filter(function (t) { return _now - t < _win; });
-      if (_hist.length >= _cap) return Promise.resolve(true);
+      if (_hist.length >= _cap) { C2B_leadFail(); return Promise.resolve(false); }
       _hist.push(_now); localStorage.setItem('c2b_lead_rl', JSON.stringify(_hist));
     } catch (e) {}
     var attr = attribution(), meta = payload.meta || {};
