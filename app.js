@@ -137,7 +137,7 @@
             note.style.cssText = 'margin-top:14px;padding:12px 14px;border-radius:10px;background:#fff4f4;color:#b23b3b;font-weight:600;line-height:1.6;';
             form.appendChild(note);
           }
-          note.innerHTML = 'לא הצלחנו לשלוח את הפנייה כרגע. חייגו <a href="tel:+972723319929" style="color:inherit;text-decoration:underline;">072-3319929</a> או כתבו לנו ב<a href="https://wa.me/972723319929" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">וואטסאפ</a> ונחזור אליכם.';
+          note.innerHTML = 'לא הצלחנו לשלוח את הפנייה כרגע. חייגו <a href="tel:+972723319929" style="color:inherit;text-decoration:underline;">072-3319929</a> או כתבו לנו ב<a href="https://wa.me/972559722696" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">וואטסאפ</a> ונחזור אליכם.';
         }
       });
     });

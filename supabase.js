@@ -110,7 +110,7 @@
         t.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2147483647;max-width:92vw;background:#fff4f4;color:#b23b3b;border:1px solid #f2c4c4;padding:14px 18px;border-radius:12px;font:600 14.5px/1.6 system-ui,-apple-system,"Heebo",sans-serif;box-shadow:0 16px 40px -12px rgba(0,0,0,.35);direction:rtl;text-align:center;';
         document.body.appendChild(t);
       }
-      t.innerHTML = 'לא הצלחנו לשלוח את הפנייה כרגע. נסו שוב, או חייגו <a href="tel:+972723319929" style="color:inherit;text-decoration:underline;">072-3319929</a> / <a href="https://wa.me/972723319929" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">וואטסאפ</a>.';
+      t.innerHTML = 'לא הצלחנו לשלוח את הפנייה כרגע. נסו שוב, או חייגו <a href="tel:+972723319929" style="color:inherit;text-decoration:underline;">072-3319929</a> / <a href="https://wa.me/972559722696" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">וואטסאפ</a>.';
       t.style.display = 'block';
       clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = 'none'; }, 9000);
     } catch (e) {}

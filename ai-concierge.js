@@ -76,7 +76,7 @@
   }
 
   // WhatsApp handoff button — pre-filled with the customer's request.
-  const WA = '972723319929';
+  const WA = '972559722696';
   function waBtn(q) {
     const href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('היי, אני מחפש/ת רכב: ' + q);
     return `<a class="ai-wa" href="${href}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:#25D366;color:#fff;font-weight:700;padding:10px 16px;border-radius:10px;text-decoration:none;">💬 ייעוץ אישי בוואטסאפ</a>`;
