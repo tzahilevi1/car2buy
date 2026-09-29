@@ -540,6 +540,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script src="model-specs.js"></script>
 <script src="gov-data.js"></script>
 <script src="car-specs.js"></script>
+<script src="cmp-gov.js"></script>
+<script src="car-specs-real.js"></script>
 <script src="customers-data.js"></script>
 <script src="brand-content.js"></script>
 <script src="brand-articles.js"></script>
@@ -653,6 +655,9 @@ function renderCarDetail() {
     power: s.power || 0, accel: s.accel || 0, fuel: s.fuel || '', drive: s.drive || '',
     seats: s.seats || 5, list: car.price || 0, monthly: car.monthly60 || 0
   };
+  if (!mForSpec.nameEn && car.nameEn) mForSpec.nameEn = car.nameEn;
+  if (!mForSpec.fuel && (car.engine || s.fuel)) mForSpec.fuel = car.engine || s.fuel;
+  window.__c2bRerender = renderCarDetail;
   var rs = (C2B.richSpecs ? C2B.richSpecs(mForSpec) : {});
   // pull manufacturer/registry-verified values back onto the summary object so hero stats fill too
   if (rs.power && !s.power) s.power = rs.power;
