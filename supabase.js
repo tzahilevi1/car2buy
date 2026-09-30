@@ -117,6 +117,24 @@
   }
   window.C2B_leadFail = C2B_leadFail;
 
+  /*CANON-CHANNEL v1 — fleet 6-way channel classifier: PPC/Social/GEO/SEO/Referral/Direct*/
+  var __AI_RE = /(chatgpt|openai|chat\.com|perplexity|claude|anthropic|gemini|bard|copilot|bing\.com\/chat|you\.com|phind|poe\.com|deepseek|grok|meta\.ai|mistral)/i;
+  var __PAID_KEYS = ['gclid','gbraid','wbraid','dclid','msclkid'];
+  var __SOCIAL_KEYS = ['fbclid','ttclid','twclid','li_fat_id'];
+  var __SEARCH_RE = /google\.|bing\.|duckduckgo|yahoo\.|ecosia|yandex|\.baidu\./i;
+  var __SOCIAL_RE = /facebook\.|fb\.com|instagram\.|tiktok\.|twitter\.|\/\/t\.co|x\.com|linkedin\.|lnkd\.in|pinterest\.|reddit\.|snapchat\./i;
+  function classify(p){
+    p = p || {};
+    var med=(p.utm_medium||'').toLowerCase(),src=(p.utm_source||'').toLowerCase(),ref=(p.referrer||'').toLowerCase(),ms=med+' '+src,i;
+    for(i=0;i<__PAID_KEYS.length;i++){if(p[__PAID_KEYS[i]])return 'PPC';}
+    if(/cpc|ppc|paid|sem|display/.test(med))return 'PPC';
+    for(i=0;i<__SOCIAL_KEYS.length;i++){if(p[__SOCIAL_KEYS[i]])return 'Social';}
+    if(/facebook|instagram|tiktok|twitter|linkedin|\bfb\b|\big\b|social/.test(ms)||__SOCIAL_RE.test(ref))return 'Social';
+    if(__AI_RE.test(ref)||__AI_RE.test(src)||med==='ai')return 'GEO';
+    if(__SEARCH_RE.test(ref)||med==='organic'||med==='seo')return 'SEO';
+    if(ref)return 'Referral';
+    return 'Direct';
+  }
   window.submitLead = function (payload) {
     payload = payload || {};
     // ---- anti-spam / abuse guards (defense-in-depth; forms also validate) ----
@@ -151,7 +169,8 @@
     // מזהי קליק + referrer נשמרים ב-meta לסיווג ערוץ בצד השרת (גם בלי UTM)
     var attrMeta = {};
     ['fbclid', 'ttclid', 'msclkid', 'gbraid', 'wbraid', 'twclid', 'li_fat_id', 'gclid', 'referrer'].forEach(function (k) { if (attr[k]) attrMeta[k] = attr[k]; });
-    var mergedMeta = payload.meta ? Object.assign({}, payload.meta, attrMeta) : (Object.keys(attrMeta).length ? attrMeta : null);
+    var channel = classify(attr);
+    var mergedMeta = Object.assign({}, payload.meta || {}, attrMeta, { channel: channel });
     return getIp().then(function (ip) {
       var body = {
         name: payload.name || null,
