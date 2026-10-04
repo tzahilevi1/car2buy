@@ -1596,7 +1596,7 @@ function renderCarDetail() {
 
     var shown = false, timer = null;
     function openIdle() {
-      if (shown || document.querySelector('.lnm.open, #tiPop.open, #cuLb.open')) return;
+      if (shown || document.querySelector('.lnm.open, #tiPop.open, #cuLb.open') || (window.C2B_modalOpen && window.C2B_modalOpen(pop))) return;
       shown = true; sessionStorage.setItem(KEY, '1');
       pop.classList.add('open'); pop.setAttribute('aria-hidden', 'false');
       clearTimeout(timer); teardown();

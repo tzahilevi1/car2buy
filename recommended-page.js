@@ -143,7 +143,7 @@
         '<input type="text" placeholder="שם מלא" required>' +
         '<input type="tel" placeholder="טלפון נייד" required>' +
         '<select required><option value="">מתי נוח לכם?</option><option>בבוקר (9:00-12:00)</option><option>בצהריים (12:00-16:00)</option><option>אחר הצהריים (16:00-19:00)</option></select>' +
-        '<label class="rc-appt-consent"><input type="checkbox" required> אני מאשר/ת קבלת פנייה מ-Car2Buy לתיאום הפגישה.</label>' +
+        '<label class="rc-appt-consent"><input type="checkbox" class="c2b-consent-cb" required> אני מאשר/ת קבלת פנייה מ-Car2Buy לתיאום הפגישה.</label>' +
         '<button type="submit" class="btn btn-gold btn-lg">קביעת פגישה</button>' +
       '</form></div></div>';
   document.body.appendChild(wrapDiv);

@@ -761,3 +761,24 @@ window.C2B_validPhone = function (v) {
     document.addEventListener('click', function (e) { if (nsForm && !nsForm.contains(e.target)) nsOut.classList.remove('open'); });
   }
 })();
+
+/*C2B-MODAL-OPEN*/
+/* one popup at a time: automatic popups (exit-intent, idle) ask this before opening */
+window.C2B_modalOpen = function (self) {
+  var de = document.documentElement, b = document.body;
+  if ((b && b.style.overflow === 'hidden') || de.style.overflow === 'hidden') return true;
+  var vw = window.innerWidth, vh = window.innerHeight;
+  var nodes = document.querySelectorAll('[role="dialog"],[aria-modal="true"],.open,.show,.is-open,.qm-overlay');
+  for (var i = 0; i < nodes.length; i++) {
+    var n = nodes[i];
+    if (self && (n === self || self.contains(n) || n.contains(self))) continue;
+    if (n.hidden) continue;
+    var c = getComputedStyle(n);
+    if (c.display === 'none' || c.visibility === 'hidden' || +c.opacity < 0.05) continue;
+    if (c.position !== 'fixed' && !n.matches('[role="dialog"],[aria-modal="true"]')) continue;
+    var r = n.getBoundingClientRect(); // only what is actually on screen (a closed sheet parked below the fold doesn't count)
+    var w = Math.min(r.right, vw) - Math.max(r.left, 0), h = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+    if (w > 0 && h > 0 && w * h >= vw * vh * 0.25) return true;
+  }
+  return false;
+};

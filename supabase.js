@@ -232,3 +232,19 @@
     });
   };
 })();
+
+/*C2B-CONSENT-GATE*/
+/* no lead leaves any page (incl. landing pages that don't load site.js) while its consent box is unchecked */
+(function () {
+  if (window.__c2bConsentGate) return; window.__c2bConsentGate = 1;
+  document.addEventListener('submit', function (e) {
+    var f = e.target; if (!f || f.nodeName !== 'FORM' || !f.querySelector) return;
+    var c = f.querySelector('input[type=checkbox].c2b-consent-cb,input[type=checkbox][id*="onsent"],input[type=checkbox][name*="onsent"]');
+    if (!c || c.checked) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var l = c.closest('label') || c.parentElement || c;
+    l.style.outline = '2px solid #E0342A'; l.style.outlineOffset = '3px'; l.style.borderRadius = '8px';
+    try { c.focus(); } catch (_) {}
+    setTimeout(function () { l.style.outline = ''; l.style.outlineOffset = ''; }, 2400);
+  }, true);
+})();

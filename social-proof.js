@@ -46,6 +46,7 @@
   const modal = el.querySelector('.exit-modal');
   function open() {
     if (fired || sessionStorage.getItem('c2b_exit_done')) return;
+    if (window.C2B_modalOpen ? window.C2B_modalOpen(el) : document.body.style.overflow === 'hidden') return; // never stack on another popup — stays armed for the next exit
     fired = true;
     el.classList.add('open');
     el.setAttribute('aria-hidden', 'false');
