@@ -20,9 +20,9 @@ window.C2B_IMAGIN_KEY = '';
     }
   } catch (e) {}
 })();
-// shared consent checkbox — pre-checked by default; leads can't be sent while unchecked.
+// shared consent checkbox — unchecked by default (חוק הספאם); leads can't be sent while unchecked.
 window.C2B_consentHTML = function () {
-  return '<label class="c2b-consent"><input type="checkbox" class="c2b-consent-cb" checked>' +
+  return '<label class="c2b-consent"><input type="checkbox" class="c2b-consent-cb">' +
     '<span>אני מאשר/ת יצירת קשר וקבלת מידע מ-Car2Buy בהתאם ל<a href="privacy" target="_blank" rel="noopener noreferrer">מדיניות הפרטיות</a></span></label>';
 };
 // visual car picker: attaches an image+name autocomplete dropdown to a text input.
