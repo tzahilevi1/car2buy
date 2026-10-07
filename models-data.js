@@ -442,7 +442,7 @@
       const dispFull = C2B.enName ? C2B.enName(m) : (m.brand + ' ' + m.name);
       return `<article class="car reveal" data-cat="${m.cat}" data-brand="${m.brand}" data-fuel="${m.fuel}" data-monthly="${m.monthly}" data-name="${dispFull}">
         <button class="car-compare" type="button" data-id="${m.id}">+ השוואה</button>
-        <a class="car-hit" href="car?car=${m.id}">
+        <a class="car-hit" href="${(window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(m.id) : (window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(m.id) : 'car.html?car=' + encodeURIComponent(m.id)))}">
           <div class="car-ph car-ph-shot"><img loading="lazy" src="${m.img}" alt="${dispFull}">
             ${m.tag ? `<span class="car-badge">${m.tag}</span>` : ''}
             ${LOGO_SLUG[m.brand] ? `<span class="brand-logo car-logo-badge"><img loading="lazy" src="${LOGO(m.brand)}" alt="${dispB}" onerror="this.closest('.brand-logo').style.display='none'"></span>` : ''}
@@ -462,7 +462,7 @@
           </div>
         </a>
         <div class="car-actions">
-          <a class="car-cta-main" href="car?car=${m.id}">כמה יעלה לי להפוך את זה למציאות?</a>
+          <a class="car-cta-main" href="${(window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(m.id) : (window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(m.id) : 'car.html?car=' + encodeURIComponent(m.id)))}">כמה יעלה לי להפוך את זה למציאות?</a>
         </div>
       </article>`;
     },

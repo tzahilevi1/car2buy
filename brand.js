@@ -9,7 +9,8 @@
   var C = window.Car2Buy;
   var NIS = C.NIS || function (n) { return '₪' + (n || 0).toLocaleString('he-IL'); };
   var params = new URLSearchParams(location.search);
-  var brand = params.get('brand') || '';
+  // ?brand=<hebrew>, or a prerendered static page (/brand-<slug>) that sets window.C2B_PAGE.brand
+  var brand = params.get('brand') || (window.C2B_PAGE && window.C2B_PAGE.brand) || '';
   var brandDisp = C.dispBrand ? C.dispBrand(brand) : brand;
 
   var LOGO_SLUG = {
@@ -30,6 +31,9 @@
   var wrap = root;
 
   if (!brand) { location.href = 'models'; return; }
+  // one canonical per brand: the static page /brand-<slug>
+  var _bsl = C.brandSlug && C.brandSlug(brand);
+  if (_bsl) window.C2B_CANONICAL = location.origin + '/brand-' + _bsl;
 
   document.title = 'ליסינג ומימון ' + brandDisp + ' ' + new Date().getFullYear() + ' – מחירים והחזר חודשי · Car2Buy';
   try { window.C2B_setMeta && C2B_setMeta({ description: brandDisp + ' — כל הדגמים, המחירים וההחזר החודשי של ' + brandDisp + ' ב-Car2Buy. מצאו את הרכב המתאים לכם בליסינג מימוני.' }); } catch (e) {}
@@ -98,7 +102,7 @@
 
   // ---------- models grid ----------
   var cards = models.map(function (g) {
-    var href = 'car?car=' + g.slug;
+    var href = (window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(g.slug) : 'car.html?car=' + encodeURIComponent(g.slug));
     var full = (C.enName ? C.enName(g) : g.brand + ' ' + g.name);
     return '<article class="car ccard reveal">'
       + '<a class="car-hit" href="' + href + '">'

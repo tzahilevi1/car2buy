@@ -553,7 +553,9 @@ function renderCarDetail() {
   var root = document.getElementById('carDetail');
   if (!root) return;
   var params = new URLSearchParams(location.search);
-  var slug = params.get('car');
+  // ?car=<id|seo-slug>, or a prerendered static page (/car-<slug>) that sets window.C2B_PAGE.car
+  var slug = params.get('car') || (window.C2B_PAGE && window.C2B_PAGE.car) || null;
+  if (window.Car2Buy && window.Car2Buy.idForSlug) slug = window.Car2Buy.idForSlug(slug) || slug;
   var car = (window.Car2Buy && window.Car2Buy.getCar) ? window.Car2Buy.getCar(slug) : null;
 
   function detectFuel(t) {
@@ -894,6 +896,21 @@ function renderCarDetail() {
     if (!m) { m = d.createElement('meta'); m.setAttribute('name', 'description'); d.head.appendChild(m); }
     m.setAttribute('content', metaDesc);
   })(document);
+  // one canonical per car: the static page /car-<seo> (car.html?car=sheetN / seed cN and /car-<seo> are the same car)
+  try {
+    var _L = window.Car2Buy.LOAN_CARS || [], _cl = _L.filter(function (l) { return l.id === slug; })[0];
+    if (!_cl) { // seed id (cN) indexed by Google → the same car in the live sheet
+      var _sd = (window.Car2Buy.LOAN_CARS_SEED || []).filter(function (l) { return l.id === slug; })[0];
+      if (_sd) _cl = _L.filter(function (l) { return l.brand === _sd.brand && l.name === _sd.name && (l.trim || '') === (_sd.trim || ''); })[0]
+        || _L.filter(function (l) { return l.brand === _sd.brand && l.name === _sd.name; })[0];
+    }
+    if (_cl && _cl.seo) {
+      var _cu = location.origin + '/car-' + _cl.seo;
+      window.C2B_CANONICAL = _cu;
+      var _lc = document.querySelector('link[rel="canonical"]'); if (_lc) _lc.setAttribute('href', _cu);
+      var _og = document.querySelector('meta[property="og:url"]'); if (_og) _og.setAttribute('content', _cu);
+    }
+  } catch (e) {}
 
   // ===== rich original content generator =====
   function buildArticle(c) {
@@ -1083,7 +1100,7 @@ function renderCarDetail() {
           '<div class="cd-trims-grid">' +
             trims.map(function (t) {
               var cur = t.id === slug;
-              return '<a class="cd-trim' + (cur ? ' is-cur' : '') + '" href="car?car=' + encodeURIComponent(t.id) + '">' +
+              return '<a class="cd-trim' + (cur ? ' is-cur' : '') + '" href="' + (window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(t.id) : 'car.html?car=' + encodeURIComponent(t.id)) + '">' +
                 '<div class="cd-trim-head">' +
                   '<span class="cd-trim-name"><bdi>' + esc(t.trim || 'סטנדרט') + '</bdi></span>' +
                   (cur ? '<span class="cd-trim-badge">הגרסה שנבחרה</span>' : '') +
@@ -1484,7 +1501,7 @@ function renderCarDetail() {
     (window.Car2Buy.CARS || []).forEach(function (c) { FLAG[c.brand + '|' + c.model] = c.slug; });
     box.innerHTML = picks.map(function (c) {
       var slug = FLAG[c.brand + '|' + c.name];
-      var href = 'car?car=' + (slug || c.id);
+      var href = (window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(slug || c.id) : 'car.html?car=' + encodeURIComponent(slug || c.id));
       var full = (window.Car2Buy.enName ? window.Car2Buy.enName(c) : c.brand + ' ' + c.name);
       return '<a class="cd-sim-card" href="' + href + '">' +
         '<div class="cd-sim-img">' + (c.img ? '<img loading="lazy" src="' + esc(c.img) + '" alt="' + esc(full) + '">' : '') + '</div>' +
@@ -1630,16 +1647,23 @@ function renderCarDetail() {
 // resolves; otherwise wait for the sheet so sheetN links don't hit "car not found".
 (function () {
   var C = window.Car2Buy;
-  var slug = new URLSearchParams(location.search).get('car');
+  var slug = new URLSearchParams(location.search).get('car') || (window.C2B_PAGE && window.C2B_PAGE.car) || null;
   function canResolve(s) {
     if (!C) return false;
+    if (C.idForSlug && C.idForSlug(s)) return true;
     if (C.getCar && C.getCar(s)) return true;
     var L = (C.LOAN_CARS || []).concat(C.LOAN_CARS_SEED || []);
     for (var i = 0; i < L.length; i++) if (L[i].id === s) return true;
     return false;
   }
-  if (canResolve(slug) || !(C && C.carsLoading)) { renderCarDetail(); return; }
-  var done = false, go = function () { if (done) return; done = true; renderCarDetail(); };
+  if (canResolve(slug)) { renderCarDetail(); return; }
+  if (!(C && C.carsLoading)) { if (!window.C2B_PAGE) renderCarDetail(); return; }
+  var done = false, go = function () {
+    if (done) return; done = true;
+    // prerendered page whose car could not be resolved live: keep the static content
+    if (window.C2B_PAGE && !canResolve(slug)) return;
+    renderCarDetail();
+  };
   document.addEventListener('c2b:cars-updated', go, { once: true });
   setTimeout(function () { if (C) C.carsLoading = false; go(); }, 5000);
 })();

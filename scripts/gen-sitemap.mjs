@@ -25,7 +25,9 @@ for (const d of fs.readdirSync(ROOT, { withFileTypes: true })) {
   if (s.includes('העמוד עבר · Car2Buy') || /<meta[^>]+noindex/i.test(s)) continue;
   const c = s.match(/<link rel="canonical" href="([^"]+)"/); if (c && c[1].startsWith(BASE)) add(c[1], '0.6');
 }
-const brands = [...new Set(JSON.parse(fs.readFileSync(path.join(ROOT, 'cars.json'), 'utf8')).map((c) => c.brand).filter(Boolean))];
+// prerendered /brand-<slug> pages (listed above via their canonical) replace the ?brand= URLs
+const staticBrands = fs.readdirSync(ROOT).some((f) => /^brand-(?!article\.html)[a-z0-9-]+\.html$/.test(f));
+const brands = staticBrands ? [] : [...new Set(JSON.parse(fs.readFileSync(path.join(ROOT, 'cars.json'), 'utf8')).map((c) => c.brand).filter(Boolean))];
 for (const b of brands) add(`${BASE}/brand?brand=${encodeURIComponent(b)}`, '0.7');
 fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...new Set(urls)].join('\n')}\n</urlset>\n`);
 console.log('sitemap urls', new Set(urls).size, 'brands', brands.length);

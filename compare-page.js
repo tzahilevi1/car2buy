@@ -235,7 +235,7 @@
     });
 
     var heads = cars.map(function (m) {
-      return '<th><div class="cmp-card"><a href="car?car=' + m.id + '">' +
+      return '<th><div class="cmp-card"><a href="' + (window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(m.id) : 'car.html?car=' + encodeURIComponent(m.id)) + '">' +
         (m.img ? '<img src="' + esc(m.img) + '" alt="' + esc(enName(m)) + '" onerror="this.style.visibility=\'hidden\'">' : '') + '</a>' +
         '<div class="br">' + esc(dispBrand(m.brand)) + '</div><div class="nm">' + esc(enModel(m.name)) + '</div>' +
         '<button class="rm" data-remove="' + m.id + '">הסר ✕</button></div></th>';

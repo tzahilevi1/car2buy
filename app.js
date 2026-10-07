@@ -224,7 +224,7 @@
     })();
 
     const loanCard = (g) => {
-      const href = `car?car=${g.slug}`;
+      const href = `${(window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(g.slug) : (window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(g.slug) : 'car.html?car=' + encodeURIComponent(g.slug)))}`;
       const full = (window.Car2Buy.enName ? window.Car2Buy.enName(g) : g.brand + ' ' + g.name);
       const searchName = full + ' ' + g.brand + ' ' + g.name + ' ' + (g.trim || '') + ' ' + (g.nameEn || '') + ' ' + (BRAND_ALIASES[g.brand] || '');
       return `<article class="car ccard reveal" data-cat="${g.cat}" data-brand="${g.brand}" data-fuel="${g.fuel}" data-monthly="${g.minM > 0 ? g.minM : 999999}" data-name="${searchName}">
@@ -839,7 +839,7 @@
         return;
       }
       out.innerHTML = hits.map((m) =>
-        `<a class="ir-row" href="car?car=${m.id}">
+        `<a class="ir-row" href="${(window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(m.id) : (window.Car2Buy && window.Car2Buy.urlForId ? window.Car2Buy.urlForId(m.id) : 'car.html?car=' + encodeURIComponent(m.id)))}">
           <img class="ir-thumb" loading="lazy" src="${m.img}" alt="${eM(m.name)}">
           <span class="brand-logo ir-logo"><img src="${LOGO(m.brand)}" alt="" onerror="this.closest('.ir-logo').style.display='none'"></span>
           <span class="ir-meta"><b>${dB(m.brand)} ${eM(m.name)}</b><span>${m.power} כ״ס · ${m.fuel}</span></span>

@@ -44,6 +44,42 @@
     return /^https?:\/\//i.test(s) ? cleanImg(s) : '';
   }
 
+  C.seoSlug = function (c) {
+    var s = String((c.nameEn || '') + ' ' + (c.trim || '')).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return s || 'model';
+  };
+  // stable slug ('byd-atto-2-boost') or legacy id → the current internal id (sheetN / cN)
+  C.idForSlug = function (s) {
+    if (!s) return null;
+    var L = C.LOAN_CARS || [];
+    for (var i = 0; i < L.length; i++) if (L[i].seo === s) return L[i].id;
+    return null;
+  };
+  C.carUrl = function (c) { return c && c.seo ? 'car-' + c.seo : 'car.html?car=' + encodeURIComponent(c ? c.id : ''); };
+  // stable brand slug ('byd', 'chery') from the English model name of a stocked car — static page /brand-<slug>
+  // fixed map first (sheet English names start with a model for some brands — "IX2" for BMW — or carry typos/accents)
+  var BRAND_EN = { 'ב.י.ד': 'byd', "ג'אקו": 'jaecoo', 'טיגו': 'tiggo', "צ'רי": 'chery', 'יונדאי': 'hyundai', 'טויוטה': 'toyota',
+    'ליפמוטור': 'leapmotor', 'קיה': 'kia', 'מיצובישי': 'mitsubishi', "אמ.ג'י": 'mg', 'סקודה': 'skoda', 'אווטר': 'avatr',
+    'ניסאן': 'nissan', 'סיאט': 'seat', 'סיטרואן': 'citroen', 'אומודה': 'omoda', 'שברולט': 'chevrolet', 'ב.מ.וו': 'bmw',
+    'מאזדה': 'mazda', 'זיקר': 'zeekr', 'מרצדס': 'mercedes', 'סמארט': 'smart', 'סקיוואל': 'skywell', 'אאודי': 'audi',
+    'דונפנג': 'dongfeng', 'האמר': 'gmc', 'מקסוס': 'maxus', 'לינק': 'lynk-co' };
+  C.brandSlug = function (b) {
+    if (BRAND_EN[b]) return BRAND_EN[b];
+    var L = C.LOAN_CARS || [];
+    for (var i = 0; i < L.length; i++) {
+      if (L[i].brand !== b) continue;
+      var en = String(L[i].nameEn || '').normalize ? String(L[i].nameEn || '').normalize('NFD').replace(/[̀-ͯ]/g, '') : String(L[i].nameEn || '');
+      if (/^[A-Za-z]/.test(en)) return en.split(/\s+/)[0].toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    }
+    return null;
+  };
+  // internal links: the prerendered static page when the id is a live-sheet car, else the query URL
+  C.urlForId = function (id) {
+    var L = C.LOAN_CARS || [];
+    for (var i = 0; i < L.length; i++) if (L[i].id === id && L[i].seo) return 'car-' + L[i].seo;
+    return 'car.html?car=' + encodeURIComponent(id || '');
+  };
+
   // cache-bust lightly so edits show within the CDN cache window
   fetch('cars.json', { cache: 'no-cache' })
     .then(function (r) { return r.ok ? r.json() : null; })
@@ -71,6 +107,12 @@
             id: 'sheet' + i
           };
         }).filter(function (c) { return c.brand && c.name; });
+        // stable SEO slug per car (nameEn + trim) — sheetN ids shift when the sheet is reordered, so static
+        // pages (/car-<slug>) and their links resolve through this instead (SEO 7.10.26). Same rule as scripts/prerender.mjs.
+        var _seen = {};
+        C.LOAN_CARS.forEach(function (c) {
+          var s = C.seoSlug(c), base = s, k = 2; while (_seen[s]) s = base + '-' + (k++); _seen[s] = 1; c.seo = s;
+        });
         if (C.rebuildModels) C.rebuildModels();
       }
       done();

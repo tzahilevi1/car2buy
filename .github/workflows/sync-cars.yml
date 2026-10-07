@@ -28,12 +28,25 @@ jobs:
         env:
           DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
         run: node scripts/sync-used.mjs
+      # SEO (7.10.26): every inventory car/brand has a prerendered static page (/car-<slug>, /brand-<slug>) and the site
+      # links to them — so a changed cars.json must regenerate those pages and the sitemap, or new cars would 404.
+      - name: Prerender static car/brand pages + sitemap when the inventory changed
+        continue-on-error: true   # never block the inventory sync itself
+        run: |
+          if [[ -n "$(git status --porcelain cars.json)" ]]; then
+            npm i --no-save --no-package-lock --silent puppeteer-core@23
+            export CHROME="$(command -v google-chrome || command -v chromium-browser || command -v chromium)"
+            export PUPPETEER_CORE="$PWD/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js"
+            node scripts/prerender.mjs
+            node scripts/gen-sitemap.mjs
+          fi
       - name: Commit if changed
         run: |
           if [[ -n "$(git status --porcelain cars.json used-cars.js)" ]]; then
             git config user.name "car2buy-bot"
             git config user.email "actions@users.noreply.github.com"
-            git add cars.json used-cars.js
+            git add cars.json used-cars.js sitemap.xml scripts/_prerendered.json
+            git add -A -- 'car-*.html' 'brand-*.html'
             git commit -m "chore: sync inventory from Google Sheets [skip ci]"
             git push
           else
