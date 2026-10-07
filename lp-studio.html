@@ -16,7 +16,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="alternate icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/favicon-48.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap"></noscript>
 <style>
   :root{--ink:#0c0e12;--ink2:#151922;--pan:#1b212c;--gold:#F5691E;--gold-l:#ff8a4b;--line:rgba(255,255,255,.12);--muted:rgba(255,255,255,.6);--txt:#eef1f6;--ok:#3ad07a;}
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -244,7 +244,7 @@ function render(){
   var accentCss=d.accent&&d.accent.toLowerCase()!=='#f5691e'?('<style>:root{--gold:'+d.accent+' !important;--gold-l:'+d.accent+' !important;--star:'+d.accent+' !important;}</style>'):'';
   return '<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'+
     '<title>'+esc(d.brand+' '+d.model)+'</title>'+
-    '<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">'+
+    '<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap"></noscript>'+
     STYLE+accentCss+'<base href="'+location.href.replace(/lp-studio\.html.*$/,'')+'">'+
     '</head><body>'+body+'</body></html>';
 }
