@@ -675,7 +675,7 @@ window.C2B_validPhone = function (v) {
       const descEl = meta('name', 'description');
       const desc = opts.description || descEl.getAttribute('content') || DEFAULT_DESC;
       descEl.setAttribute('content', desc);
-      const canonical = location.origin + location.pathname;
+      const canonical = (function () { var sp = new URLSearchParams(location.search), keep = new URLSearchParams(); ['car', 'brand', 'id', 'a'].forEach(function (k) { if (sp.get(k)) keep.set(k, sp.get(k)); }); var q = keep.toString(); return location.origin + location.pathname + (q ? '?' + q : ''); })();
       link('canonical').setAttribute('href', canonical);
       const image = new URL(opts.image || 'og-default.jpg', location.href).href;
       const og = { 'og:site_name': 'Car2Buy', 'og:type': opts.type || 'website', 'og:title': title, 'og:description': desc, 'og:url': canonical, 'og:image': image, 'og:locale': 'he_IL' };
