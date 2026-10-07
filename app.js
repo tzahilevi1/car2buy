@@ -587,7 +587,9 @@
     const dotsWrap = document.getElementById('vtDots');
     track.innerHTML = items.map((c) => {
       const media = c.video
-        ? `<video class="vtest-video" controls preload="metadata" playsinline${c.img ? ` poster="${c.img}"` : ''}><source src="${c.video}" type="video/mp4"></video>`
+        // preload="none" + poster frame: the 11 testimonial mp4s (~30MB) used to download on page load (mobile LCP 4.8–14s);
+        // now nothing is fetched until the visitor presses play. Posters: videos/<name>.jpg (speed fix 7.10.26)
+        ? `<video class="vtest-video" controls preload="none" playsinline poster="${c.img || String(c.video).replace(/\.mp4$/, '.jpg')}"><source src="${c.video}" type="video/mp4"></video>`
         : `<img src="${c.img}" alt="${c.name || ''}"><button class="vtest-play" aria-label="נגן סרטון"><span class="tri"></span></button><span class="vtest-badge">▶ סרטון המלצה</span>`;
       const nm = c.name || 'חוויית לקוח';
       return `
