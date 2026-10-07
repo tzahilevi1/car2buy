@@ -31,7 +31,7 @@
 
   if (!brand) { location.href = 'models'; return; }
 
-  document.title = brandDisp + ' · קטלוג רכבים · Car2Buy';
+  document.title = 'ליסינג ומימון ' + brandDisp + ' ' + new Date().getFullYear() + ' – מחירים והחזר חודשי · Car2Buy';
   try { window.C2B_setMeta && C2B_setMeta({ description: brandDisp + ' — כל הדגמים, המחירים וההחזר החודשי של ' + brandDisp + ' ב-Car2Buy. מצאו את הרכב המתאים לכם בליסינג מימוני.' }); } catch (e) {}
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
