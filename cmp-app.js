@@ -186,11 +186,13 @@
     });
   }
 
-  fetch('cars.json?v=2').then(function (r) { return r.json(); }).then(function (d) {
+  fetch('cars.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
     var seen = {};
+    // icar.co.il photos are self-hosted in images/loan (scripts/localize-ext-images.mjs) — never hotlink (15.10.26)
+    var localImg = function (u) { var m = String(u || '').match(/icar\.co\.il\/_media\/images\/models\/bgremoval\/([A-Za-z0-9._-]+)/); return m ? 'images/loan/' + m[1].replace(/\.(jpe?g|png)$/i, '.webp') : u; };
     MODELS = (d || []).filter(function (c) { return c && c.img && c.m; }).map(function (c) {
       var id = slug(c); while (seen[id]) id += 'x'; seen[id] = 1;
-      return { id: id, brand: c.brand, name: c.name, disp: (c.nameEn || '').replace(/[֐-׿"'׳״]+/g, ' ').replace(/\s{2,}/g, ' ').trim() || (dispBrand(c.brand) + ' ' + c.name), modelEn: enModel(c), trim: c.trim, type: c.name, monthly: c.m, list: c.listPrice || c.p, down: c.down, img: c.img, seats: c.seats, fuel: c.engine };
+      return { id: id, brand: c.brand, name: c.name, disp: (c.nameEn || '').replace(/[֐-׿"'׳״]+/g, ' ').replace(/\s{2,}/g, ' ').trim() || (dispBrand(c.brand) + ' ' + c.name), modelEn: enModel(c), trim: c.trim, type: c.name, monthly: c.m, list: c.listPrice || c.p, down: c.down, img: localImg(c.img), seats: c.seats, fuel: c.engine };
     }).sort(function (a, b) { return a.disp.localeCompare(b.disp, 'en'); });
     // default: two different-brand mainstream cars (that match the MoT registry well) on first visit
     if (!get().length) {

@@ -1847,3 +1847,21 @@ td.cmp-best { background: color-mix(in oklab, var(--gold) 9%, transparent); colo
 
 /* speed 7.10.26: the H1 is always in the first screen and is the mobile LCP element — never scroll-animate it (it could sit half-transparent until a scroll) */
 h1.reveal{animation:none!important;opacity:1!important;transform:none!important}
+
+/* C2B-LAUNCH-15-10: phone inputs LTR (number reads correctly) but aligned to the RTL form edge */
+input[type="tel"]{direction:ltr;text-align:right}
+input[type="tel"]::placeholder{direction:rtl;text-align:right}
+/* footer legal lines stack (company + ח.פ, financing footnote, legal links) */
+.footer-bottom .footer-legal{flex:1 1 100%;max-width:none}
+/* header at 320–400px: the hamburger was pushed off-screen — saved-cars heart hides (it is also in the menu flow), phone pill shrinks */
+@media (max-width: 400px) {
+  .nav-fav { display: none !important; }
+  .nav-cta { gap: 6px; }
+  .nav-phone-pill { padding: 7px 10px; font-size: 12px; letter-spacing: 0; }
+  .brand-img { height: 34px; }
+  .nav-top-inner { gap: 6px; }
+}
+@media (max-width: 340px) {
+  .nav-phone-pill { font-size: 0; padding: 0; width: 40px; height: 40px; justify-content: center; }
+  .nav-phone-pill::before { content: "☎"; font-size: 17px; }
+}

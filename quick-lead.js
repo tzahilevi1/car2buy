@@ -74,11 +74,11 @@
       if (!nm) { els.name.focus(); return; }
       if (window.C2B_validPhone ? !C2B_validPhone(ph) : ph.replace(/\D/g, '').length < 9) { els.phone.focus(); els.phone.style.borderColor = '#e25555'; return; }
       var hp = (modal.querySelector('#qlHp') || {}).value || '';
-      if (window.submitLead) {
-        window.submitLead({ name: nm, phone: ph, car: els.car.value.trim(), source: modal._source || 'article_cta', hp: hp });
-      }
-      els.form.style.display = 'none';
-      els.ok.classList.add('show');
+      if (!window.C2B_formSend) { if (window.C2B_leadFail) C2B_leadFail(); return; }
+      C2B_formSend(els.form, { name: nm, phone: ph, car: els.car.value.trim(), source: modal._source || 'article_cta', hp: hp }, function () {
+        els.form.style.display = 'none';
+        els.ok.classList.add('show');
+      });
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
   }

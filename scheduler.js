@@ -158,10 +158,16 @@
       const data = { name, phone, email, car: carVal, type: root.querySelector('#sType').value, branch: root.querySelector('#sBranch').value, note: root.querySelector('#sNote').value.trim(), date: fmtDate(selDate), time: selTime };
       try { const _ap = new Date(selDate); const _t = String(selTime).split(':'); _ap.setHours(+_t[0] || 0, +_t[1] || 0, 0, 0); data.appt_at = _ap.toISOString(); } catch (e) {}
       if (window.c2bTrack) c2bTrack('meeting_scheduled', { date: data.date, time: data.time, type: data.type });
-      if (window.submitLead) submitLead({ name: data.name, phone: data.phone, email: data.email, message: data.note, car: data.car || data.type, source: 'scheduler', meta: { branch: data.branch, date: data.date, time: data.time, type: data.type, car: data.car } });
-      // persist the appointment (triggers the email-notification webhook server-side)
-      if (window.submitAppointment) submitAppointment(data);
-      renderSuccess(data);
+      const sForm = root.querySelector('#schedForm');
+      if (!window.C2B_send) { err.textContent = 'לא הצלחנו לשלוח כרגע. חייגו 072-3319929.'; return; }
+      // success screen only after the lead is confirmed saved (15.10.26 — was shown unconditionally)
+      C2B_send(sForm, { name: data.name, phone: data.phone, email: data.email, message: data.note, car: data.car || data.type, source: 'scheduler', meta: { branch: data.branch, date: data.date, time: data.time, type: data.type, car: data.car } }).then((ok) => {
+        if (ok === null) return;
+        if (!ok) { err.innerHTML = 'לא הצלחנו לקבוע את הפגישה כרגע. נסו שוב או חייגו <a href="tel:+972723319929">072-3319929</a>.'; return; }
+        // persist the appointment (triggers the email-notification webhook server-side)
+        if (window.submitAppointment) submitAppointment(data);
+        renderSuccess(data);
+      });
     });
   }
   function bindTimes() {

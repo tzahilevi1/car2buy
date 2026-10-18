@@ -94,18 +94,15 @@
     +       '<div class="lnm-actions"><button type="button" class="btn btn-ghost btn-lg lnm-back" id="lnmBack2">→ חזרה</button><button type="button" class="btn btn-gold btn-lg" id="lnmNext2">המשך לפרטים ←</button></div>'
     +     '</div>'
     +     '<div class="lnm-step" data-step="3">'
-    +       '<div class="lnm-head"><div class="lnm-badge">📄</div><div class="lnm-head-t"><div class="lnm-k">שלב 3 מתוך 3</div><h3>מסמכים ופרטים</h3></div></div>'
-    +       '<p class="lnm-sub">תעודת זהות ורישיון נהיגה בתוקף מזרזים את האישור. הכל מאובטח ומשמש את ועדת האשראי בלבד.</p>'
-    +       '<div class="lnm-uploads">'
-    +         '<label class="lnm-up" id="lnmUpId"><input type="file" accept="image/*,.pdf" id="lnmFileId"><div class="uic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="M15 9h3M15 13h3M5 17c1.5-2 5-2 6.5 0"></path></svg></div><b>תעודת זהות</b><span>צילום או PDF · לחצו לצירוף</span></label>'
-    +         '<label class="lnm-up" id="lnmUpLic"><input type="file" accept="image/*,.pdf" id="lnmFileLic"><div class="uic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20M6 15h5"></path></svg></div><b>רישיון נהיגה</b><span>צילום או PDF · לחצו לצירוף</span></label></div>'
+    +       '<div class="lnm-head"><div class="lnm-badge">📄</div><div class="lnm-head-t"><div class="lnm-k">שלב 3 מתוך 3</div><h3>פרטים ליצירת קשר</h3></div></div>'
+    +       '<p class="lnm-sub">השאירו שם וטלפון — יועץ מימון יחזור אליכם עם הצעה. את המסמכים הנדרשים (אם יידרשו) נבקש בשיחה, לא דרך האתר.</p>'
     +       '<div class="lnm-selects" style="margin-top:14px"><input class="lnm-in" type="text" id="lnmName" placeholder="שם מלא"><input class="lnm-in" type="tel" id="lnmPhone" placeholder="טלפון נייד"></div>'
-    +       '<label class="lnm-consent"><input type="checkbox" id="lnmConsent">אני מאשר/ת קבלת פנייה מ-Car2Buy ושימוש במסמכים שצורפו לצורך בדיקת זכאות למימון בלבד.</label>'
+    +       '<label class="lnm-consent"><input type="checkbox" id="lnmConsent">אני מאשר/ת קבלת פנייה מ-Car2Buy בנוגע לבקשת המימון, בהתאם ל<a href="privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a>.</label>'
     +       '<div class="lnm-actions"><button type="button" class="btn btn-ghost btn-lg lnm-back" id="lnmBack3">→ חזרה</button><button type="button" class="btn btn-gold btn-lg" id="lnmSubmit">שליחת הבקשה</button></div>'
     +     '</div>'
     +     '<div class="lnm-step" data-step="4"><div class="lnm-success"><div class="lnm-check">✓</div><h3>הבקשה נשלחה!</h3><p>יועץ מימון אישי של Car2Buy יחזור אליכם תוך כ-30 דקות עם הצעה מוכנה.</p><div class="lnm-sum" id="lnmSummary"></div></div></div>'
     +   '</div>'
-    +   '<p class="lnm-note">ההחזר החודשי המוצג הוא משוער בלבד ואינו מהווה הצעה מחייבת. תנאי העסקה כפופים לאישור גוף מימון ולנתוני הלקוח. * הפרטים נשמרים לצורך ההדגמה בלבד.</p>'
+    +   '<p class="lnm-note">ההחזר החודשי המוצג הוא משוער בלבד ואינו מהווה הצעה מחייבת. תנאי העסקה כפופים לאישור גוף מימון ולנתוני הלקוח.</p>'
     + '</div>';
 
   function boot() {
@@ -180,14 +177,6 @@
       goStep(3);
     });
 
-    function bindUpload(wrapId, inputId) {
-      var wrap = $(wrapId), input = $(inputId);
-      input.addEventListener('change', function () {
-        if (input.files && input.files.length) { wrap.classList.add('filled'); wrap.querySelector('span').textContent = input.files[0].name; }
-        else wrap.classList.remove('filled');
-      });
-    }
-    bindUpload('lnmUpId', 'lnmFileId'); bindUpload('lnmUpLic', 'lnmFileLic');
 
     $('lnmSubmit').addEventListener('click', function () {
       var name = $('lnmName'), phone = $('lnmPhone'), consent = $('lnmConsent'), ok = true;
@@ -203,8 +192,9 @@
       $('lnmSummary').innerHTML = rows.map(function (r) { return '<div class="lnm-sum-row"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>'; }).join('');
       if (window.c2bTrack) window.c2bTrack('car_loan_submit', { amount: +amount.value, car: carLine });
       // מציגים "נשלח" רק אם השמירה הצליחה בפועל; אחרת C2B_leadFail מציג שגיאה והטופס נשאר לניסיון חוזר.
-      var _lp = window.submitLead ? submitLead({ name: name.value.trim(), phone: phone.value.trim(), car: carLine, message: 'סכום מבוקש: ' + fmt(+amount.value), source: 'car_loan', meta: { amount: +amount.value, kind: want.kind, brand: want.brand, model: want.model } }) : Promise.resolve(true);
-      _lp.then(function (ok) { if (ok) goStep(4); });
+      var _lpl = { name: name.value.trim(), phone: phone.value.trim(), car: carLine, message: 'סכום מבוקש: ' + fmt(+amount.value), source: 'car_loan', meta: { amount: +amount.value, kind: want.kind, brand: want.brand, model: want.model } };
+      var _lp = window.C2B_send ? C2B_send($('lnmSubmit').parentNode, _lpl, $('lnmSubmit')) : Promise.resolve(false);
+      _lp.then(function (ok) { if (ok === null) return; if (ok) goStep(4); else if (!window.C2B_send && window.C2B_leadFail) C2B_leadFail(); });
     });
 
     // open pre-filled for a specific inventory car (by id)

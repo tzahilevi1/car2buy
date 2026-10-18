@@ -1,3 +1,5 @@
+/* cache-bust stamp for scripts site.js loads itself (kept in sync by the bust script) */
+window.C2B_V = '1792071800';
 /* ============================================================
    Car2Buy — shared site chrome: header + footer, injected on
    every page. Set <body data-page="models"> to mark the active
@@ -118,13 +120,13 @@ window.C2B_validPhone = function (v) {
   // load Supabase lead-capture helper (defines window.submitLead) on every page
   if (!window.submitLead && !document.getElementById('c2bSupabase')) {
     const sb = document.createElement('script');
-    sb.src = 'supabase.js'; sb.id = 'c2bSupabase';
+    sb.src = 'supabase.js?v=' + window.C2B_V; sb.id = 'c2bSupabase';
     document.head.appendChild(sb);
   }
   // load first-party analytics tracker
   if (!document.getElementById('c2bAnalytics')) {
     const an = document.createElement('script');
-    an.src = 'analytics.js'; an.id = 'c2bAnalytics'; an.async = true;
+    an.src = 'analytics.js?v=' + window.C2B_V; an.id = 'c2bAnalytics'; an.async = true;
     document.head.appendChild(an);
   }
 
@@ -296,7 +298,9 @@ window.C2B_validPhone = function (v) {
         <p class="footer-seo-p">Car2Buy מציעה <a href="financing">עסקאות מימון לרכב</a> חדש ויד שנייה ממגוון <a href="models">יצרנים ומותגים מובילים</a>, עם <a href="calculator">מחשבון החזר חודשי</a> שקוף, <a href="trade-in">הערכת טרייד-אין אונליין</a> ו<a href="compare">השוואת רכבים</a> חכמה. מחפשים <a href="finance-budget">רכב בהחזר חודשי נמוך</a>, <a href="finance-electric">רכב חשמלי במימון</a>, <a href="finance-family">רכב משפחתי</a>, <a href="finance-business">רכב לעסק</a> או <a href="finance-luxury">רכב יוקרה</a> — נבנה לכם החזר חודשי מותאם אישית. רוצים להעמיק? קראו את <a href="magazine">המגזין שלנו</a> או בדקו את <a href="faq">השאלות הנפוצות</a>.</p>
       </div>
       <div class="footer-bottom">
-        <p class="footer-legal">© 2026 Car2Buy. כל הזכויות שמורות. ההחזר החודשי המוצג באתר הינו משוער בלבד ואינו מהווה הצעה מחייבת. תנאי העסקה כפופים לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. טרייד-אין בהתאם לבדיקה ולתנאי העסקה. אי‑עמידה בהחזרים עלולה לגרור עלויות נוספות. תמונות הרכבים להמחשה. <a href="privacy" style="color:inherit;text-decoration:underline;">מדיניות פרטיות ותנאי שימוש</a>.</p>
+        <p class="footer-legal">© 2026 Car2Buy — מופעל על ידי גלובל דרייב, ח.פ 516685898, הר הקפיצה, נצרת. כל הזכויות שמורות. ההחזר החודשי המוצג באתר הינו משוער בלבד ואינו מהווה הצעה מחייבת. תנאי העסקה כפופים לאישור גוף מימון, נתוני הלקוח וזמינות הרכב במלאי. טרייד-אין בהתאם לבדיקה ולתנאי העסקה. אי‑עמידה בהחזרים עלולה לגרור עלויות נוספות. תמונות הרכבים להמחשה.</p>
+        <p class="footer-legal footer-note">* עד 100% מימון והחזר חודשי — בכפוף לאישור הגוף המממן ולבדיקת זכאות. "ההחזר הנמוך בישראל" — בהשוואה להצעה כתובה זהה (אותו רכב, תקופה ומקדמה) שתציגו לנו, בכפוף לתנאי ההצעה.</p>
+        <p class="footer-legal footer-links"><a href="privacy" style="color:inherit;text-decoration:underline;">מדיניות פרטיות</a> · <a href="terms" style="color:inherit;text-decoration:underline;">תנאי שימוש</a> · <a href="cookies" style="color:inherit;text-decoration:underline;">מדיניות עוגיות</a> · <a href="accessibility" style="color:inherit;text-decoration:underline;">הצהרת נגישות</a></p>
         <p>עוצב ונבנה עבור Car2Buy</p>
       </div>
     </div>
@@ -534,7 +538,7 @@ window.C2B_validPhone = function (v) {
   if (!document.getElementById('aiConciergeScript')) {
     const s = document.createElement('script');
     s.id = 'aiConciergeScript';
-    s.src = 'ai-concierge.js';
+    s.src = 'ai-concierge.js?v=' + window.C2B_V;
     document.body.appendChild(s);
   }
 
@@ -542,7 +546,7 @@ window.C2B_validPhone = function (v) {
   if (!document.getElementById('schedulerScript')) {
     const s = document.createElement('script');
     s.id = 'schedulerScript';
-    s.src = 'scheduler.js';
+    s.src = 'scheduler.js?v=' + window.C2B_V;
     document.body.appendChild(s);
   }
 
@@ -550,7 +554,7 @@ window.C2B_validPhone = function (v) {
   if (!document.getElementById('quickLeadScript')) {
     const s = document.createElement('script');
     s.id = 'quickLeadScript';
-    s.src = 'quick-lead.js';
+    s.src = 'quick-lead.js?v=' + window.C2B_V;
     document.body.appendChild(s);
   }
 
@@ -558,7 +562,7 @@ window.C2B_validPhone = function (v) {
   if (!document.getElementById('socialProofScript')) {
     const s = document.createElement('script');
     s.id = 'socialProofScript';
-    s.src = 'social-proof.js';
+    s.src = 'social-proof.js?v=' + window.C2B_V;
     document.body.appendChild(s);
   }
 
@@ -688,13 +692,22 @@ window.C2B_validPhone = function (v) {
   })();
 
   // ===== cookie consent (Consent Mode friendly) =====
-  if (!localStorage.getItem('c2b_consent') && !document.getElementById('cookieBar')) {
+  let _cv = null; try { _cv = localStorage.getItem('c2b_consent'); } catch (e) {}
+  if (!_cv && !document.getElementById('cookieBar')) {
     document.body.insertAdjacentHTML('beforeend',
       '<div id="cookieBar" class="cookie-bar">' +
-        '<p>אנו משתמשים בעוגיות לשיפור החוויה ולמדידה שיווקית. המשך הגלישה מהווה הסכמה. <a href="privacy">למדיניות הפרטיות</a>.</p>' +
+        '<p>אנו משתמשים בעוגיות למדידה ולשיווק — רק אם תאשרו. אפשר לדחות, והאתר ימשיך לעבוד כרגיל. <a href="cookies">מדיניות עוגיות</a> · <a href="privacy">פרטיות</a>.</p>' +
         '<div class="cookie-actions"><button class="btn btn-ghost" id="cookieDecline">דחייה</button><button class="btn btn-gold" id="cookieOk">אישור</button></div>' +
       '</div>');
-    const close = (v) => { localStorage.setItem('c2b_consent', v); const b = document.getElementById('cookieBar'); if (b) b.remove(); window.c2bTrack && c2bTrack('consent_' + v); };
+    // Consent Mode v2 (15.10.26): the inline default (before GTM) is 'denied' until the visitor accepts here.
+    const close = (v) => {
+      try { localStorage.setItem('c2b_consent', v); } catch (e) {}
+      const g = v === 'granted' ? 'granted' : 'denied';
+      window.dataLayer = window.dataLayer || [];
+      if (!window.gtag) window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('consent', 'update', { ad_storage: g, analytics_storage: g, ad_user_data: g, ad_personalization: g });
+      const b = document.getElementById('cookieBar'); if (b) b.remove(); window.c2bTrack && c2bTrack('consent_' + v);
+    };
     document.getElementById('cookieOk').addEventListener('click', () => close('granted'));
     document.getElementById('cookieDecline').addEventListener('click', () => close('denied'));
   }
@@ -783,3 +796,48 @@ window.C2B_modalOpen = function (self) {
   }
   return false;
 };
+
+/*C2B-A11Y-TYPING (15.10.26, ported from center-lease) — site-wide: visible keyboard focus ring, skip-link, LTR phone
+  inputs, and on phones the floating UI (mobile bar / AI concierge / accessibility button) steps aside while typing */
+(function () {
+  if (window.__c2bA11yTyping) return; window.__c2bA11yTyping = 1;
+  var css = ''
+    // focus ring: deep brand orange — reads on the white pages and on the dark header/footer (>=3:1 on both)
+    + ':where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid #D14E0C !important;outline-offset:2px !important}'
+    + '.nav :where(a,button,input):focus-visible,.footer :where(a,button):focus-visible{outline-color:#FF8240 !important}'
+    + ':where(input,select,textarea):focus-visible{outline-offset:1px !important}'
+    // skip-link: off-screen until focused
+    + '.c2b-skip{position:fixed;top:8px;inset-inline-start:8px;z-index:100000;padding:12px 18px;border-radius:10px;background:#1E1D1B;color:#fff;font-weight:700;font-size:15px;text-decoration:none;transform:translateY(-160%);transition:transform .15s}'
+    + '.c2b-skip:focus,.c2b-skip:focus-visible{transform:none}'
+    // phone numbers are LTR, but sit on the right edge like the rest of the RTL form
+    + 'input[type="tel"]{direction:ltr !important;text-align:right}'
+    + 'input[type="tel"]::placeholder{direction:rtl;text-align:right}'
+    + '@media (max-width:768px){body.c2b-typing #mobileBar,body.c2b-typing .mbar,body.c2b-typing #ai-concierge,body.c2b-typing #a11yFab,body.c2b-typing .wa-float{visibility:hidden !important;opacity:0 !important;pointer-events:none !important}}';
+  var st = document.createElement('style'); st.id = 'c2bA11yTyping'; st.textContent = css;
+  (document.head || document.documentElement).appendChild(st);
+
+  function fixTel(root) {
+    var l = (root && root.querySelectorAll ? root : document).querySelectorAll('input[type=tel]');
+    for (var i = 0; i < l.length; i++) if (l[i].getAttribute('dir') !== 'ltr') l[i].setAttribute('dir', 'ltr');
+  }
+  function skipLink() {
+    if (document.querySelector('.c2b-skip') || !document.body) return;
+    var main = document.querySelector('main') || document.getElementById('carDetail') || document.querySelector('section'); if (!main) return;
+    if (!main.id) main.id = 'main-content';
+    if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
+    var a = document.createElement('a'); a.className = 'c2b-skip'; a.href = '#' + main.id; a.textContent = 'דילוג לתוכן הראשי';
+    a.addEventListener('click', function (e) { e.preventDefault(); main.focus({ preventScroll: true }); main.scrollIntoView(); });
+    document.body.insertBefore(a, document.body.firstChild);
+  }
+  function boot() {
+    fixTel(document); skipLink();
+    try { new MutationObserver(function (ms) { for (var i = 0; i < ms.length; i++) { var ns = ms[i].addedNodes; for (var j = 0; j < ns.length; j++) { var n = ns[j]; if (n.nodeType === 1) { if (n.matches && n.matches('input[type=tel]')) fixTel(n.parentNode); else if (n.querySelector && n.querySelector('input[type=tel]')) fixTel(n); } } } }).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+
+  var TYPING = 'input:not([type]),input[type=text],input[type=tel],input[type=email],input[type=search],input[type=number],input[type=url],input[type=password],textarea';
+  document.addEventListener('focusin', function (e) { var t = e.target; if (t && t.matches && t.matches(TYPING) && document.body) document.body.classList.add('c2b-typing'); });
+  document.addEventListener('focusout', function () {
+    setTimeout(function () { var a = document.activeElement; if (!(a && a.matches && a.matches(TYPING)) && document.body) document.body.classList.remove('c2b-typing'); }, 60);
+  });
+})();

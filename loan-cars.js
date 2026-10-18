@@ -5,7 +5,7 @@
    ============================================================ */
 (function () {
   window.Car2Buy = window.Car2Buy || {};
-  var I = 'https://www.icar.co.il/_media/images/models/bgremoval/';
+  var I = 'images/loan/';
   var C = [
     // BYD
     { brand:'ב.י.ד', name:'אטו 2', trim:'Boost', m:1580, p:152300, img:I+'byd-atto2-new.jpg' },
@@ -123,7 +123,7 @@
     "ב.י.ד|אטו 2": g6('byd-atto2'),
     "ב.י.ד|סיל 5 DM-i": g6('byd-seal5'),
     "ב.י.ד|סיל U": g6('byd-sealu'),
-    "ב.י.ד|סיליון 5": g6('byd-sealion5'),
+    "ב.י.ד|סיליון 5": g6('byd-sealion5').slice(0, 5) /* int6.jpg was an empty (0-byte) file — removed */,
     "צ'רי|טיגו 8 פרו": g6('chery-tiggo8'),
     "צ'רי|טיגו 4": g6('chery-tiggo4'),
     "צ'רי|טיגו 7 פרו": ["images/gallery/chery-tiggo7/ext2.webp","images/gallery/chery-tiggo7/ext3.webp","images/gallery/chery-tiggo7/ext4.webp","images/gallery/chery-tiggo7/int5.webp","images/gallery/chery-tiggo7/int6.webp"],
@@ -182,7 +182,7 @@
     "אאודי|Q5 40TFSI": g6('audi-q5'),
     "אומודה|7 הרמוני": g6('omoda-7'),
 "ב.י.ד|סיל יו": ["images/gallery/byd-sealu/ext1.webp","images/gallery/byd-sealu/ext2.webp","images/gallery/byd-sealu/ext3.webp","images/gallery/byd-sealu/ext4.webp","images/gallery/byd-sealu/int5.webp","images/gallery/byd-sealu/int6.webp"],
-    "ב.י.ד|סיליון": ["images/gallery/byd-sealion5/ext1.webp","images/gallery/byd-sealion5/ext2.webp","images/gallery/byd-sealion5/ext3.webp","images/gallery/byd-sealion5/ext4.webp","images/gallery/byd-sealion5/int5.webp","images/gallery/byd-sealion5/int6.jpg"],
+    "ב.י.ד|סיליון": ["images/gallery/byd-sealion5/ext1.webp","images/gallery/byd-sealion5/ext2.webp","images/gallery/byd-sealion5/ext3.webp","images/gallery/byd-sealion5/ext4.webp","images/gallery/byd-sealion5/int5.webp"],
     "ג'אקו|8": ["images/gallery/jaecoo-8/ext1.webp","images/gallery/jaecoo-8/ext2.webp","images/gallery/jaecoo-8/ext3.webp","images/gallery/jaecoo-8/ext4.webp","images/gallery/jaecoo-8/int5.webp","images/gallery/jaecoo-8/int6.webp"],
     "ג'אקו|7": ["images/gallery/jaecoo-7/ext1.webp","images/gallery/jaecoo-7/ext2.webp","images/gallery/jaecoo-7/ext3.webp","images/gallery/jaecoo-7/ext4.webp","images/gallery/jaecoo-7/int5.webp","images/gallery/jaecoo-7/int6.webp"],
     "ג'אקו|5": ["images/gallery/jaecoo-5/ext1.webp","images/gallery/jaecoo-5/ext2.webp","images/gallery/jaecoo-5/ext3.webp","images/gallery/jaecoo-5/ext4.webp","images/gallery/jaecoo-5/int5.webp","images/gallery/jaecoo-5/int6.webp"],

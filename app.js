@@ -122,8 +122,10 @@
       if (!ok) return;
       if (window.c2bTrack) c2bTrack('lead_form_submit', { car: (carSelect && carSelect.value) || '' });
       const payload = window.collectForm ? collectForm(form, { source: 'contact' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'contact' };
-      const p = window.submitLead ? submitLead(payload) : Promise.resolve(false);
+      // C2B_send: one save per click burst (button disabled until it settles) — 3 fast clicks used to send 3 leads
+      const p = window.C2B_send ? C2B_send(form, payload) : (window.submitLead ? submitLead(payload) : Promise.resolve(false));
       p.then((saved) => {
+        if (saved === null) return;
         if (saved) {
           form.style.display = 'none';
           if (success) success.classList.add('show');
@@ -262,7 +264,7 @@
         </div>
         <div class="filter-group">
           <div class="filter-label">החזר חודשי עד <b id="fPriceVal">${NIS(maxP)}</b></div>
-          <input type="range" id="fPrice" min="${minP}" max="${maxP}" step="100" value="${maxP}">
+          <input type="range" id="fPrice" aria-label="החזר חודשי מקסימלי" min="${minP}" max="${maxP}" step="100" value="${maxP}">
           <div class="calc-ticks"><span>${NIS(minP)}</span><span>${NIS(maxP)}</span></div>
         </div>
         <div class="filter-group">
@@ -568,12 +570,26 @@
 
     // newsletter
     const news = document.getElementById('magNews');
-    if (news) news.addEventListener('submit', (e) => { e.preventDefault(); const em = news.querySelector('input'); if (window.submitLead && em && em.value.trim()) submitLead({ email: em.value.trim(), source: 'newsletter_magazine' }); news.querySelector('input').style.display = 'none'; news.querySelector('button').style.display = 'none'; const ok = document.getElementById('magNewsOk'); if (ok) ok.classList.add('show'); });
+    if (news && !news.querySelector('.c2b-consent-cb') && window.C2B_consentHTML) news.querySelector('button').insertAdjacentHTML('beforebegin', window.C2B_consentHTML());
+    if (news) news.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const em = news.querySelector('input[type=email]');
+      if (!em || !/.+@.+\..+/.test(em.value.trim())) { if (em) { em.style.borderColor = '#e25555'; em.focus(); } return; }
+      // דיוור = הסכמה מפורשת (תיקון 13 / 30א) — לא שולחים בלי סימון
+      if (window.C2B_consentOK && !window.C2B_consentOK(news)) return;
+      if (!window.C2B_formSend) { if (window.C2B_leadFail) C2B_leadFail(); return; }
+      C2B_formSend(news, { email: em.value.trim(), source: 'newsletter_magazine', meta: { newsletter_consent: true } }, () => {
+        em.style.display = 'none'; news.querySelector('button').style.display = 'none';
+        const c = news.querySelector('.c2b-consent'); if (c) c.style.display = 'none';
+        const ok = document.getElementById('magNewsOk'); if (ok) ok.classList.add('show');
+      });
+    });
   }
 
   /* ---------- press strip ---------- */
   const press = document.getElementById('pressStrip');
-  if (press && window.Car2Buy) {
+  if (press && window.Car2Buy && !(window.Car2Buy.PRESS || []).length) { const ps = press.closest('section'); if (ps) ps.remove(); else press.remove(); }
+  else if (press && window.Car2Buy) {
     press.innerHTML = window.Car2Buy.PRESS.map((p) =>
       `<figure class="press-item reveal"><span class="press-logo press-${p.style}">${p.name}</span><figcaption class="press-quote">${p.quote}</figcaption></figure>`).join('');
   }
@@ -582,7 +598,7 @@
   const vtest = document.getElementById('vtest');
   if (vtest && window.Car2Buy) {
     // testimonials carry quotes; CUSTOMERS may be overridden with photo-only data (customers-data.js)
-    const items = window.Car2Buy.TESTIMONIALS || window.Car2Buy.CUSTOMERS;
+    const items = (window.Car2Buy.TESTIMONIALS && window.Car2Buy.TESTIMONIALS.length) ? window.Car2Buy.TESTIMONIALS : (window.Car2Buy.CUSTOMERS || []);
     const track = document.getElementById('vtTrack');
     const dotsWrap = document.getElementById('vtDots');
     track.innerHTML = items.map((c) => {
@@ -637,7 +653,11 @@
   const artView = document.getElementById('articleView');
   if (artView && window.Car2Buy) {
     const { ARTICLES, articleCard } = window.Car2Buy;
-    const id = new URLSearchParams(location.search).get('id');
+    // removed articles keep a landing (15.10.26: the end-of-term-payment article was withdrawn — fleet red line)
+    const ID_ALIAS = { 'balloon-payment-explained': 'monthly-payment-breakdown' };
+    const id0 = new URLSearchParams(location.search).get('id');
+    const id = ID_ALIAS[id0] || id0;
+    if (id !== id0) { try { history.replaceState(null, '', 'article?id=' + encodeURIComponent(id)); } catch (e) {} }
     const a = ARTICLES.find((x) => x.id === id);
     if (!a) {
       artView.innerHTML = `<section class="section" style="padding-top:160px;"><div class="wrap center"><h2 class="h-sec">הכתבה לא נמצאה</h2><div style="margin-top:24px;"><a href="magazine" class="btn btn-gold btn-lg">למגזין</a></div></div></section>`;
@@ -810,9 +830,10 @@
       if (consent && !consent.checked) { if (window.C2B_consentWarn) C2B_consentWarn(consent); else consent.style.color = 'var(--gold)'; ok = false; } else if (consent) consent.style.color = '';
       if (!ok) return;
       // מציגים הצלחה רק אם הליד נשמר בפועל; אחרת C2B_leadFail מציג שגיאה והטופס נשאר לניסיון חוזר.
-      const _qp = window.submitLead ? submitLead(window.collectForm ? collectForm(quickForm, { source: 'home_quick' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'home_quick' }) : Promise.resolve(true);
+      const _qpl = window.collectForm ? collectForm(quickForm, { source: 'home_quick' }) : { name: name.value.trim(), phone: phone.value.trim(), source: 'home_quick' };
+      const _qp = window.C2B_formSend ? C2B_formSend(quickForm, _qpl) : Promise.resolve(false);
       _qp.then((ok) => {
-        if (!ok) return;
+        if (!ok) { if (ok === false && !window.C2B_formSend && window.C2B_leadFail) C2B_leadFail(); return; }
         quickForm.classList.add('sent');
         const s = document.getElementById('qcSuccess');
         if (s) s.classList.add('show');
@@ -865,9 +886,9 @@
   if (heroSearch && window.Car2Buy) {
     const { CATS, BRANDS } = window.Car2Buy;
     heroSearch.innerHTML = `
-      <select class="hs-pill" id="hsCat"><option value="all">קטגוריה</option>${CATS.filter((c) => c.id !== 'all').map((c) => `<option value="${c.id}">${c.label}</option>`).join('')}</select>
-      <select class="hs-pill" id="hsBrand"><option value="">יצרן</option>${BRANDS.map((b) => `<option value="${b}">${b}</option>`).join('')}</select>
-      <select class="hs-pill" id="hsMax"><option value="">החזר חודשי עד</option><option value="3000">₪3,000</option><option value="4000">₪4,000</option><option value="5000">₪5,000</option><option value="7000">₪7,000</option></select>
+      <select class="hs-pill" id="hsCat" aria-label="קטגוריה"><option value="all">קטגוריה</option>${CATS.filter((c) => c.id !== 'all').map((c) => `<option value="${c.id}">${c.label}</option>`).join('')}</select>
+      <select class="hs-pill" id="hsBrand" aria-label="יצרן"><option value="">יצרן</option>${BRANDS.map((b) => `<option value="${b}">${b}</option>`).join('')}</select>
+      <select class="hs-pill" id="hsMax" aria-label="החזר חודשי עד"><option value="">החזר חודשי עד</option><option value="3000">₪3,000</option><option value="4000">₪4,000</option><option value="5000">₪5,000</option><option value="7000">₪7,000</option></select>
       <button class="btn btn-gold hs-btn" id="hsBtn">חיפוש רכב</button>`;
     document.getElementById('hsBtn').addEventListener('click', () => {
       const p = new URLSearchParams();
@@ -1279,6 +1300,9 @@
       let ok = true;
       [name, phone].forEach((f) => { if (!f.value.trim()) { f.style.borderColor = '#e25555'; ok = false; } else f.style.borderColor = ''; });
       if (phone.value.trim() && window.C2B_validPhone && !C2B_validPhone(phone.value)) { phone.style.borderColor = '#e25555'; ok = false; }
+      // 15.10.26: the wizard is a click handler (no <form submit>), so the global consent gate never saw it — enforce here
+      const wizConsent = $('wizConsent');
+      if (wizConsent && !wizConsent.checked) { if (window.C2B_consentWarn) C2B_consentWarn(wizConsent); ok = false; }
       if (!ok) return;
       let interest = want.kind || 'טרם הוחלט';
       if (want.kind === 'רכב חדש' && want.decide === 'specific' && want.brand) interest += ' · ' + want.brand + (want.model ? ' ' + want.model : '');
@@ -1302,18 +1326,26 @@
       // בכל מקרה תוך 1.5ש' כדי לא לתקוע את המשתמש אם הרשת איטית.
       var navigated = false;
       var goThanks = function () { if (!navigated) { navigated = true; location.href = '/thank-you'; } };
-      if (window.submitLead) {
-        submitLead({
+      const wizErr = (show) => {
+        let el = $('wizErr');
+        if (!el && show) { el = document.createElement('div'); el.id = 'wizErr'; el.setAttribute('role', 'alert'); el.style.cssText = 'margin-top:12px;padding:12px 14px;border-radius:10px;background:#fff4f4;color:#b23b3b;font-weight:600;line-height:1.6;'; $('wizSubmit').insertAdjacentElement('afterend', el); }
+        if (!el) return;
+        el.hidden = !show;
+        if (show) el.innerHTML = 'לא הצלחנו לשלוח את הפרטים כרגע. נסו שוב, או חייגו <a href="tel:+972723319929" style="color:inherit;text-decoration:underline;">072-3319929</a>.';
+      };
+      wizErr(false);
+      if (window.C2B_send) {
+        C2B_send($('wizSubmit').closest('.wiz-step') || $('wizSubmit').parentNode, {
           name: data.name,
           phone: data.phone,
           car: data.car || (want.brand ? want.brand + (want.model ? ' ' + want.model : '') : '') || interest,
           source: 'trade_in_wizard',
           message: 'טרייד-אין' + (data.plate ? ' · לוחית ' + data.plate : '') + (data.km ? ' · ' + data.km + ' ק״מ' : '') + (data.interest ? ' · מתעניין ב-' + data.interest : ''),
           meta: { trade_car: data.car, year: data.year, trim: data.trim, color: data.color, plate: data.plate, km: data.km, interest: data.interest }
-        }).then(function (ok) { if (ok) goThanks(); });
-        // אין ניווט "עיוור" בכישלון: אם השמירה נכשלה, C2B_leadFail מציג שגיאה והמשתמש נשאר לנסות שוב.
+        }, $('wizSubmit')).then(function (ok) { if (ok === null) return; if (ok) goThanks(); else wizErr(true); });
+        // אין ניווט "עיוור" בכישלון: אם השמירה נכשלה, מוצגת שגיאה והמשתמש נשאר לנסות שוב.
       } else {
-        goThanks();
+        wizErr(true);
       }
     });
   }

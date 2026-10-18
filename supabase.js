@@ -18,7 +18,8 @@
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      keepalive: true
     }).then(function (res) {
       if (!res.ok) { return res.text().then(function (t) { console.warn('[Car2Buy] ' + table + ' insert failed', res.status, t); return false; }); }
       return true;
@@ -76,18 +77,43 @@
   // marketing attribution from the URL query (utm_* + ad ids), persisted per
   // session so it survives navigation between the landing page and the form.
   function qp(name) { try { return new URLSearchParams(location.search).get(name); } catch (e) { return null; } }
-  function attribution() {
-    var keys = ['utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term', 'ad_group', 'adgroup',
-      'gclid', 'gbraid', 'wbraid', 'fbclid', 'ttclid', 'msclkid', 'twclid', 'li_fat_id'];
-    var stored = {};
-    try { stored = JSON.parse(sessionStorage.getItem('c2b_attr') || '{}'); } catch (e) {}
+  // ייחוס (15.10.26): נלכד בטעינת כל עמוד (לא רק בשליחה) — אחרת ניווט מדף הנחיתה לעמוד אחר איבד את ה-utm/gclid.
+  // מגע ראשון: localStorage c2b_attr_first — נכתב פעם אחת ולעולם לא נדרס (עמודות utm/gclid ב-CRM).
+  // מגע אחרון: localStorage c2b_attr_last — נדרס בכל כניסה עם utm/מזהה-קליק/referrer חיצוני (meta.attribution_last).
+  var ATTR_KEYS = ['utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term', 'utm_id', 'ad_group', 'adgroup',
+    'campaign_id', 'adset_id', 'ad_id', 'placement',
+    'gclid', 'gbraid', 'wbraid', 'dclid', 'fbclid', 'ttclid', 'msclkid', 'twclid', 'li_fat_id'];
+  function readAttr(k) { try { var v = JSON.parse(localStorage.getItem(k) || 'null'); return v && typeof v === 'object' ? v : null; } catch (e) { return null; } }
+  function captureAttribution() {
     var found = false, cur = {};
-    keys.forEach(function (k) { var v = qp(k); if (v) { cur[k] = v; found = true; } });
-    // referrer חיצוני (מגע ראשון) — לסיווג ערוץ אורגני/סושיאל כשאין UTM/מזהה קליק
+    ATTR_KEYS.forEach(function (k) { var v = qp(k); if (v) { cur[k] = v; found = true; } });
+    // referrer חיצוני — לסיווג ערוץ אורגני/סושיאל כשאין UTM/מזהה קליק
     try { var _ref = document.referrer || ''; if (_ref && _ref.indexOf(location.origin) !== 0) { cur.referrer = _ref; found = true; } } catch (e) {}
-    if (found) { try { sessionStorage.setItem('c2b_attr', JSON.stringify(cur)); } catch (e) {} return cur; }
-    return stored;
+    if (!found) return;
+    cur.landing_page = location.href;
+    cur.seen_at = new Date().toISOString();
+    try {
+      if (!readAttr('c2b_attr_first')) localStorage.setItem('c2b_attr_first', JSON.stringify(cur));
+      localStorage.setItem('c2b_attr_last', JSON.stringify(cur));
+    } catch (e) {}
+    try { sessionStorage.setItem('c2b_attr', JSON.stringify(cur)); } catch (e) {} // fallback when localStorage is blocked
   }
+  /* CAPTURE-ON-LOAD */ try { captureAttribution(); } catch (e) {}
+  function attribution() {
+    var first = readAttr('c2b_attr_first');
+    if (first) return first;
+    try { return JSON.parse(sessionStorage.getItem('c2b_attr') || '{}') || {}; } catch (e) { return {}; }
+  }
+  function lastTouch() { return readAttr('c2b_attr_last'); }
+  // 972-50-123-4567 / +972 50 1234567 / 050-123 4567 → 0501234567
+  function normPhone(v) {
+    var d = String(v || '').replace(/\D/g, '');
+    if (!d) return v ? String(v).trim() : null;
+    if (d.indexOf('00972') === 0) d = d.slice(5); else if (d.indexOf('972') === 0) d = d.slice(3);
+    if (d.charAt(0) !== '0' && d.length === 9) d = '0' + d;
+    return d;
+  }
+  window.C2B_normPhone = normPhone;
   // best-effort public IP (never blocks the save for more than ~0.7s; ipify usually answers <300ms)
   function getIp() {
     return new Promise(function (resolve) {
@@ -135,7 +161,7 @@
     if(ref)return 'Referral';
     return 'Direct';
   }
-  window.submitLead = function (payload) {
+  function sendLead(payload) {
     payload = payload || {};
     // ---- anti-spam / abuse guards (defense-in-depth; forms also validate) ----
     // 1) honeypot — bots fill hidden fields real users never see; drop silently.
@@ -145,7 +171,7 @@
     // 2) require a plausible contact channel (phone / email / message).
     var digits = String(payload.phone || '').replace(/\D/g, '');
     var hasEmail = /.+@.+\..+/.test(String(payload.email || ''));
-    if (digits.length < 7 && !hasEmail && !payload.message) return Promise.resolve(false);
+    if (digits.length < 7 && !hasEmail && !payload.message) { C2B_leadFail(); return Promise.resolve(false); }
     // 3) per-session rate limit — cap bursts from one browser.
     try {
       var _now = Date.now(), _win = 600000, _cap = 40;
@@ -171,10 +197,13 @@
     ['fbclid', 'ttclid', 'msclkid', 'gbraid', 'wbraid', 'twclid', 'li_fat_id', 'gclid', 'referrer'].forEach(function (k) { if (attr[k]) attrMeta[k] = attr[k]; });
     var channel = classify(attr);
     var mergedMeta = Object.assign({}, payload.meta || {}, attrMeta, { channel: channel });
+    if (attr.landing_page) mergedMeta.landing_page = attr.landing_page;
+    if (attr.seen_at) mergedMeta.first_seen = attr.seen_at;
+    var _last = lastTouch(); if (_last) mergedMeta.attribution_last = _last;
     return getIp().then(function (ip) {
       var body = {
         name: payload.name || null,
-        phone: payload.phone || null,
+        phone: normPhone(payload.phone) || null,
         email: payload.email || null,
         car: payload.car || null,
         message: payload.message || null,
@@ -229,6 +258,61 @@
       console.warn('[Car2Buy] lead save error', e);
       C2B_leadFail();
       return false;
+    });
+  }
+
+  // Duplicate guard (15.10.26): one POST per lead. A second call with the same phone/email+source while the first is
+  // still in flight gets the same promise; a repeat within 20s of a confirmed save returns true without a new POST
+  // (fast double-clicks sent 2–6 identical leads).
+  var _inflight = {}, _recent = {};
+  window.submitLead = function (payload) {
+    payload = payload || {};
+    var key = [String(normPhone(payload.phone) || ''), String(payload.email || '').toLowerCase(), payload.source || ''].join('|');
+    if (_inflight[key]) return _inflight[key];
+    if (_recent[key] && Date.now() - _recent[key] < 20000) return Promise.resolve(true);
+    var p = sendLead(payload).then(function (ok) { delete _inflight[key]; if (ok) _recent[key] = Date.now(); return ok; },
+      function () { delete _inflight[key]; return false; });
+    _inflight[key] = p;
+    return p;
+  };
+  /**
+   * Submit a form's lead once: ignores clicks while a save is in flight, disables the submit button(s) until
+   * submitLead settles, and resolves true/false (null = ignored duplicate click). Re-enables only on failure.
+   * @param {Element} form   form (or wizard container) whose buttons get disabled
+   * @param {object} payload submitLead payload
+   * @param {Element} [btn]  extra button outside the form (wizards)
+   */
+  window.C2B_send = function (form, payload, btn) {
+    var host = form || {};
+    if (host.__c2bBusy) return Promise.resolve(null);
+    host.__c2bBusy = 1;
+    var btns = [];
+    try { if (form && form.querySelectorAll) btns = [].slice.call(form.querySelectorAll('button[type=submit],input[type=submit],button:not([type])')); } catch (e) {}
+    if (btn && btns.indexOf(btn) < 0) btns.push(btn);
+    btns.forEach(function (b) { b.disabled = true; b.setAttribute('aria-busy', 'true'); });
+    var release = function () { host.__c2bBusy = 0; btns.forEach(function (b) { b.disabled = false; b.removeAttribute('aria-busy'); }); };
+    return window.submitLead(payload).then(function (ok) { if (!ok) release(); else btns.forEach(function (b) { b.removeAttribute('aria-busy'); }); return ok; },
+      function () { release(); C2B_leadFail(); return false; });
+  };
+  // Form helper: success UI only after a confirmed save; otherwise an inline error under the form (never a fake 'thanks').
+  window.C2B_formErr = function (form, show) {
+    if (!form || !form.parentNode) return;
+    var id = (form.id || 'c2bForm') + 'Err', el = document.getElementById(id);
+    if (!show) { if (el) el.hidden = true; return; }
+    if (!el) {
+      el = document.createElement('div'); el.id = id; el.className = 'c2b-form-err'; el.setAttribute('role', 'alert');
+      el.style.cssText = 'margin-top:12px;padding:12px 14px;border-radius:10px;background:#fff4f4;color:#b23b3b;font-weight:600;font-size:14px;line-height:1.6;text-align:start;direction:rtl;';
+      form.parentNode.insertBefore(el, form.nextSibling);
+    }
+    el.innerHTML = 'לא הצלחנו לשלוח את הפנייה כרגע. נסו שוב, או חייגו <a href="tel:+972723319929" style="color:inherit;text-decoration:underline;">072-3319929</a>.';
+    el.hidden = false;
+  };
+  window.C2B_formSend = function (form, payload, onOk, btn) {
+    window.C2B_formErr(form, false);
+    return window.C2B_send(form, payload, btn).then(function (ok) {
+      if (ok === null) return null;
+      if (ok) { try { onOk && onOk(); } catch (e) {} } else window.C2B_formErr(form, true);
+      return ok;
     });
   };
 })();

@@ -77,7 +77,7 @@
   });
   var models = [...map.values()].sort(function (a, b) { return a.minM - b.minM; });
 
-  var logoUrl = (C.LOGO_HE && C.LOGO_HE(brand)) || (LOGO_SLUG[brand] ? 'https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset/logos/optimized/' + LOGO_SLUG[brand] + '.png' : '');
+  var logoUrl = (C.LOGO_HE && C.LOGO_HE(brand)) || (LOGO_SLUG[brand] ? 'images/brands-cdn/' + LOGO_SLUG[brand] + '.png' : '');
   if (!models.length) {
     var binfo = (window.C2B_BRAND_INFO || {})[brand];
     var intro0 = (binfo && binfo.intro) || (brandDisp + ' היא יצרנית רכב מבוקשת, ו-Car2Buy יכולה להשיג עבורכם כל דגם שלה בעסקת מימון עם החזר חודשי נוח. אנחנו עובדים מול כל היבואנים ומתחייבים לתנאים ולריביות הטובים ביותר בשוק.');
@@ -123,7 +123,7 @@
   for (var vi = 0; vi < models.length && !brandVideo; vi++) brandVideo = VID[models[vi].slug] || '';
   if (!brandVideo) for (var vj = 0; vj < inv.length && !brandVideo; vj++) brandVideo = VID[inv[vj].id] || '';
   var ytQuery = encodeURIComponent(brand + ' רכב מבחן דרכים 2026');
-  var bvPoster = brandVideo ? 'https://img.youtube.com/vi/' + brandVideo + '/maxresdefault.jpg'
+  var bvPoster = brandVideo ? 'images/ext/yt-' + brandVideo + '.webp' // self-hosted (scripts/localize-ext-images.mjs)
     : (models[0] && models[0].img) || '';
 
   // ---------- articles (3 per model) ----------

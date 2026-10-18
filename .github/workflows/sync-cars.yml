@@ -28,6 +28,15 @@ jobs:
         env:
           DRIVE_API_KEY: ${{ secrets.DRIVE_API_KEY }}
         run: node scripts/sync-used.mjs
+      # Launch audit (15.10.26): sheet photos (icar.co.il, Google Drive, wikimedia) were hotlinked and broke when the host
+      # blocked/deleted them. Self-host new ones BEFORE the prerender bakes them into the static car pages.
+      - name: Self-host sheet / hotlinked images when the inventory changed
+        continue-on-error: true   # never block the inventory sync itself
+        run: |
+          if [[ -n "$(git status --porcelain cars.json)" ]]; then
+            npm i --no-save --no-package-lock --silent sharp@0.33
+            node scripts/localize-ext-images.mjs
+          fi
       # SEO (7.10.26): every inventory car/brand has a prerendered static page (/car-<slug>, /brand-<slug>) and the site
       # links to them — so a changed cars.json must regenerate those pages and the sitemap, or new cars would 404.
       - name: Prerender static car/brand pages + sitemap when the inventory changed
@@ -45,7 +54,8 @@ jobs:
           if [[ -n "$(git status --porcelain cars.json used-cars.js)" ]]; then
             git config user.name "car2buy-bot"
             git config user.email "actions@users.noreply.github.com"
-            git add cars.json used-cars.js sitemap.xml scripts/_prerendered.json
+            git add cars.json used-cars.js sitemap.xml scripts/_prerendered.json db-cars.js
+            git add -A -- images/ext images/loan images/brands-cdn
             git add -A -- 'car-*.html' 'brand-*.html'
             git commit -m "chore: sync inventory from Google Sheets [skip ci]"
             git push

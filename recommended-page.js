@@ -20,7 +20,7 @@
   (C2B.BRANDS_ALL || []).forEach(function (b) { if (b.he) SLUG[b.he] = b.slug; SLUG[b.name] = b.slug; });
   function brandLogo(he) {
     var slug = SLUG[he];
-    return slug ? 'https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/' + slug + '.png' : '';
+    return slug ? 'images/brands-cdn/' + slug + '.png' : '';
   }
 
   function card(m) {
@@ -194,8 +194,10 @@
     // חובה טלפון תקין לפני שליחה
     if (window.C2B_validPhone && !C2B_validPhone(phone)) { if (ph) { ph.style.borderColor = '#e25555'; ph.focus(); } return; }
     // שמירת הליד בפועל (וירי פיקסל Lead) לפני החלפת תוכן הטופס — אחרת הקלט אבד.
-    if (window.submitLead) submitLead({ name: name, phone: phone, source: 'recommended_appt', message: 'קביעת פגישה' + (timePref ? ' · העדפת שעה: ' + timePref : '') });
     if (window.c2bTrack) c2bTrack('lead_submit', { source: 'recommended_appt' });
-    apptForm.innerHTML = '<div style="text-align:center;color:#1f8a4c;font-weight:700;padding:20px 0;">תודה! ניצור קשר בהקדם לתיאום הפגישה ✓</div>';
+    if (!window.C2B_formSend) { if (window.C2B_leadFail) C2B_leadFail(); return; }
+    C2B_formSend(apptForm, { name: name, phone: phone, source: 'recommended_appt', message: 'קביעת פגישה' + (timePref ? ' · העדפת שעה: ' + timePref : '') }, function () {
+      apptForm.innerHTML = '<div style="text-align:center;color:#1f8a4c;font-weight:700;padding:20px 0;">תודה! ניצור קשר בהקדם לתיאום הפגישה ✓</div>';
+    });
   });
 })();

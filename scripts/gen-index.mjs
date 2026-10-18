@@ -1,12 +1,17 @@
 import fs from 'fs';
 const ROOT = process.cwd();
+// 15.10.26: in sync with the live landings.html — extensionless links, webp thumbs, consent default before GTM,
+// cookie bar, "עד 100% מימון*" + footnote (no rate claims), ?v= stamp shared with index.html.
+const V = ((fs.readFileSync(ROOT + '/index.html', 'utf8').match(/site\.js\?v=(\d+)/) || [])[1]) || String(Math.floor(Date.now() / 1000));
+const webp = (p) => { const w = String(p).replace(/\.(jpe?g|png)$/i, '.webp'); return w !== p && fs.existsSync(ROOT + '/' + w) ? w : p; };
+const CONSENT = "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}(function(){var v=null;try{v=localStorage.getItem('c2b_consent');}catch(e){}var g=v==='granted'?'granted':'denied';gtag('consent','default',{ad_storage:g,analytics_storage:g,ad_user_data:g,ad_personalization:g,functionality_storage:'granted',security_storage:'granted',wait_for_update:500});gtag('set','ads_data_redaction',true);})();</script>";
 const built = JSON.parse(fs.readFileSync(ROOT + '/scripts/_built.json', 'utf8'));
 const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const nis = (n) => '₪' + Number(n).toLocaleString('en-US');
 const items = built.slice().sort((a, b) => (a.brandEn || a.brand || '').localeCompare(b.brandEn || b.brand || '', 'en') || (a.m || 9e9) - (b.m || 9e9));
 
-const cards = items.map((x) => `    <a class="card rev" href="${esc(x.file)}">
-      <div class="ph"><img loading="lazy" src="${esc(x.thumb)}" alt="${esc(x.name)}"></div>
+const cards = items.map((x) => `    <a class="card rev" href="${esc(String(x.file).replace(/\.html$/, ''))}">
+      <div class="ph"><img loading="lazy" src="${esc(webp(x.thumb))}" alt="${esc(x.name)}"></div>
       <div class="cb">
         <div class="br" dir="ltr">${esc(x.brandEn || x.brand || '')}</div>
         <div class="nm" dir="ltr">${esc(x.modelEn || x.name)}</div>
@@ -20,6 +25,7 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+${CONSENT}
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -27,19 +33,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-WK4JC6C');</script>
 <!-- End Google Tag Manager -->
+<meta name="robots" content="noindex,nofollow">
 <title>דפי הנחיתה של Car2Buy · כל הרכבים החדשים</title>
-<meta name="description" content="דפי נחיתה לכל הרכבים החדשים של Car2Buy — רכב חדש 0 ק&quot;מ, 100% מימון בריבית הטובה בישראל, טרייד-אין וליווי אישי.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/favicon-48.png">
+<meta name="description" content="דפי נחיתה לכל הרכבים החדשים של Car2Buy — רכב חדש 0 ק&quot;מ, עד 100% מימון, טרייד-אין וליווי אישי.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap"></noscript>
 <style>
-  :root{ --ink:#08090b; --ink-2:#101216; --gold:#F5691E; --gold-l:#ff8a4b; --muted:rgba(255,255,255,.64); --line:rgba(255,255,255,.13); --r:18px; --ease:cubic-bezier(.32,.72,0,1); --back:cubic-bezier(.34,1.56,.64,1); }
+  :root{ --ink:#08090b; --ink-2:#101216; --gold:#F5691E; --gold-l:#ff8a4b; --cta:#c74e12; --muted:rgba(255,255,255,.64); --line:rgba(255,255,255,.13); --r:18px; --ease:cubic-bezier(.32,.72,0,1); --back:cubic-bezier(.34,1.56,.64,1); }
   *{margin:0;padding:0;box-sizing:border-box;} html{scroll-behavior:smooth;overflow-x:clip;}
   body{font-family:"Heebo","Noto Sans Hebrew",sans-serif;background:var(--ink);color:#fff;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
   img{max-width:100%;display:block;} a{color:inherit;text-decoration:none;}
   .wrap{width:100%;max-width:1280px;margin-inline:auto;padding-inline:clamp(16px,4vw,44px);}
   .top{position:sticky;inset-block-start:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:14px clamp(16px,4vw,44px);background:rgba(8,9,11,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
   .top .b{font-weight:900;font-size:20px;} .top .b i{color:var(--gold);font-style:normal;}
-  .top .tel{background:var(--gold);color:#fff;font-weight:800;font-size:14px;padding:10px 16px;border-radius:8px;}
+  .top .tel{background:var(--cta);color:#fff;font-weight:800;font-size:14px;padding:10px 16px;border-radius:8px;}
   .hero{padding:clamp(48px,8vw,96px) 0 clamp(28px,4vw,44px);text-align:center;}
   .hero .k{color:var(--gold-l);font-weight:800;font-size:13px;letter-spacing:.2em;text-transform:uppercase;}
   .hero h1{font-size:clamp(32px,6vw,68px);font-weight:900;letter-spacing:-.03em;margin-top:12px;line-height:1.02;} .hero h1 span{color:var(--gold);}
@@ -67,17 +77,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <section class="hero"><div class="wrap">
   <div class="k">דפי הנחיתה שלנו</div>
   <h1>כל הרכבים החדשים <span>שלנו</span></h1>
-  <p>${items.length} דגמים · רכב חדש 0 ק"מ · 100% מימון בריבית הטובה בישראל · טרייד-אין וליווי אישי עד קבלת המפתח. בחרו רכב וקבלו הצעה אישית.</p>
+  <p>${items.length} דגמים · רכב חדש 0 ק"מ · עד 100% מימון* · טרייד-אין וליווי אישי עד קבלת המפתח. בחרו רכב וקבלו הצעה אישית.</p>
 </div></section>
 <main class="wrap"><div class="grid">
 ${cards}
 </div></main>
-<footer class="foot"><div class="wrap"><b>Car2Buy</b> · <a href="tel:+972723319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור גוף מימון וזמינות במלאי.</div></footer>
+<footer class="foot"><div class="wrap"><b>Car2Buy</b> · <a href="tel:+972723319929">072-3319929</a> · המחירים להמחשה, ההצעה הסופית נתפרת אישית בכפוף לאישור גוף מימון וזמינות במלאי.<p class="c2b-fn" style="margin:10px 0 0;font-size:12px;line-height:1.6;opacity:.8">* עד 100% מימון והחזר חודשי — בכפוף לאישור הגוף המממן ולבדיקת זכאות. Car2Buy מופעל על ידי גלובל דרייב, ח.פ 516685898. <a href="privacy" style="color:inherit;text-decoration:underline">פרטיות</a> · <a href="terms" style="color:inherit;text-decoration:underline">תנאי שימוש</a> · <a href="cookies" style="color:inherit;text-decoration:underline">עוגיות</a> · <a href="accessibility" style="color:inherit;text-decoration:underline">נגישות</a></p></div></footer>
 <script>
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
   document.querySelectorAll('.rev').forEach(function(el){io.observe(el);});
 </script>
+<script src="cookie-bar.js?v=${V}" defer></script>
 </body>
 </html>`;
-fs.writeFileSync(ROOT + '/landings', html, 'utf8');
+fs.writeFileSync(ROOT + '/landings.html', html, 'utf8');
 console.log('wrote landings with', items.length, 'cars');

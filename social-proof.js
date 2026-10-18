@@ -6,6 +6,9 @@
    ============================================================ */
 (function () {
   if (sessionStorage.getItem('c2b_exit_done')) return;
+  // no exit popup on the thank-you / contact / legal pages (the visitor is already converting or reading terms)
+  if (/^\/(thank-you|thanks|contact|privacy|terms|cookies|accessibility)(\.html)?\/?$/.test(location.pathname)) return;
+  if (/^(thank-you|thanks|contact|privacy|terms|cookies|accessibility)$/.test((document.body && document.body.dataset.page) || '')) return;
   // מי שכבר שלח ליד — לא מציגים לו יותר את הפופאפ האוטומטי (בכל הביקורים).
   try { if (localStorage.getItem('c2b_lead_done')) return; } catch (e) {}
 
@@ -19,7 +22,7 @@
     <div class="exit-modal" role="dialog" aria-label="הצעה מיוחדת">
       <button class="exit-close" aria-label="סגור">×</button>
       <div class="exit-grid">
-        <div class="exit-media"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900&q=80&auto=format&fit=crop" alt="רכב חדש"></div>
+        <div class="exit-media"><img src="images/ext/unsplash-1503376780353-7e6692767b70.webp" alt="רכב חדש"></div>
         <div class="exit-body">
           <div class="exit-eyebrow">רגע לפני שאתם הולכים</div>
           <h2 class="exit-title">קבלו הצעת מימון<br>אישית — בלי התחייבות</h2>
@@ -29,7 +32,7 @@
             <input type="tel" id="exitPhone" placeholder="טלפון" required>
             ${window.C2B_consentHTML ? window.C2B_consentHTML() : ''}
             <button type="submit" class="btn btn-gold">קבלו הצעה</button>
-            <div class="exit-err" id="exitErr"></div>
+            <div class="exit-err" id="exitErr" role="alert" aria-live="polite"></div>
           </form>
           <button type="button" class="exit-dismiss" id="exitDismiss">לא תודה, אמשיך לגלוש</button>
         </div>
@@ -106,9 +109,11 @@
     err.textContent = '';
     if (window.c2bTrack) c2bTrack('lead_submit', { source: 'exit_popup' });
     // מציגים הצלחה רק אם הליד נשמר בפועל; אחרת C2B_leadFail מציג שגיאה והטופס נשאר פתוח לניסיון חוזר.
-    var _ep = window.submitLead ? submitLead({ name: name.value.trim(), phone: phone.value.trim(), source: 'exit_popup' }) : Promise.resolve(true);
+    var _ef = el.querySelector('#exitForm'), _epl = { name: name.value.trim(), phone: phone.value.trim(), source: 'exit_popup' };
+    var _ep = window.C2B_send ? C2B_send(_ef, _epl) : Promise.resolve(false);
     _ep.then(function (ok) {
-      if (!ok) return;
+      if (ok === null) return;
+      if (!ok) { err.innerHTML = 'לא הצלחנו לשלוח כרגע. נסו שוב או חייגו <a href="tel:+972723319929">072-3319929</a>.'; return; }
       modal.querySelector('.exit-grid').style.display = 'none';
       el.querySelector('#exitSuccess').classList.add('show');
       sessionStorage.setItem('c2b_exit_done', '1');

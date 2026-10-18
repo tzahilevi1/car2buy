@@ -83,13 +83,16 @@
 
   // contact form
   var f = document.getElementById('tpForm');
+  if (f && f.__bound) f = null; else if (f) f.__bound = 1;
   if (f) f.addEventListener('submit', function (e) {
     e.preventDefault();
     var ok = true;
     [].slice.call(f.querySelectorAll('input[required]')).forEach(function (inp) { if (!inp.value.trim()) ok = false; });
     if (!ok) return;
-    if (window.submitLead) submitLead(window.collectForm ? collectForm(f, { source: 'trade_in' }) : { source: 'trade_in' });
-    var c = f.parentNode.querySelector('.tp-consent'); if (c) c.style.display = 'none';
-    f.outerHTML = '<div class="tp-form-done">תודה! נציג יחזור אליכם בהקדם ✓</div>';
+    if (!window.C2B_formSend) { if (window.C2B_leadFail) C2B_leadFail(); return; }
+    C2B_formSend(f, window.collectForm ? collectForm(f, { source: 'trade_in' }) : { source: 'trade_in' }, function () {
+      var c = f.parentNode.querySelector('.tp-consent'); if (c) c.style.display = 'none';
+      f.outerHTML = '<div class="tp-form-done">תודה! נציג יחזור אליכם בהקדם ✓</div>';
+    });
   });
 })();
