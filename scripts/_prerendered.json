@@ -1,5 +1,5 @@
 {
- "at": "2026-10-25T15:22:42.518Z",
+ "at": "2026-10-26T13:38:05.916Z",
  "cars": [
   "byd-atto-2-boost",
   "byd-dolphin-comfort",
@@ -89,6 +89,8 @@
   "mercedes-eqa-250-mercedes-eqa-250-elite",
   "link-co-02-pro-02-pro",
   "dongfeng-mage-dongfeng-mage",
+  "cadillac-escalade-iq-permium-luxury",
+  "cadillac-escalade-iq-premium-sport",
   "toyota-yaris-cross-style",
   "lynk-co-01-halo"
  ],
@@ -120,6 +122,7 @@
   "gmc",
   "maxus",
   "lynk-co",
+  "cadillac",
   "toyota"
  ]
 }
