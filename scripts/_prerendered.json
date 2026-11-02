@@ -1,5 +1,5 @@
 {
- "at": "2026-10-26T13:38:05.916Z",
+ "at": "2026-11-02T18:42:26.507Z",
  "cars": [
   "byd-atto-2-boost",
   "byd-dolphin-comfort",
@@ -92,7 +92,8 @@
   "cadillac-escalade-iq-permium-luxury",
   "cadillac-escalade-iq-premium-sport",
   "toyota-yaris-cross-style",
-  "lynk-co-01-halo"
+  "lynk-co-01-halo",
+  "xpeng-g6-core-plus"
  ],
  "brands": [
   "byd",
@@ -123,6 +124,7 @@
   "maxus",
   "lynk-co",
   "cadillac",
-  "toyota"
+  "toyota",
+  "xpeng"
  ]
 }
